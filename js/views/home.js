@@ -122,7 +122,7 @@ window.ShopVietViews.home = (function () {
                 <!-- Badge Xanh Lá Nhạt -->
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50 font-medium text-xs">
                   <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  <span>⚡ Tự động giao hàng sau khi thanh toán</span>
+                  <span>Tự động giao hàng sau khi thanh toán</span>
                 </div>
 
                 <!-- H1 Lớn Đậm -->
@@ -205,8 +205,9 @@ window.ShopVietViews.home = (function () {
 
                 <div class="relative z-10 space-y-3 max-w-lg">
                   <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black tracking-wide uppercase bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-sm">
-                      🔥 HOT PRODUCT 2026
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      Hot product 2026
                     </span>
                     <span class="text-xs text-indigo-300 font-semibold">• Bản quyền chính chủ</span>
                   </div>
@@ -437,8 +438,8 @@ window.ShopVietViews.home = (function () {
 
                         <!-- Rating & Sold Count -->
                         <div class="flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-400">
-                          <span class="flex items-center text-amber-500 font-bold">
-                            ★ ${prod.rating || '5.0'}
+                          <span class="flex items-center gap-1 text-amber-500 font-bold">
+                            <svg class="w-3.5 h-3.5 text-amber-400 fill-current inline-block" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> ${prod.rating || '5.0'}
                           </span>
                           <span>•</span>
                           <span>${prod.soldCount ? `${(prod.soldCount / 1000).toFixed(1)}k đã bán` : 'Mới mở bán'}</span>

@@ -135,7 +135,7 @@
       const date = ord.createdAtFormatted ? (ord.createdAtFormatted.includes(' ') ? ord.createdAtFormatted.split(' ')[1] : ord.createdAtFormatted) : (ord.date ? (ord.date.includes(' ') ? ord.date.split(' ')[0] : ord.date) : '28/10/2026');
       const total = ord.amount || ord.total || ord.price || 0;
       const status = ord.status || 'completed';
-      const statusText = status === 'pending' ? 'Chờ thanh toán' : 'Hoàn tất';
+      const statusText = status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' ? 'Chờ thanh toán' : 'Hoàn tất');
       const deliveryInfo = ord.deliveryInfo || {
         account: ord.userEmail || user.email,
         licenseKey: ord.licenseKey || `SV-KEY-${id}-AI-PRO-2026`,
@@ -154,7 +154,10 @@
         status: status,
         statusText: statusText,
         userEmail: ord.userEmail || user.email,
-        deliveryInfo: deliveryInfo
+        deliveryInfo: deliveryInfo,
+        customDeliveryLink: ord.customDeliveryLink || (ord.deliveryInfo && ord.deliveryInfo.customDeliveryLink) || '',
+        adminMessage: ord.adminMessage || (ord.deliveryInfo && ord.deliveryInfo.adminMessage) || '',
+        licenseKey: ord.licenseKey || (ord.deliveryInfo && ord.deliveryInfo.licenseKey) || ''
       };
     });
   }
@@ -506,6 +509,9 @@
                   </span>
                 </div>
 
+                <!-- Khối thông báo khi đơn đang chờ duyệt giao dịch -->
+                <div id="modalOrderWaitingNotice" class="hidden p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-medium">⏳ Đơn hàng của bạn đang được Ban quản trị đối soát giao dịch Sacombank và chuẩn bị bàn giao đường link bản quyền riêng. Vui lòng quay lại sau ít phút!</div>
+
                 <!-- Tài khoản / Email -->
                 <div>
                   <span class="text-[11px] text-slate-500 block font-medium">Tài khoản / Email bàn giao:</span>
@@ -519,13 +525,16 @@
                   </div>
                 </div>
 
-                <!-- Password / Key -->
+                <!-- Password / Key / Đường link -->
                 <div>
-                  <span class="text-[11px] text-slate-500 block font-medium">Mật khẩu / Key kích hoạt:</span>
+                  <span class="text-[11px] text-slate-500 block font-medium">Đường link / Key kích hoạt bàn giao riêng:</span>
                   <div class="flex items-center justify-between gap-2 mt-1">
                     <code id="modalOrderKey" class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 select-all bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 flex-1 truncate">
                       p***_OpenAI_SecuredKey_8942
                     </code>
+                    <a id="openOrderLinkBtn" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shrink-0 transition shadow-sm items-center gap-1 inline-flex">
+                      <span>Mở link ↗</span>
+                    </a>
                     <button type="button" id="copyKeyBtn" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 text-xs font-semibold shrink-0 cursor-pointer shadow-sm transition-colors">
                       Sao chép Key
                     </button>
@@ -843,18 +852,15 @@
                         ${order.totalFormatted}
                       </td>
                       <td class="py-3.5 px-4 whitespace-nowrap">
-                        ${order.status === 'pending' ? `
+                        ${order.status === 'pending_review' ? `
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">⏳ Chờ duyệt</span>
+                        ` : order.status === 'pending' ? `
                           <span class="bg-amber-50 text-amber-600 border border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             <span>Chờ thanh toán</span>
                           </span>
                         ` : `
-                          <span class="bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
-                            <svg class="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            <span>Hoàn tất</span>
-                          </span>
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300">✓ Hoàn tất</span>
                         `}
                       </td>
                       <td class="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap">
@@ -882,7 +888,7 @@
       if (currentOrderFilter === 'completed') {
         filteredOrders = filteredOrders.filter(o => o.status === 'completed');
       } else if (currentOrderFilter === 'pending') {
-        filteredOrders = filteredOrders.filter(o => o.status === 'pending');
+        filteredOrders = filteredOrders.filter(o => o.status === 'pending' || o.status === 'pending_review');
       }
 
       if (orderSearchQuery.trim()) {
@@ -896,7 +902,7 @@
 
       const totalCount = orders.length;
       const completedCount = orders.filter(o => o.status === 'completed').length;
-      const pendingCount = orders.filter(o => o.status === 'pending').length;
+      const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'pending_review').length;
 
       return `
         <!-- Header Quản lý đơn hàng -->
@@ -995,18 +1001,15 @@
                         ${order.totalFormatted}
                       </td>
                       <td class="py-3.5 px-4 whitespace-nowrap">
-                        ${order.status === 'pending' ? `
+                        ${order.status === 'pending_review' ? `
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">⏳ Chờ duyệt</span>
+                        ` : order.status === 'pending' ? `
                           <span class="bg-amber-50 text-amber-600 border border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             <span>Chờ thanh toán</span>
                           </span>
                         ` : `
-                          <span class="bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
-                            <svg class="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            <span>Hoàn tất</span>
-                          </span>
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300">✓ Hoàn tất</span>
                         `}
                       </td>
                       <td class="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap">
@@ -2025,7 +2028,9 @@
       detailBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           const orderId = btn.getAttribute('data-order-id');
-          const found = userOrders.find(o => o.id === orderId) || userOrders[0];
+          const allOrders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
+          const origOrder = allOrders.find(o => o.id === orderId);
+          const found = (userOrders && userOrders.find(o => o.id === orderId)) || origOrder || (userOrders && userOrders[0]);
 
           if (found && orderDetailModal) {
             const modalOrderId = document.getElementById('modalOrderId');
@@ -2033,18 +2038,54 @@
             const modalOrderAccount = document.getElementById('modalOrderAccount');
             const modalOrderKey = document.getElementById('modalOrderKey');
             const modalOrderGuide = document.getElementById('modalOrderGuide');
+            const modalOrderWaitingNotice = document.getElementById('modalOrderWaitingNotice');
+            const openOrderLinkBtn = document.getElementById('openOrderLinkBtn');
 
-            const delInfo = found.deliveryInfo || {
-              account: user.email || 'minhcuong.dev@gmail.com',
+            const delInfo = found.deliveryInfo || (origOrder && origOrder.deliveryInfo) || {
+              account: (user && user.email) || 'minhcuong.dev@gmail.com',
               licenseKey: 'SV-LICENSE-KEY-VIP-2026',
               guide: 'Đăng nhập vào trang chủ và bắt đầu sử dụng. Bảo hành 1 đổi 1.'
             };
 
             if (modalOrderId) modalOrderId.textContent = found.id;
             if (modalOrderProduct) modalOrderProduct.textContent = found.productName;
-            if (modalOrderAccount) modalOrderAccount.textContent = delInfo.account || user.email;
-            if (modalOrderKey) modalOrderKey.textContent = delInfo.licenseKey || 'SV-KEY-PRO-2026';
-            if (modalOrderGuide) modalOrderGuide.textContent = delInfo.guide || 'Sản phẩm được kích hoạt tự động. Bảo hành 1 đổi 1.';
+            if (modalOrderAccount) modalOrderAccount.textContent = delInfo.account || (user && user.email) || 'minhcuong.dev@gmail.com';
+
+            const deliveryLink = found.customDeliveryLink || (origOrder && origOrder.customDeliveryLink) || (found.deliveryInfo && found.deliveryInfo.licenseKey) || found.licenseKey || (delInfo && delInfo.licenseKey) || '';
+
+            if (modalOrderKey) {
+              modalOrderKey.textContent = deliveryLink || 'Đang chờ Admin cấp link';
+            }
+
+            if (openOrderLinkBtn) {
+              if (deliveryLink && (deliveryLink.startsWith('http://') || deliveryLink.startsWith('https://'))) {
+                openOrderLinkBtn.classList.remove('hidden');
+                openOrderLinkBtn.href = deliveryLink;
+              } else {
+                openOrderLinkBtn.classList.add('hidden');
+              }
+            }
+
+            const currentStatus = found.status || (origOrder && origOrder.status);
+            if (modalOrderWaitingNotice) {
+              if (currentStatus === 'pending_review') {
+                modalOrderWaitingNotice.classList.remove('hidden');
+                if (modalOrderKey) {
+                  modalOrderKey.textContent = '⏳ Đang chờ Admin duyệt & gửi link...';
+                }
+              } else {
+                modalOrderWaitingNotice.classList.add('hidden');
+              }
+            }
+
+            const adminMsg = found.adminMessage || (origOrder && origOrder.adminMessage) || (delInfo && delInfo.adminMessage);
+            if (modalOrderGuide) {
+              if (adminMsg) {
+                modalOrderGuide.innerHTML = `<div class="font-bold text-indigo-700 dark:text-indigo-300 mb-1">💬 Lời nhắn từ Admin Minh Cường:</div><p class="italic mb-2 font-medium">${adminMsg}</p><div class="text-slate-500 text-[11px] pt-1 border-t border-amber-200/50">Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</div>`;
+              } else {
+                modalOrderGuide.textContent = delInfo.guide || 'Sản phẩm được kích hoạt tự động. Bảo hành 1 đổi 1 trong suốt thời gian sử dụng.';
+              }
+            }
 
             orderDetailModal.classList.remove('hidden');
           }

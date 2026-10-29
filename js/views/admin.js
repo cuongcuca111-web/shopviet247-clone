@@ -4,10 +4,10 @@
  * 
  * Cổng Quản Trị Bí Mật (minhcuong111) chuẩn xác theo phong cách Ảnh 3:
  * - Bảo mật truy cập: Phím tắt Ctrl + Shift + A, Hash #admin, Mã PIN xác thực (minhcuong111 / admin2026)
- * - Header Modal chuẩn Ảnh 3: Icon bánh răng gradient tím/xanh, Tiêu đề "Phiên quản trị (minhcuong111)", Badge "Admin Session", Dòng phụ "Bạn vẫn đang dùng tài khoản Minh Cuong • Phiên: 59:54 • Cấu hình: v12", nút Làm mới 🔄, Về Trang chủ, Đăng xuất
- * - Tab 1: 🏷️ Giá & gói (Quản lý sản phẩm: thêm/sửa/xóa, giá bán, giá gốc, tồn kho, trạng thái, ảnh/icon, lưu localStorage, realtime cập nhật view Home)
- * - Tab 2: 💳 Thanh toán VietQR & Đơn hàng (Duyệt đơn, xem ảnh bill, thống kê doanh thu)
- * - Tab 3: ⚙️ Cấu hình VietQR (Cấu hình STK, Chủ TK, Ngân hàng, Live VietQR Preview)
+ * - Header Modal chuẩn Ảnh 3: Icon bánh răng gradient tím/xanh, Tiêu đề "Phiên quản trị (minhcuong111)", Badge "Admin Session", Dòng phụ "Bạn vẫn đang dùng tài khoản Minh Cuong • Phiên: 59:54 • Cấu hình: v12", nút Làm mới, Về Trang chủ, Đăng xuất
+ * - Tab 1: Giá & gói (Quản lý sản phẩm: thêm/sửa/xóa, giá bán, giá gốc, tồn kho, trạng thái, ảnh/icon, lưu localStorage, realtime cập nhật view Home)
+ * - Tab 2: Thanh toán VietQR & Đơn hàng (Duyệt đơn, xem ảnh bill, thống kê doanh thu)
+ * - Tab 3: Cấu hình VietQR (Cấu hình STK, Chủ TK, Ngân hàng, Live VietQR Preview)
  */
 
 (function () {
@@ -277,9 +277,9 @@
               </div>
             </div>
 
-            <!-- Cụm Nút Phải Chuẩn Ảnh 3: Làm Mới 🔄, Về Trang Chủ, Đăng Xuất -->
+            <!-- Cụm Nút Phải Chuẩn Ảnh 3: Làm Mới, Về Trang Chủ, Đăng Xuất -->
             <div class="flex items-center gap-2">
-              <!-- Nút Làm Mới 🔄 -->
+              <!-- Nút Làm Mới -->
               <button 
                 type="button" 
                 onclick="window.ShopVietViews.admin.refreshData()" 
@@ -334,7 +334,7 @@
               id="adminTabBtn-pricing"
               class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'pricing' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
             >
-              <span class="text-base">🏷️</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
               <span>Giá & gói</span>
               <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold">${products.length}</span>
             </button>
@@ -346,7 +346,7 @@
               id="adminTabBtn-orders"
               class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'orders' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
             >
-              <span class="text-base">💳</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               <span>Thanh toán VietQR & Đơn hàng</span>
               <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold">${orders.length}</span>
             </button>
@@ -358,7 +358,7 @@
               id="adminTabBtn-vietqr"
               class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'vietqr' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
             >
-              <span class="text-base">⚙️</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>Cấu hình VietQR</span>
             </button>
           </div>
@@ -384,7 +384,7 @@
   }
 
   // =========================================================================
-  // TAB 1: 🏷️ GIÁ & GÓI (QUẢN LÝ SẢN PHẨM)
+  // TAB 1: GIÁ & GÓI (QUẢN LÝ SẢN PHẨM)
   // =========================================================================
   function renderTabPricing() {
     const products = (window.ShopVietData && window.ShopVietData.products) || [];
@@ -538,7 +538,7 @@
               onclick="window.ShopVietViews.admin.openProductModal('${prod.id}')" 
               class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition flex items-center gap-1"
             >
-              <span>✏️</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               <span>Sửa</span>
             </button>
             <button 
@@ -547,7 +547,7 @@
               class="px-2 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold transition"
               title="Xóa sản phẩm"
             >
-              <span>🗑️</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </td>
@@ -556,7 +556,7 @@
   }
 
   // =========================================================================
-  // TAB 2: 💳 THANH TOÁN VIETQR & ĐƠN HÀNG
+  // TAB 2: THANH TOÁN VIETQR & ĐƠN HÀNG
   // =========================================================================
   function renderTabOrders() {
     const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
@@ -678,10 +678,14 @@
 
         <!-- TRẠNG THÁI -->
         <td class="py-3 px-3 text-center">
-          ${isCompleted ? `
+          ${order.status === 'completed' ? `
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Hoàn tất
+              ✓ Hoàn tất
+            </span>
+          ` : order.status === 'pending_review' ? `
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">
+              <span>⏳</span> Chờ duyệt
             </span>
           ` : `
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50">
@@ -696,7 +700,7 @@
           <button 
             type="button" 
             onclick="window.ShopVietViews.admin.viewBillModal('${code}', '${amount}')" 
-            class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
             <span>Xem bill</span>
@@ -705,24 +709,37 @@
 
         <!-- THAO TÁC -->
         <td class="py-3 px-4 text-right">
-          ${!isCompleted ? `
+          <div class="flex items-center justify-end gap-1.5 flex-wrap">
             <button 
               type="button" 
-              onclick="window.ShopVietViews.admin.approveOrder('${code}')" 
-              class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition"
+              onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
+              class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
             >
-              ✓ Duyệt hoàn tất
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Duyệt đơn</span>
             </button>
-          ` : `
-            <span class="text-xs text-slate-400 font-medium">Đã kích hoạt</span>
-          `}
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
+              class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-sm transition flex items-center gap-1 cursor-pointer" 
+              title="Cập nhật link kích hoạt hoặc lời nhắn riêng"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span>Gửi link</span>
+            </button>
+          </div>
+          ${order.customDeliveryLink ? `
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-mono mt-1">Đã gửi link riêng</span>
+          ` : isCompleted ? `
+            <span class="text-[10px] text-slate-400 block font-medium mt-1">Đã kích hoạt</span>
+          ` : ''}
         </td>
       </tr>
     `;
   }
 
   // =========================================================================
-  // TAB 3: ⚙️ CẤU HÌNH VIETQR
+  // TAB 3: CẤU HÌNH VIETQR
   // =========================================================================
   function renderTabVietQR() {
     const config = getVietQRConfig();
@@ -737,7 +754,8 @@
           <div class="md:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
             <div>
               <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>⚙️ Cấu Hình Tài Khoản Nhận Tiền VietQR</span>
+                <svg class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Cấu hình tài khoản nhận tiền VietQR</span>
               </h3>
               <p class="text-xs text-slate-500 mt-1">Thông tin này sẽ được gắn tự động vào mã QR tạo ra khi khách bấm Đặt Hàng.</p>
             </div>
@@ -872,7 +890,12 @@
           <!-- Header -->
           <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950/70">
             <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>${isEdit ? '✏️ Chỉnh Sửa Sản Phẩm' : '✨ Thêm Sản Phẩm Mới'}</span>
+              <span class="flex items-center gap-1.5">
+                ${isEdit 
+                  ? `<svg class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span>Chỉnh Sửa Sản Phẩm</span>` 
+                  : `<svg class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Thêm Sản Phẩm Mới</span>`
+                }
+              </span>
               <code class="text-xs font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded">${prod.id}</code>
             </h3>
             <button 
@@ -1108,6 +1131,106 @@
           >
             Đóng
           </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Modal Admin Duyệt Đơn & Gửi Link Riêng Cho Khách
+  function renderDeliveryModal(order) {
+    const code = order.orderCode || order.id || 'ORDER';
+    const customer = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Khách vãng lai';
+    const customerEmail = (order.customer && order.customer.email) || (order.user && order.user.email) || order.customerEmail || 'cuongcuca111@gmail.com';
+    const productName = order.productName || (order.items && order.items[0] && order.items[0].name) || 'Gói Bản Quyền Pro';
+    const amount = order.amount || order.total || order.price || 69000;
+    const currentLink = order.customDeliveryLink || (order.licenseKey && order.licenseKey.startsWith('http') ? order.licenseKey : '') || 'https://one.google.com/inv/gemini-pro-shopviet247-vip';
+    const currentMsg = order.adminMessage || (order.deliveryInfo && order.deliveryInfo.guide) || 'Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.';
+
+    return `
+      <div id="adminDeliveryBackdrop" class="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onclick="if(event.target === this) this.remove()">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up p-6 space-y-5 relative" onclick="event.stopPropagation()">
+          <!-- Close button -->
+          <button 
+            type="button" 
+            onclick="document.getElementById('adminDeliveryBackdrop').remove()" 
+            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition cursor-pointer text-sm"
+          >
+            ✕
+          </button>
+
+          <!-- Header -->
+          <div class="flex items-start gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 text-2xl shadow-inner">
+              👑
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Duyệt Đơn & Gửi Link Riêng Cho Khách</h3>
+              <div class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">#${code}</div>
+            </div>
+          </div>
+
+          <!-- Tóm tắt đơn hàng -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 space-y-1.5 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Khách hàng:</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">${customer} <span class="text-slate-400 font-normal">(${customerEmail})</span></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Gói sản phẩm:</span>
+              <span class="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">${productName}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Số tiền thanh toán:</span>
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">${formatVND(amount)}</span>
+            </div>
+          </div>
+
+          <!-- Form nhập liệu -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                🔗 Link kích hoạt bản quyền riêng:
+              </label>
+              <input 
+                type="text" 
+                id="adminDeliveryLinkInput" 
+                value="${currentLink}" 
+                placeholder="https://one.google.com/inv/gemini-..." 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+              <p class="text-[11px] text-slate-400 mt-1">Đường dẫn này sẽ hiển thị trực tiếp cho khách hàng trong trang Đơn hàng / Bản quyền để họ kích hoạt ngay.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                💬 Lời nhắn / Hướng dẫn dặn dò riêng cho khách:
+              </label>
+              <textarea 
+                id="adminDeliveryMessageInput" 
+                rows="3" 
+                placeholder="Lời nhắn kèm theo cho khách..." 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+              >${currentMsg}</textarea>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button 
+              type="button" 
+              onclick="document.getElementById('adminDeliveryBackdrop').remove()" 
+              class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.submitApproveWithDelivery('${code}')" 
+              class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>✓ Phê Duyệt & Gửi Ngay</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1423,7 +1546,7 @@
     // 15. Duyệt hoàn tất đơn hàng
     approveOrder: function (orderCode) {
       if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
-        const ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode));
+        const ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
         if (ord) {
           ord.status = 'completed';
           ord.statusText = 'Đã hoàn tất';
@@ -1431,6 +1554,9 @@
             ord.licenseKey = `KEY-${Date.now().toString().slice(-6)}-PRO-ACTIVE`;
           }
           window.ShopVietState.save();
+          if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+            window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
+          }
         }
       }
 
@@ -1441,6 +1567,79 @@
       }
 
       notify(`Đã duyệt hoàn tất và kích hoạt license cho đơn hàng ${orderCode}!`, 'success');
+    },
+
+    // 15b. Mở Modal Admin Duyệt Đơn & Gửi Link Riêng Cho Khách
+    openDeliveryModal: function (orderCode) {
+      let ord = null;
+      if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
+        ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
+      }
+      if (!ord) {
+        ord = {
+          orderCode: orderCode,
+          id: orderCode,
+          customerName: 'Khách hàng',
+          productName: 'Gói Bản Quyền VIP',
+          amount: 69000
+        };
+      }
+
+      const existing = document.getElementById('adminDeliveryBackdrop');
+      if (existing) existing.remove();
+
+      const container = document.createElement('div');
+      container.innerHTML = renderDeliveryModal(ord);
+      document.body.appendChild(container.firstElementChild);
+    },
+
+    // 15c. Xác nhận Phê Duyệt & Gửi Link
+    submitApproveWithDelivery: function (orderCode) {
+      const linkInput = document.getElementById('adminDeliveryLinkInput');
+      const msgInput = document.getElementById('adminDeliveryMessageInput');
+      const deliveryLink = (linkInput ? linkInput.value : '').trim();
+      const message = (msgInput ? msgInput.value : '').trim();
+
+      if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
+        let ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
+        if (ord) {
+          ord.status = 'completed';
+          ord.statusText = 'Đã hoàn tất';
+          ord.customDeliveryLink = deliveryLink;
+          ord.adminMessage = message;
+          ord.licenseKey = deliveryLink || ord.licenseKey || 'KEY-PRO-ACTIVE';
+          ord.approvedAt = new Date().toISOString();
+          
+          const customerEmail = (ord.customer && typeof ord.customer === 'object' && ord.customer.email) || 
+                                (ord.user && ord.user.email) || 
+                                (typeof ord.customer === 'string' && ord.customer.includes('@') ? ord.customer : 'cuongcuca111@gmail.com');
+
+          ord.deliveryInfo = {
+            account: customerEmail,
+            licenseKey: deliveryLink || ord.licenseKey || 'KEY-PRO-ACTIVE',
+            guide: message
+          };
+
+          window.ShopVietState.save();
+
+          // Đồng bộ nếu có Cloud Sync / Firebase
+          if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+            window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
+          }
+        }
+      }
+
+      // Đóng modal #adminDeliveryBackdrop
+      const modal = document.getElementById('adminDeliveryBackdrop');
+      if (modal) modal.remove();
+
+      // Re-render lại tab orders trong admin
+      const tabContent = document.getElementById('adminTabContent');
+      if (tabContent && currentActiveTab === 'orders') {
+        tabContent.innerHTML = renderTabOrders();
+      }
+
+      notify(`Đã phê duyệt đơn hàng #${orderCode} và bàn giao link riêng thành công!`, 'success');
     },
 
     // 16. Xem hóa đơn / Bill

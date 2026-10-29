@@ -666,6 +666,64 @@ window.ShopVietViews.modal = (function () {
               </div>
             </div>
 
+            <!-- WAITING REVIEW STATE MODAL CONTAINER (Hiện khi khách bấm Tôi đã chuyển khoản) -->
+            <div id="quickpay-waiting-container" class="hidden p-6 sm:p-8 text-center space-y-5 animate-slide-up">
+              <div class="relative w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
+                <svg class="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500 text-[9px] font-bold text-white items-center justify-center">⏳</span>
+                </span>
+              </div>
+
+              <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-800 mb-2">
+                  ⏳ Đã ghi nhận thông tin chuyển khoản
+                </span>
+                <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Đơn Hàng Đang Chờ Phê Duyệt</h3>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+                  Giao dịch của bạn đã được chuyển tới Ban quản trị Shopviet247. Đơn hàng sẽ được Admin đối soát với Sacombank và gửi đường link bản quyền riêng cho bạn sau ít phút!
+                </p>
+              </div>
+
+              <!-- Chi tiết đơn chờ duyệt -->
+              <div class="max-w-lg mx-auto p-4 rounded-2xl bg-amber-50/50 dark:bg-slate-800/60 border border-amber-200/80 dark:border-slate-700 text-left space-y-2.5">
+                <div class="flex items-center justify-between text-xs pb-2 border-b border-amber-200/60 dark:border-slate-700">
+                  <span class="text-slate-500">Mã đơn hàng:</span>
+                  <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400" id="waiting-order-code">${order.orderCode}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs pb-2 border-b border-amber-200/60 dark:border-slate-700">
+                  <span class="text-slate-500">Gói sản phẩm:</span>
+                  <span class="font-bold text-slate-900 dark:text-white">${order.items[0] ? order.items[0].name : 'Công cụ AI Bản Quyền'}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-500">Số tiền:</span>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400">${window.ShopVietState ? window.ShopVietState.formatCurrency(order.amount) : order.amount + 'đ'}</span>
+                </div>
+              </div>
+
+              <!-- 2 Nút hành động -->
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button 
+                  type="button" 
+                  onclick="ShopVietViews.modal.goToOrdersTab()" 
+                  class="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Xem đơn hàng của tôi →</span>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="ShopVietViews.modal.close()" 
+                  class="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition cursor-pointer"
+                >
+                  <span>Đóng & Về trang chủ</span>
+                </button>
+              </div>
+            </div>
+
             <!-- SUCCESS STATE MODAL CONTAINER (Ẩn ban đầu, hiện khi thành công) -->
             <div id="quickpay-success-container" class="hidden p-6 sm:p-8 text-center space-y-5 animate-slide-up">
               <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20">
@@ -780,7 +838,7 @@ window.ShopVietViews.modal = (function () {
       }
     },
 
-    // Xác nhận đã thanh toán
+    // Xác nhận đã thanh toán -> Đưa vào hàng đợi chờ Ban quản trị duyệt
     confirmPaid: function (orderCode) {
       const confirmBtn = document.getElementById('btn-quickpay-confirm');
       if (confirmBtn) {
@@ -788,17 +846,73 @@ window.ShopVietViews.modal = (function () {
         confirmBtn.classList.add('opacity-75', 'cursor-wait');
         confirmBtn.innerHTML = `
           <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-          <span>Đang kiểm tra biến động...</span>
+          <span>Đang lưu giao dịch...</span>
         `;
       }
 
       if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast('Đang kết nối cổng Sacombank kiểm tra giao dịch...', 'info');
+        window.ShopVietState.showToast('Đang ghi nhận thông tin chuyển khoản...', 'info');
       }
 
       setTimeout(() => {
-        this.finishPaymentSuccess(orderCode);
-      }, 1200);
+        this.finishPaymentWaitingReview(orderCode);
+      }, 1000);
+    },
+
+    // Xử lý hoàn tất trạng thái Chờ phê duyệt (Khi khách bấm "Tôi đã chuyển khoản")
+    finishPaymentWaitingReview: function (orderCode) {
+      clearPaymentTimer();
+
+      const order = window.ShopVietState ? window.ShopVietState.currentOrder : null;
+      if (order) {
+        order.status = 'pending_review';
+        order.submittedAt = new Date().toISOString();
+        const userEmail = (window.ShopVietState.state && window.ShopVietState.state.user && window.ShopVietState.state.user.email) || 'Khách vãng lai';
+        order.userEmail = userEmail;
+
+        if (window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) {
+          const exists = window.ShopVietState.state.orders.some(function (o) { return o.orderCode === order.orderCode; });
+          if (!exists) {
+            window.ShopVietState.state.orders.unshift(order);
+          }
+        }
+        if (Array.isArray(window.ShopVietState.orders)) {
+          const exists2 = window.ShopVietState.orders.some(function (o) { return o.orderCode === order.orderCode; });
+          if (!exists2) {
+            window.ShopVietState.orders.unshift(order);
+          }
+        }
+
+        if (typeof window.ShopVietState.save === 'function') {
+          window.ShopVietState.save();
+        }
+
+        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+          window.ShopVietFirebase.syncOrderToCloud(order);
+        }
+      }
+
+      const mainContent = document.getElementById('quickpay-main-content');
+      const waitingContainer = document.getElementById('quickpay-waiting-container');
+      const waitingCodeEl = document.getElementById('waiting-order-code');
+
+      if (waitingCodeEl && orderCode) {
+        waitingCodeEl.textContent = orderCode;
+      }
+      if (mainContent) mainContent.classList.add('hidden');
+      if (waitingContainer) waitingContainer.classList.remove('hidden');
+
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Đã ghi nhận giao dịch! Đơn của bạn sẽ được duyệt sau ít phút.', 'success');
+      }
+    },
+
+    // Điều hướng vào tab Đơn hàng trong trang Dashboard
+    goToOrdersTab: function () {
+      this.close();
+      if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+        window.ShopVietState.navigate('dashboard', { tab: 'orders' });
+      }
     },
 
     // Giả lập webhook tức thì
