@@ -2493,17 +2493,50 @@
       document.body.appendChild(container.firstElementChild);
     },
 
-    // 10.1 Xử lý Tải ảnh sản phẩm từ máy (Base64)
-    handleProductImageUpload: function (input) {
+    // 10.0 Nén ảnh bằng HTML5 Canvas siêu nhẹ (< 25KB WebP/JPEG)
+    compressImage: function (file, maxWidth, maxHeight, quality) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxHeight) {
+              if (width / height > maxWidth / maxHeight) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              } else {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            // Xuất ra WebP hoặc JPEG dung lượng siêu nhẹ < 25KB
+            const compressedDataUrl = canvas.toDataURL('image/webp', quality || 0.85);
+            resolve(compressedDataUrl);
+          };
+        };
+      });
+    },
+
+    // 10.1 Xử lý Tải ảnh sản phẩm từ máy (Tự động nén Canvas siêu nhẹ)
+    handleProductImageUpload: async function (input) {
       if (!input || !input.files || !input.files[0]) return;
       const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function (e) {
+      try {
+        const compressedDataUrl = await this.compressImage(file, 256, 256, 0.85);
         const preview = document.getElementById('adminProdImagePreview');
         const placeholder = document.getElementById('adminProdImagePlaceholder');
         const urlInput = document.getElementById('editProdImageUrl');
         if (preview) {
-          preview.src = e.target.result;
+          preview.src = compressedDataUrl;
           preview.classList.remove('hidden');
         }
         if (placeholder) {
@@ -2511,10 +2544,12 @@
           placeholder.classList.remove('flex');
         }
         if (urlInput) {
-          urlInput.value = e.target.result;
+          urlInput.value = compressedDataUrl;
         }
-      };
-      reader.readAsDataURL(file);
+        console.log('[ShopVietAdmin] Đã nén ảnh thành công với Canvas WebP 256x256 siêu nhẹ!');
+      } catch (err) {
+        console.warn('[ShopVietAdmin] Lỗi nén ảnh:', err);
+      }
     },
 
     // 10.2 Xử lý Nhập URL ảnh trực tiếp

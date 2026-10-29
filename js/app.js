@@ -86,11 +86,11 @@ function setupHeaderEvents() {
   const navProducts = document.getElementById('navProducts');
   const navBlog = document.getElementById('navBlog');
   const navSupport = document.getElementById('navSupport');
-  const searchTriggerBtn = document.getElementById('searchTriggerBtn');
+  const searchTriggerBtn = document.getElementById('header-search-btn') || document.getElementById('searchTriggerBtn');
   const cartBtn = document.getElementById('cartBtn');
-  const langToggleBtn = document.getElementById('langToggleBtn');
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
-  const dashboardBtn = document.getElementById('dashboardBtn');
+  const langToggleBtn = document.getElementById('header-lang-btn') || document.getElementById('langToggleBtn');
+  const themeToggleBtn = document.getElementById('headerThemeToggle') || document.getElementById('themeToggleBtn');
+  const dashboardBtn = document.getElementById('header-dashboard-link') || document.getElementById('dashboardBtn');
 
   // Click Logo -> Về Home
   if (brandLogoLink) {
@@ -441,7 +441,7 @@ function updateHeaderAuthUI() {
         <!-- Nút User Profile Badge (Click mở Dropdown) -->
         <button id="headerUserMenuBtn" type="button" class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group shadow-2xs">
           <!-- Avatar tròn chữ cái đầu (VD: C hoặc VH) -->
-          <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs ring-2 ring-white/50 dark:ring-slate-800">
             ${avatarChar}
           </div>
           <!-- Tên người dùng -->
@@ -452,17 +452,6 @@ function updateHeaderAuthUI() {
           <svg id="userMenuChevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
           </svg>
-        </button>
-
-        <!-- Nút Dashboard nhanh tiện lợi -->
-        <button id="headerDashboardQuickBtn" type="button" title="Mở trang Quản lý cá nhân & Đơn hàng" class="hidden sm:flex bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-3 py-1.5 items-center gap-1.5 text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer active:scale-95">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <rect width="7" height="9" x="3" y="3" rx="1" />
-            <rect width="7" height="5" x="14" y="3" rx="1" />
-            <rect width="7" height="9" x="14" y="12" rx="1" />
-            <rect width="7" height="5" x="3" y="16" rx="1" />
-          </svg>
-          <span>Dashboard</span>
         </button>
 
         <!-- Dropdown Menu Tài Khoản Thông Minh -->

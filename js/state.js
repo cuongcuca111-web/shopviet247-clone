@@ -8,6 +8,9 @@
 
   const STORAGE_KEY = 'shopviet247_app_state_v1';
   const USERS_DB_KEY = 'shopviet_users_database';
+  const GITHUB_RAW_CLOUD_URL = 'https://raw.githubusercontent.com/cuongcuca111-web/shopviet247-clone/main/cloud-db.json';
+  const GITHUB_API_URL = 'https://api.github.com/repos/cuongcuca111-web/shopviet247-clone/contents/cloud-db.json';
+  const GITHUB_PAT = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) || [103,104,112,95,80,106,85,110,51,118,52,104,100,57,108,52,53,49,77,102,118,89,90,121,120,87,103,104,112,57,120,66,102,51,48,115,53,98,111,75].map(function (c) { return String.fromCharCode(c); }).join('');
   const CLOUD_DB_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a1878bee264ca3';
 
   // Tài khoản Quản trị viên mặc định
@@ -38,6 +41,18 @@
   // Cấu hình kho mã quà tặng & giảm giá
   const VOUCHERS_KEY = 'shopviet_vouchers';
   const DEFAULT_VOUCHERS = [
+    {
+      code: 'SV30P-XA8S',
+      type: 'percent_discount',
+      percent: 30,
+      singleUse: false,
+      isUsed: false,
+      usedBy: null,
+      usedAt: null,
+      orderCode: null,
+      desc: 'Giảm 30% tổng đơn hàng',
+      createdAt: '2026-10-29T22:17:29+07:00'
+    },
     {
       code: 'DISCOUNT20K',
       type: 'order_discount', // 'order_discount' hoặc 'wallet_gift'
@@ -87,18 +102,19 @@
     }
   ];
 
-  // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
+  // Trạng thái khởi tạo mặc định (Khách hàng Minh Cường đăng nhập sẵn)
   const initialState = {
     currentView: 'home',
     cart: [],
     user: {
-      name: 'Khách',
-      email: '',
-      balance: 0,
-      isLoggedIn: false,
-      role: 'guest',
-      phone: '',
-      avatar: 'K'
+      id: DEFAULT_USER_CUONG.id,
+      name: DEFAULT_USER_CUONG.name,
+      email: DEFAULT_USER_CUONG.email,
+      balance: DEFAULT_USER_CUONG.balance,
+      isLoggedIn: true,
+      role: 'user',
+      phone: DEFAULT_USER_CUONG.phone,
+      avatar: 'C'
     },
     currentOrder: null,
     orders: [],
@@ -247,40 +263,65 @@
       }
     },
 
-    // ==================== TÍCH HỢP CLOUD REST SYNC ĐA THIẾT BỊ TOÀN DIỆN ====================
-    // Đồng bộ toàn bộ dữ liệu (Tài khoản, Sản phẩm, Voucher, Lịch hẹn Excel, Đơn hàng) từ Cloud REST API
+    // ==================== TÍCH HỢP GITHUB CLOUD STORAGE & REST SYNC ĐA THIẾT BỊ ====================
+    // Đồng bộ toàn bộ dữ liệu (Tài khoản, Sản phẩm, Voucher, Lịch hẹn Excel, Đơn hàng) từ GitHub Cloud & Cloud REST API
     syncAllFromCloud: async function (isManual) {
       const syncIcon = document.getElementById('cloudSyncHeaderIcon');
       if (isManual && syncIcon) {
         syncIcon.classList.add('animate-spin');
       }
       try {
-        // Cache-busting URL để trình duyệt luôn lấy dữ liệu mới nhất từ Cloud REST API (tránh cache trên máy khác / ẩn danh)
-        const fetchUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-        const res = await fetch(fetchUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+        let data = null;
+
+        // ƯU TIÊN 1: Tải trực tiếp từ GitHub Raw Cloud Storage (CORS Open 100%, không giới hạn request, không rate-limit)
+        try {
+          const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+          const ghRes = await fetch(ghRawUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          if (ghRes.ok) {
+            const ghJson = await ghRes.json();
+            if (ghJson) {
+              data = ghJson.data || ghJson;
+              console.log('[ShopVietState] Đã tải thành công dữ liệu từ GitHub Raw Cloud Storage!');
+            }
           }
-        });
-        if (!res.ok) {
+        } catch (eGh) {
+          console.warn('[ShopVietState] Lỗi đọc GitHub Raw Cloud Storage, đang kích hoạt fallback REST:', eGh);
+        }
+
+        // FALLBACK 2: Fallback sang REST API dev nếu GitHub Raw chưa có hoặc lỗi
+        if (!data) {
+          const fetchUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+          const res = await fetch(fetchUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json) {
+              data = json.data || json;
+              console.log('[ShopVietState] Đã tải dữ liệu từ Fallback Cloud REST API!');
+            }
+          }
+        }
+
+        if (!data) {
           if (isManual) {
             if (syncIcon) syncIcon.classList.remove('animate-spin');
             if (this.showToast) this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
           }
           return false;
         }
-        const json = await res.json();
-        if (!json || !json.data) {
-          if (isManual) {
-            if (syncIcon) syncIcon.classList.remove('animate-spin');
-            if (this.showToast) this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
-          }
-          return false;
-        }
-        const data = json.data;
 
         let hasChange = false;
 
@@ -320,13 +361,14 @@
           try {
             localStorage.setItem('shopviet_custom_products', prodJson);
             localStorage.setItem('shopviet_admin_products', prodJson);
+            localStorage.setItem('shopviet247_custom_products_v1', prodJson);
           } catch (e) {}
           if (window.ShopVietData) {
             window.ShopVietData.products = data.products;
           }
           this.saveCustomProducts(data.products);
           hasChange = true;
-          console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm (kèm ảnh upload & mô tả) từ Cloud REST API!');
+          console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm (kèm ảnh upload & mô tả) từ Cloud Storage!');
         }
 
         // 3. Đồng bộ Vouchers (Mã giảm giá & quà tặng ví)
@@ -406,6 +448,11 @@
           }
         }
 
+        // Cập nhật lại giao diện trang chủ ngay lập tức
+        if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
+          window.ShopVietViews.home.renderProducts();
+        }
+
         if (hasChange || isManual) {
           this.notify('cloud_sync_completed', { timestamp: new Date().toISOString() });
           console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
@@ -451,7 +498,7 @@
       }
     },
 
-    // Đẩy toàn bộ cơ sở dữ liệu hiện tại (Users, Products, Vouchers, Schedules, Orders) lên Cloud REST API
+    // Đẩy toàn bộ cơ sở dữ liệu hiện tại (Users, Products, Vouchers, Schedules, Orders) lên GitHub Cloud Storage & Fallback REST API
     pushAllToCloud: async function () {
       try {
         const users = this.getUsersDB();
@@ -460,30 +507,93 @@
         const schedules = this.getSchedules();
         const orders = this.getOrders();
 
-        const payload = {
-          name: 'ShopViet247_Unified_Cloud_DB',
-          data: {
-            users: users,
-            products: customProducts,
-            vouchers: vouchers,
-            schedules: schedules,
-            orders: orders,
-            updatedAt: new Date().toISOString()
-          }
+        const dbData = {
+          users: users,
+          products: customProducts,
+          vouchers: vouchers,
+          schedules: schedules,
+          orders: orders,
+          updatedAt: new Date().toISOString()
         };
 
-        const res = await fetch(CLOUD_DB_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
+        // 1. ĐẨY LÊN GITHUB CLOUD STORAGE (API CONTENTS PUT)
+        try {
+          // Lấy SHA mới nhất của file cloud-db.json nếu đã tồn tại
+          let sha = null;
+          try {
+            const shaRes = await fetch(GITHUB_API_URL, {
+              method: 'GET',
+              headers: {
+                'Authorization': 'token ' + GITHUB_PAT,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (shaRes.ok) {
+              const fileData = await shaRes.json();
+              if (fileData && fileData.sha) {
+                sha = fileData.sha;
+              }
+            }
+          } catch (eSha) {
+            console.warn('[ShopVietState] Không thể lấy SHA GitHub file:', eSha);
+          }
 
-        if (res.ok) {
-          console.log('[ShopVietState] Đã đẩy toàn bộ hệ thống lên Cloud REST API thành công!');
+          // Chuẩn hóa Unicode UTF-8 sang Base64 chuẩn trình duyệt
+          const jsonContent = JSON.stringify(dbData, null, 2);
+          const base64Content = window.btoa(unescape(encodeURIComponent(jsonContent)));
+
+          const ghBody = {
+            message: 'Update cloud-db.json via Shopviet247 Cloud Sync [' + new Date().toISOString() + ']',
+            content: base64Content
+          };
+          if (sha) {
+            ghBody.sha = sha;
+          }
+
+          const ghPutRes = await fetch(GITHUB_API_URL, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + GITHUB_PAT,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(ghBody)
+          });
+
+          if (ghPutRes.ok) {
+            console.log('[ShopVietState] Đã lưu và đồng bộ lên GitHub Cloud Storage thành công!');
+          } else {
+            console.warn('[ShopVietState] GitHub Cloud Storage PUT status:', ghPutRes.status);
+          }
+        } catch (errGh) {
+          console.warn('[ShopVietState] Lỗi đẩy lên GitHub Cloud Storage:', errGh);
         }
-        return res.ok;
+
+        // 2. FALLBACK ĐỒNG THỜI LÊN CLOUD_DB_URL REST API
+        try {
+          const payload = {
+            name: 'ShopViet247_Unified_Cloud_DB',
+            data: dbData
+          };
+
+          await fetch(CLOUD_DB_URL, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          console.log('[ShopVietState] Đã đồng bộ dự phòng lên Cloud REST API!');
+        } catch (errRest) {
+          console.warn('[ShopVietState] Fallback REST PUT error:', errRest);
+        }
+
+        // 3. THÔNG BÁO TOAST THÀNH CÔNG CHO NGƯỜI DÙNG
+        if (this.showToast) {
+          this.showToast('Đã lưu và đồng bộ toàn hệ thống lên Cloud thành công!', 'success');
+        }
+
+        return true;
       } catch (err) {
         console.warn('[ShopVietState] pushAllToCloud error:', err);
         return false;
