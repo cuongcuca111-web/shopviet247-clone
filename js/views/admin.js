@@ -133,6 +133,18 @@
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
+  // Helper định dạng ngày giờ chuẩn Việt Nam
+  function formatDateTime(dateStr) {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
   // Helper Toast
   function notify(msg, type) {
     if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
@@ -239,6 +251,7 @@
   function renderAdminPortalModal() {
     const products = (window.ShopVietData && window.ShopVietData.products) || [];
     const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
+    const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
     const vietqr = getVietQRConfig();
 
     return `
@@ -361,6 +374,24 @@
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>Cấu hình VietQR</span>
             </button>
+
+            <!-- Tab 4: Mã quà tặng & Giảm giá -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.switchTab('vouchers')" 
+              id="adminTabBtn-vouchers"
+              class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'vouchers' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12" />
+                <rect x="2" y="7" width="20" height="5" />
+                <line x1="12" y1="22" x2="12" y2="7" />
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+              </svg>
+              <span>Mã quà tặng & Giảm giá</span>
+              <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold" id="adminVoucherTabBadge">${vouchers.length}</span>
+            </button>
           </div>
 
           <!-- ==================== BODY CONTENT THEO TAB ==================== -->
@@ -379,6 +410,8 @@
       return renderTabOrders();
     } else if (tabName === 'vietqr') {
       return renderTabVietQR();
+    } else if (tabName === 'vouchers') {
+      return renderTabVouchers();
     }
     return renderTabPricing();
   }
@@ -853,6 +886,395 @@
 
         </div>
 
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // TAB 4: MÃ QUÀ TẶNG & GIẢM GIÁ (VOUCHERS & GIFTS)
+  // =========================================================================
+  function renderTabVouchers() {
+    const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
+    
+    // Thống kê nhanh
+    const totalCount = vouchers.length;
+    const usedCount = vouchers.filter(v => v.isUsed).length;
+    const availableCount = totalCount - usedCount;
+    const totalDiscountGiven = vouchers.filter(v => v.isUsed).reduce((sum, v) => sum + (Number(v.value) || 0), 0);
+
+    return `
+      <div class="space-y-5">
+        
+        <!-- Thống Kê 4 Khối Thẻ Hiện Đại -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <!-- Tổng mã -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12" />
+                <rect x="2" y="7" width="20" height="5" />
+                <line x1="12" y1="22" x2="12" y2="7" />
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng mã voucher</div>
+              <div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">${totalCount} mã</div>
+            </div>
+          </div>
+
+          <!-- Sẵn sàng dùng -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Chưa sử dụng</div>
+              <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">${availableCount} mã</div>
+            </div>
+          </div>
+
+          <!-- Đã dùng -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Đã sử dụng</div>
+              <div class="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">${usedCount} mã</div>
+            </div>
+          </div>
+
+          <!-- Tổng tiền đã giảm -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng tiền đã giảm</div>
+              <div class="text-lg sm:text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5">${formatVND(totalDiscountGiven)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar Phía Trên: Nút + Tạo mã mới & Ô Tìm kiếm -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          
+          <div class="flex items-center gap-2">
+            <!-- Nút + Tạo mã mới -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.openVoucherModal()" 
+              class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-colors shrink-0"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>+ Tạo mã mới</span>
+            </button>
+
+            <!-- Nút Nạp mã mặc định mẫu -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.resetDefaultVouchers()" 
+              title="Khôi phục mã mẫu nếu rỗng"
+              class="p-2 sm:px-3 sm:py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition"
+            >
+              Khôi phục mẫu
+            </button>
+          </div>
+
+          <!-- Ô Tìm kiếm voucher -->
+          <div class="relative flex-1 max-w-sm">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input 
+              type="text" 
+              id="adminVoucherSearchInput" 
+              oninput="window.ShopVietViews.admin.filterVouchers(this.value)" 
+              placeholder="Tìm mã voucher, người dùng, loại mã..." 
+              class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+            >
+          </div>
+
+        </div>
+
+        <!-- Bảng Danh Sách Voucher -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+              <span>🎁 Kho Mã Quà Tặng & Giảm Giá</span>
+              <span class="text-xs px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold" id="adminVoucherTableBadge">${vouchers.length} mã</span>
+            </h4>
+            <span class="text-xs text-slate-500">Mã có hiệu lực áp dụng tại trang Đặt hàng & Nạp ví</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm" id="adminVoucherTable">
+              <thead class="bg-slate-50 dark:bg-slate-950/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th class="py-3 px-4">MÃ VOUCHER</th>
+                  <th class="py-3 px-3.5">LOẠI MÃ</th>
+                  <th class="py-3 px-3.5">GIÁ TRỊ GIẢM</th>
+                  <th class="py-3 px-3.5 text-center">TRẠNG THÁI</th>
+                  <th class="py-3 px-4">NGƯỜI ĐÃ DÙNG (EMAIL)</th>
+                  <th class="py-3 px-3.5">ĐƠN HÀNG</th>
+                  <th class="py-3 px-3.5">THỜI GIAN</th>
+                  <th class="py-3 px-4 text-right">THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80" id="adminVoucherTableTbody">
+                ${vouchers.length > 0 ? vouchers.map(renderVoucherTableRow).join('') : `
+                  <tr>
+                    <td colspan="8" class="py-12 text-center text-slate-400">
+                      <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /></svg>
+                        <span>Chưa có mã voucher nào. Hãy bấm "+ Tạo mã mới" để thêm mã đầu tiên!</span>
+                      </div>
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  // Render 1 dòng trong bảng voucher
+  function renderVoucherTableRow(v) {
+    const isUsed = !!v.isUsed;
+    const typeLabel = v.type === 'wallet_gift' ? 'Nạp tiền vào ví' : 'Giảm giá đơn hàng';
+    const typeBadge = v.type === 'wallet_gift' 
+      ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+      : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+
+    return `
+      <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors" data-code="${(v.code || '').toLowerCase()}" data-user="${(v.usedBy || '').toLowerCase()}">
+        <!-- MÃ VOUCHER -->
+        <td class="py-3 px-4">
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60">${v.code}</span>
+            <button 
+              type="button" 
+              onclick="navigator.clipboard.writeText('${v.code}'); window.ShopVietState.showToast('Đã sao chép mã ${v.code}!', 'info');" 
+              title="Sao chép mã"
+              class="text-slate-400 hover:text-indigo-600 transition p-1"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </td>
+
+        <!-- LOẠI MÃ -->
+        <td class="py-3 px-3.5">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${typeBadge}">
+            ${typeLabel}
+          </span>
+        </td>
+
+        <!-- GIÁ TRỊ GIẢM -->
+        <td class="py-3 px-3.5 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+          -${formatVND(v.value)}
+        </td>
+
+        <!-- TRẠNG THÁI -->
+        <td class="py-3 px-3.5 text-center">
+          ${isUsed ? `
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              Đã sử dụng
+            </span>
+          ` : `
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Chưa sử dụng
+            </span>
+          `}
+        </td>
+
+        <!-- NGƯỜI ĐÃ DÙNG (EMAIL) -->
+        <td class="py-3 px-4">
+          ${isUsed && v.usedBy ? `
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                ${v.usedBy.charAt(0).toUpperCase()}
+              </div>
+              <span class="font-medium text-slate-800 dark:text-slate-200 text-xs">${v.usedBy}</span>
+            </div>
+            <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Đã được giảm -${formatVND(v.value)}</div>
+          ` : `
+            <span class="text-slate-400 text-xs">-</span>
+          `}
+        </td>
+
+        <!-- ĐƠN HÀNG -->
+        <td class="py-3 px-3.5">
+          ${v.orderCode ? `
+            <span class="font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">${v.orderCode}</span>
+          ` : `
+            <span class="text-slate-400">-</span>
+          `}
+        </td>
+
+        <!-- THỜI GIAN -->
+        <td class="py-3 px-3.5 text-xs text-slate-500">
+          ${isUsed && v.usedAt ? `
+            <div class="font-medium text-slate-700 dark:text-slate-300">${formatDateTime(v.usedAt)}</div>
+            <div class="text-[10px] text-slate-400">Tạo: ${formatDateTime(v.createdAt)}</div>
+          ` : `
+            <div>Tạo: ${formatDateTime(v.createdAt)}</div>
+          `}
+        </td>
+
+        <!-- THAO TÁC -->
+        <td class="py-3 px-4 text-right">
+          <button 
+            type="button" 
+            onclick="window.ShopVietViews.admin.deleteVoucher('${v.code}')" 
+            title="Xóa voucher" 
+            class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }
+
+  // =========================================================================
+  // MODAL TẠO MÃ QUÀ TẶNG & GIẢM GIÁ MỚI (#adminCreateVoucherModal)
+  // =========================================================================
+  function renderCreateVoucherModal() {
+    return `
+      <div id="adminCreateVoucherModal" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up">
+          
+          <!-- Header Modal -->
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950/70">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12" />
+                  <rect x="2" y="7" width="20" height="5" />
+                  <line x1="12" y1="22" x2="12" y2="7" />
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-extrabold text-base text-slate-900 dark:text-white">Tạo Mã Quà Tặng & Giảm Giá Mới</h3>
+                <p class="text-xs text-slate-500">Mã có hiệu lực sử dụng ngay lập tức</p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.closeVoucherModal()" 
+              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Body Form -->
+          <form id="createVoucherForm" onsubmit="event.preventDefault(); window.ShopVietViews.admin.createVoucherSubmit(event);" class="p-6 space-y-4 text-xs sm:text-sm">
+            
+            <!-- Mã Code & Nút Random -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã Voucher (*)</label>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="voucherCodeInput" 
+                  required 
+                  placeholder="Ví dụ: DISCOUNT20K, VIP100K..." 
+                  class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white uppercase font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                <button 
+                  type="button" 
+                  onclick="window.ShopVietViews.admin.generateRandomVoucherCode()" 
+                  class="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5 transition shrink-0"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Sinh ngẫu nhiên</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Mã tự động chuyển thành chữ HOA không dấu.</p>
+            </div>
+
+            <!-- Loại Mã -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Loại mã (*)</label>
+              <select 
+                id="voucherTypeInput" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+              >
+                <option value="order_discount">Giảm giá trực tiếp đơn hàng (Khuyên dùng)</option>
+                <option value="wallet_gift">Mã quà tặng nạp tiền vào Ví</option>
+              </select>
+            </div>
+
+            <!-- Số Tiền Giảm -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số tiền giảm (VNĐ) (*)</label>
+              <input 
+                type="number" 
+                id="voucherValueInput" 
+                required 
+                min="1000" 
+                step="1000" 
+                value="20000" 
+                placeholder="Ví dụ: 20000, 50000, 100000..." 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-bold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base"
+              >
+              <!-- Các nút chọn nhanh -->
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] text-slate-400">Chọn nhanh:</span>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 10000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">10k</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 20000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">20k</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 50000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">50k</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 100000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">100k</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 200000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">200k</button>
+              </div>
+            </div>
+
+            <!-- Thiết lập dùng 1 lần -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">Giới hạn sử dụng 1 lần</div>
+                <div class="text-[11px] text-slate-500">Mỗi mã chỉ được 1 khách nhập thành công 1 lần duy nhất</div>
+              </div>
+              <input type="checkbox" id="voucherSingleUseInput" checked class="w-4 h-4 text-indigo-600 rounded">
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="pt-2 flex items-center justify-end gap-2">
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.closeVoucherModal()" 
+                class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                type="submit" 
+                class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Tạo mã ngay</span>
+              </button>
+            </div>
+
+          </form>
+
+        </div>
       </div>
     `;
   }
@@ -1717,6 +2139,158 @@
           timerEl.textContent = formatSessionTime(sessionCountdownSeconds);
         }
       }, 1000);
+    },
+
+    // 20. Quản lý mã quà tặng & giảm giá (Vouchers)
+    openVoucherModal: function () {
+      const existing = document.getElementById('adminCreateVoucherModal');
+      if (existing) existing.remove();
+
+      const container = document.createElement('div');
+      container.innerHTML = renderCreateVoucherModal();
+      document.body.appendChild(container.firstElementChild);
+      this.generateRandomVoucherCode();
+    },
+
+    closeVoucherModal: function () {
+      const modal = document.getElementById('adminCreateVoucherModal');
+      if (modal) modal.remove();
+    },
+
+    generateRandomVoucherCode: function () {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let randomPart = '';
+      for (let i = 0; i < 4; i++) {
+        randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const valInput = document.getElementById('voucherValueInput');
+      const val = valInput ? parseInt(valInput.value, 10) || 20000 : 20000;
+      let prefix = 'SV' + Math.round(val / 1000) + 'K';
+      const codeInput = document.getElementById('voucherCodeInput');
+      if (codeInput) {
+        codeInput.value = prefix + '-' + randomPart;
+      }
+    },
+
+    createVoucherSubmit: function (e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const codeInput = document.getElementById('voucherCodeInput');
+      const typeInput = document.getElementById('voucherTypeInput');
+      const valInput = document.getElementById('voucherValueInput');
+      const singleUseInput = document.getElementById('voucherSingleUseInput');
+
+      if (!codeInput || !valInput) return;
+
+      const code = codeInput.value.trim().toUpperCase();
+      const type = typeInput ? typeInput.value : 'order_discount';
+      const value = parseInt(valInput.value, 10) || 0;
+      const singleUse = singleUseInput ? singleUseInput.checked : true;
+
+      if (!code) {
+        notify('Vui lòng nhập mã voucher!', 'error');
+        return;
+      }
+      if (value <= 0) {
+        notify('Giá trị giảm phải lớn hơn 0đ!', 'error');
+        return;
+      }
+
+      if (window.ShopVietState && window.ShopVietState.addVoucher) {
+        const res = window.ShopVietState.addVoucher({
+          code: code,
+          type: type,
+          value: value,
+          singleUse: singleUse
+        });
+
+        if (res.success) {
+          this.closeVoucherModal();
+          this.switchTab('vouchers');
+          const tabBadge = document.getElementById('adminVoucherTabBadge');
+          if (tabBadge && window.ShopVietState.getVouchers) {
+            tabBadge.textContent = window.ShopVietState.getVouchers().length;
+          }
+          notify(`Đã tạo thành công mã voucher "${code}" giảm ${formatVND(value)}!`, 'success');
+        } else {
+          notify(res.message || 'Lỗi khi tạo mã voucher!', 'error');
+        }
+      }
+    },
+
+    deleteVoucher: function (code) {
+      if (!confirm(`Bạn có chắc chắn muốn xóa mã voucher "${code}" khỏi hệ thống?`)) {
+        return;
+      }
+      if (window.ShopVietState && window.ShopVietState.deleteVoucher) {
+        const res = window.ShopVietState.deleteVoucher(code);
+        if (res.success) {
+          this.switchTab('vouchers');
+          const tabBadge = document.getElementById('adminVoucherTabBadge');
+          if (tabBadge && window.ShopVietState.getVouchers) {
+            tabBadge.textContent = window.ShopVietState.getVouchers().length;
+          }
+          notify(`Đã xóa mã voucher "${code}" thành công!`, 'info');
+        } else {
+          notify(res.message || 'Không thể xóa mã!', 'error');
+        }
+      }
+    },
+
+    resetDefaultVouchers: function () {
+      if (window.ShopVietState && window.ShopVietState.saveVouchers) {
+        const list = [
+          {
+            code: 'DISCOUNT20K',
+            type: 'order_discount',
+            value: 20000,
+            singleUse: true,
+            isUsed: false,
+            usedBy: null,
+            usedAt: null,
+            orderCode: null,
+            createdAt: '2026-03-20T00:00:00.000Z'
+          },
+          {
+            code: 'VIP50K',
+            type: 'order_discount',
+            value: 50000,
+            singleUse: true,
+            isUsed: false,
+            usedBy: null,
+            usedAt: null,
+            orderCode: null,
+            createdAt: '2026-03-20T00:00:00.000Z'
+          }
+        ];
+        window.ShopVietState.saveVouchers(list);
+        this.switchTab('vouchers');
+        const tabBadge = document.getElementById('adminVoucherTabBadge');
+        if (tabBadge) {
+          tabBadge.textContent = list.length;
+        }
+        notify('Đã khôi phục danh sách voucher mẫu ban đầu!', 'success');
+      }
+    },
+
+    filterVouchers: function (query) {
+      const q = (query || '').trim().toLowerCase();
+      const rows = document.querySelectorAll('#adminVoucherTableTbody tr');
+      let matchCount = 0;
+      rows.forEach(row => {
+        const code = row.getAttribute('data-code') || '';
+        const user = row.getAttribute('data-user') || '';
+        const text = row.innerText.toLowerCase();
+        if (!q || code.includes(q) || user.includes(q) || text.includes(q)) {
+          row.style.display = '';
+          matchCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      const badge = document.getElementById('adminVoucherTableBadge');
+      if (badge) {
+        badge.textContent = `${matchCount} mã`;
+      }
     },
 
     // Helper export ra ngoài

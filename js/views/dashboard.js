@@ -409,23 +409,7 @@
                   </span>
                 </button>
 
-                <!-- 4. "Giới thiệu bạn bè" -->
-                <button type="button" data-tab="referral" id="tabBtn-referral" class="dashboard-tab-btn w-full ${activeTab === 'referral' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'} rounded-xl px-4 py-2.5 flex items-center justify-between transition-all text-left cursor-pointer">
-                  <div class="flex items-center gap-3">
-                    <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                    <span>Giới thiệu bạn bè</span>
-                  </div>
-                  <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 px-1.5 py-0.5 rounded">
-                    +50k
-                  </span>
-                </button>
-
-                <!-- 5. "Thẻ quà tặng" -->
+                <!-- 4. "Thẻ quà tặng" -->
                 <button type="button" data-tab="giftcards" id="tabBtn-giftcards" class="dashboard-tab-btn w-full ${activeTab === 'giftcards' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'} rounded-xl px-4 py-2.5 flex items-center justify-between transition-all text-left cursor-pointer">
                   <div class="flex items-center gap-3">
                     <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -510,7 +494,18 @@
                 </div>
 
                 <!-- Khối thông báo khi đơn đang chờ duyệt giao dịch -->
-                <div id="modalOrderWaitingNotice" class="hidden p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-medium">⏳ Đơn hàng của bạn đang được Ban quản trị đối soát giao dịch Sacombank và chuẩn bị bàn giao đường link bản quyền riêng. Vui lòng quay lại sau ít phút!</div>
+                <div id="modalOrderWaitingNotice" class="hidden p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-medium space-y-1">
+                  <div class="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                    <svg class="w-4 h-4 animate-spin text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle>
+                      <polyline points="12 6 12 12 14 14"></polyline>
+                    </svg>
+                    <span>Đang chờ Admin phê duyệt giao dịch</span>
+                  </div>
+                  <p class="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300/90 pl-6">
+                    Đơn hàng của bạn đang được Ban quản trị đối soát giao dịch Sacombank và chuẩn bị bàn giao đường link bản quyền riêng. Vui lòng quay lại sau ít phút!
+                  </p>
+                </div>
 
                 <!-- Tài khoản / Email -->
                 <div>
@@ -1313,58 +1308,7 @@
           </p>
         </div>
 
-        <!-- 3 Thẻ quà tặng Test Thật Khả Dụng -->
-        <div class="space-y-3">
-          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-            Các mã quà tặng độc quyền khả dụng:
-          </h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <!-- Mã 1: SHOPVIET50K -->
-            <div class="bg-gradient-to-br from-indigo-50 to-white dark:from-slate-800 dark:to-slate-900 p-5 rounded-2xl border border-indigo-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Tặng tiền vào ví</span>
-                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">+50.000đ</span>
-              </div>
-              <div class="font-mono text-lg font-black text-slate-900 dark:text-white mt-2">SHOPVIET50K</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cộng ngay 50.000đ vào số dư ví nội bộ</p>
-              <button type="button" onclick="ShopVietViews.dashboard.fillGiftcode('SHOPVIET50K')" class="mt-3 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer">
-                <span>Áp dụng nhanh mã này</span>
-                <span>→</span>
-              </button>
-            </div>
-
-            <!-- Mã 2: FREEAI2026 -->
-            <div class="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 p-5 rounded-2xl border border-emerald-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Tặng tiền vào ví</span>
-                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">+20.000đ</span>
-              </div>
-              <div class="font-mono text-lg font-black text-slate-900 dark:text-white mt-2">FREEAI2026</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cộng ngay 20.000đ trải nghiệm công cụ AI</p>
-              <button type="button" onclick="ShopVietViews.dashboard.fillGiftcode('FREEAI2026')" class="mt-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer">
-                <span>Áp dụng nhanh mã này</span>
-                <span>→</span>
-              </button>
-            </div>
-
-            <!-- Mã 3: VIPMEMBER -->
-            <div class="bg-gradient-to-br from-amber-50 to-white dark:from-slate-800 dark:to-slate-900 p-5 rounded-2xl border border-amber-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Đặc quyền VIP</span>
-                <span class="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">+100.000đ</span>
-              </div>
-              <div class="font-mono text-lg font-black text-slate-900 dark:text-white mt-2">VIPMEMBER</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Quà tặng tri ân thành viên VIP 100.000đ</p>
-              <button type="button" onclick="ShopVietViews.dashboard.fillGiftcode('VIPMEMBER')" class="mt-3 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">
-                <span>Áp dụng nhanh mã này</span>
-                <span>→</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
 
         <!-- Danh sách thẻ quà tặng đã kích hoạt -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-5 space-y-3">
@@ -2040,6 +1984,7 @@
             const modalOrderGuide = document.getElementById('modalOrderGuide');
             const modalOrderWaitingNotice = document.getElementById('modalOrderWaitingNotice');
             const openOrderLinkBtn = document.getElementById('openOrderLinkBtn');
+            const copyKeyBtn = document.getElementById('copyKeyBtn');
 
             const delInfo = found.deliveryInfo || (origOrder && origOrder.deliveryInfo) || {
               account: (user && user.email) || 'minhcuong.dev@gmail.com',
@@ -2053,28 +1998,28 @@
 
             const deliveryLink = found.customDeliveryLink || (origOrder && origOrder.customDeliveryLink) || (found.deliveryInfo && found.deliveryInfo.licenseKey) || found.licenseKey || (delInfo && delInfo.licenseKey) || '';
 
-            if (modalOrderKey) {
-              modalOrderKey.textContent = deliveryLink || 'Đang chờ Admin cấp link';
-            }
-
-            if (openOrderLinkBtn) {
-              if (deliveryLink && (deliveryLink.startsWith('http://') || deliveryLink.startsWith('https://'))) {
-                openOrderLinkBtn.classList.remove('hidden');
-                openOrderLinkBtn.href = deliveryLink;
-              } else {
-                openOrderLinkBtn.classList.add('hidden');
-              }
-            }
-
             const currentStatus = found.status || (origOrder && origOrder.status);
-            if (modalOrderWaitingNotice) {
-              if (currentStatus === 'pending_review') {
-                modalOrderWaitingNotice.classList.remove('hidden');
-                if (modalOrderKey) {
-                  modalOrderKey.textContent = '⏳ Đang chờ Admin duyệt & gửi link...';
+
+            if (currentStatus === 'pending_review') {
+              if (modalOrderWaitingNotice) modalOrderWaitingNotice.classList.remove('hidden');
+              if (copyKeyBtn) copyKeyBtn.classList.add('hidden');
+              if (openOrderLinkBtn) openOrderLinkBtn.classList.add('hidden');
+              if (modalOrderKey) {
+                modalOrderKey.textContent = 'Đang chờ Admin đối soát & bàn giao...';
+              }
+            } else {
+              if (modalOrderWaitingNotice) modalOrderWaitingNotice.classList.add('hidden');
+              if (copyKeyBtn) copyKeyBtn.classList.remove('hidden');
+              if (modalOrderKey) {
+                modalOrderKey.textContent = deliveryLink || 'Đang chờ Admin cấp link';
+              }
+              if (openOrderLinkBtn) {
+                if (deliveryLink && (deliveryLink.startsWith('http://') || deliveryLink.startsWith('https://'))) {
+                  openOrderLinkBtn.classList.remove('hidden');
+                  openOrderLinkBtn.href = deliveryLink;
+                } else {
+                  openOrderLinkBtn.classList.add('hidden');
                 }
-              } else {
-                modalOrderWaitingNotice.classList.add('hidden');
               }
             }
 

@@ -35,6 +35,33 @@
     createdAt: '2026-03-20T10:00:00.000Z'
   };
 
+  // Cấu hình kho mã quà tặng & giảm giá
+  const VOUCHERS_KEY = 'shopviet_vouchers';
+  const DEFAULT_VOUCHERS = [
+    {
+      code: 'DISCOUNT20K',
+      type: 'order_discount', // 'order_discount' hoặc 'wallet_gift'
+      value: 20000,
+      singleUse: true,
+      isUsed: false,
+      usedBy: null,
+      usedAt: null,
+      orderCode: null,
+      createdAt: '2026-03-20T00:00:00.000Z'
+    },
+    {
+      code: 'VIP50K',
+      type: 'order_discount',
+      value: 50000,
+      singleUse: true,
+      isUsed: false,
+      usedBy: null,
+      usedAt: null,
+      orderCode: null,
+      createdAt: '2026-03-20T00:00:00.000Z'
+    }
+  ];
+
   // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
   const initialState = {
     currentView: 'home',
@@ -711,6 +738,117 @@
       };
     },
 
+    // ==================== QUẢN LÝ MÃ VOUCHER & QUÀ TẶNG ====================
+    // Lấy danh sách voucher từ localStorage (hoặc nạp mặc định nếu rỗng)
+    getVouchers: function () {
+      try {
+        const raw = localStorage.getItem(VOUCHERS_KEY);
+        let list = raw ? JSON.parse(raw) : null;
+        if (!Array.isArray(list) || list.length === 0) {
+          list = JSON.parse(JSON.stringify(DEFAULT_VOUCHERS));
+          localStorage.setItem(VOUCHERS_KEY, JSON.stringify(list));
+        }
+        return list;
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi đọc vouchers:', e);
+        return JSON.parse(JSON.stringify(DEFAULT_VOUCHERS));
+      }
+    },
+
+    // Lưu danh sách voucher vào localStorage
+    saveVouchers: function (vouchers) {
+      try {
+        localStorage.setItem(VOUCHERS_KEY, JSON.stringify(vouchers || []));
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi lưu vouchers:', e);
+      }
+    },
+
+    // Thêm mã voucher mới
+    addVoucher: function (voucherData) {
+      if (!voucherData || !voucherData.code) {
+        return { success: false, message: 'Vui lòng nhập mã voucher!' };
+      }
+      const code = String(voucherData.code).trim().toUpperCase();
+      if (!code) {
+        return { success: false, message: 'Mã voucher không được để trống!' };
+      }
+
+      const list = this.getVouchers();
+      const exists = list.some(function (v) {
+        return v.code && v.code.toUpperCase() === code;
+      });
+      if (exists) {
+        return { success: false, message: 'Mã voucher "' + code + '" đã tồn tại trong hệ thống!' };
+      }
+
+      const newVoucher = {
+        code: code,
+        type: voucherData.type === 'wallet_gift' ? 'wallet_gift' : 'order_discount',
+        value: Math.max(0, parseInt(voucherData.value, 10) || 0),
+        singleUse: voucherData.singleUse !== undefined ? !!voucherData.singleUse : true,
+        isUsed: false,
+        usedBy: null,
+        usedAt: null,
+        orderCode: null,
+        createdAt: voucherData.createdAt || new Date().toISOString()
+      };
+
+      list.unshift(newVoucher);
+      this.saveVouchers(list);
+      return { success: true, voucher: newVoucher };
+    },
+
+    // Xóa mã voucher
+    deleteVoucher: function (code) {
+      if (!code) return { success: false, message: 'Mã voucher không hợp lệ!' };
+      const cleanCode = String(code).trim().toUpperCase();
+      let list = this.getVouchers();
+      const initialLen = list.length;
+      list = list.filter(function (v) {
+        return !(v.code && v.code.toUpperCase() === cleanCode);
+      });
+      if (list.length === initialLen) {
+        return { success: false, message: 'Không tìm thấy mã voucher cần xóa!' };
+      }
+      this.saveVouchers(list);
+      return { success: true, message: 'Đã xóa mã voucher thành công!' };
+    },
+
+    // Áp dụng và đánh dấu mã voucher đã sử dụng cho đơn hàng hoặc nạp ví
+    applyVoucher: function (code, userEmail, orderCode) {
+      const clean = (code || '').trim().toUpperCase();
+      if (!clean) {
+        return { success: false, message: 'Vui lòng cung cấp mã voucher!' };
+      }
+      const list = this.getVouchers();
+      const idx = list.findIndex(function (v) {
+        return v.code && v.code.toUpperCase() === clean;
+      });
+
+      if (idx === -1) {
+        return { success: false, message: 'Mã voucher không tồn tại hoặc đã hết hạn!' };
+      }
+
+      const voucher = list[idx];
+      if (voucher.isUsed) {
+        return { 
+          success: false, 
+          message: 'Mã này đã được sử dụng bởi ' + (voucher.usedBy || 'khách hàng khác') + '!'
+        };
+      }
+
+      voucher.isUsed = true;
+      voucher.usedBy = userEmail || 'Khách vãng lai';
+      voucher.usedAt = new Date().toISOString();
+      voucher.orderCode = orderCode || null;
+
+      list[idx] = voucher;
+      this.saveVouchers(list);
+
+      return { success: true, voucher: voucher, message: 'Áp dụng mã thành công!' };
+    },
+
     // Áp dụng mã giảm giá
     applyDiscount: function (code) {
       const clean = (code || '').trim().toUpperCase();
@@ -721,7 +859,37 @@
         return { success: false, message: 'Vui lòng nhập mã giảm giá!' };
       }
 
-      // Danh sách voucher khuyến mãi
+      // 1. Tra cứu trong kho mã Voucher động từ Admin
+      const dynamicVouchers = this.getVouchers ? this.getVouchers() : [];
+      const foundVoucher = dynamicVouchers.find(function (v) {
+        return v.code && v.code.toUpperCase() === clean;
+      });
+
+      if (foundVoucher) {
+        if (foundVoucher.isUsed) {
+          const usedByText = foundVoucher.usedBy ? ` bởi ${foundVoucher.usedBy}` : '';
+          this.showToast(`Mã "${clean}" đã được sử dụng${usedByText}!`, 'error');
+          return { success: false, message: 'Mã đã được sử dụng' };
+        }
+
+        const desc = foundVoucher.type === 'wallet_gift' 
+          ? `Quà tặng ví ${foundVoucher.value.toLocaleString('vi-VN')}đ` 
+          : `Giảm ${foundVoucher.value.toLocaleString('vi-VN')}đ cho đơn hàng`;
+
+        this.state.discountCode = {
+          code: clean,
+          percent: 0,
+          amount: foundVoucher.value || 0,
+          type: foundVoucher.type,
+          desc: desc
+        };
+        this.save();
+        this.notify('discount_changed', this.state.discountCode);
+        this.showToast(`Áp dụng mã ${clean} thành công! (${desc})`, 'success');
+        return { success: true, voucher: this.state.discountCode };
+      }
+
+      // 2. Danh sách voucher khuyến mãi cố định
       const vouchers = {
         'AI2026': { percent: 15, desc: 'Giảm 15% tổng đơn' },
         'HSSV': { percent: 10, desc: 'Ưu đãi sinh viên giảm 10%' },
