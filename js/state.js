@@ -175,53 +175,247 @@
       }
     },
 
-    // ==================== TÍCH HỢP CLOUD REST SYNC ĐA THIẾT BỊ ====================
-    // Đồng bộ danh sách tài khoản từ Cloud REST API (cho PC & Điện thoại cùng dùng chung)
-    syncFromCloud: async function () {
+    // ==================== QUẢN LÝ SẢN PHẨM TÙY CHỈNH (PRODUCTS) ====================
+    // Lấy danh sách sản phẩm tùy chỉnh từ localStorage (shopviet_custom_products / shopviet_admin_products)
+    getCustomProducts: function () {
       try {
-        const res = await fetch(CLOUD_DB_URL, { method: 'GET' });
-        if (!res.ok) return false;
-        const json = await res.json();
-        const cloudUsers = (json && json.data && Array.isArray(json.data.users)) ? json.data.users : [];
-        if (!cloudUsers.length) return false;
-
-        const localUsers = this.getUsersDB();
-        let hasNew = false;
-
-        cloudUsers.forEach(function (cu) {
-          if (!cu || !cu.email) return;
-          const cleanEmail = cu.email.trim().toLowerCase();
-          const existing = localUsers.find(function (u) {
-            return u.email && u.email.trim().toLowerCase() === cleanEmail;
-          });
-          if (!existing) {
-            localUsers.push(cu);
-            hasNew = true;
+        const raw = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
           }
-        });
-
-        if (hasNew) {
-          this.saveUsersDB(localUsers);
-          console.log('[ShopVietState] Đã đồng bộ tài khoản mới từ Cloud thành công!');
         }
+        if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
+          return window.ShopVietData.products;
+        }
+        return [];
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi getCustomProducts:', e);
+        return (window.ShopVietData && window.ShopVietData.products) || [];
+      }
+    },
+
+    // Lưu danh sách sản phẩm tùy chỉnh vào cả 2 key localStorage và window.ShopVietData
+    saveCustomProducts: function (products) {
+      try {
+        if (!Array.isArray(products)) return false;
+        const jsonStr = JSON.stringify(products);
+        localStorage.setItem('shopviet_custom_products', jsonStr);
+        localStorage.setItem('shopviet_admin_products', jsonStr);
+        if (window.ShopVietData) {
+          window.ShopVietData.products = products;
+        }
+        this.notify('products_updated', products);
         return true;
-      } catch (err) {
-        console.warn('[ShopVietState] syncFromCloud offline/failed:', err);
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi saveCustomProducts:', e);
         return false;
       }
     },
 
-    // Đẩy danh sách tài khoản hiện tại lên Cloud REST API
-    pushToCloud: async function (users) {
+    // ==================== QUẢN LÝ ĐƠN HÀNG TOÀN CỤC (ORDERS) ====================
+    // Lấy danh sách toàn bộ đơn hàng
+    getOrders: function () {
       try {
-        users = users || this.getUsersDB();
+        if (this.state && Array.isArray(this.state.orders) && this.state.orders.length > 0) {
+          return this.state.orders;
+        }
+        const raw = localStorage.getItem('shopviet_orders');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+        return (this.state && this.state.orders) || [];
+      } catch (e) {
+        return (this.state && this.state.orders) || [];
+      }
+    },
+
+    // Lưu danh sách đơn hàng
+    saveOrders: function (orders) {
+      try {
+        if (!Array.isArray(orders)) return false;
+        this.state.orders = orders;
+        this.save();
+        localStorage.setItem('shopviet_orders', JSON.stringify(orders));
+        this.notify('orders_updated', orders);
+        return true;
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi saveOrders:', e);
+        return false;
+      }
+    },
+
+    // ==================== TÍCH HỢP CLOUD REST SYNC ĐA THIẾT BỊ TOÀN DIỆN ====================
+    // Đồng bộ toàn bộ dữ liệu (Tài khoản, Sản phẩm, Voucher, Lịch hẹn Excel, Đơn hàng) từ Cloud REST API
+    syncAllFromCloud: async function () {
+      try {
+        const res = await fetch(CLOUD_DB_URL, { method: 'GET' });
+        if (!res.ok) return false;
+        const json = await res.json();
+        if (!json || !json.data) return false;
+        const data = json.data;
+
+        let hasChange = false;
+
+        // 1. Đồng bộ Users (Tài khoản)
+        if (Array.isArray(data.users) && data.users.length > 0) {
+          const localUsers = this.getUsersDB();
+          let usersChanged = false;
+          data.users.forEach(function (cu) {
+            if (!cu || !cu.email) return;
+            const cleanEmail = cu.email.trim().toLowerCase();
+            const existing = localUsers.find(function (u) {
+              return u.email && u.email.trim().toLowerCase() === cleanEmail;
+            });
+            if (!existing) {
+              localUsers.push(cu);
+              usersChanged = true;
+            } else {
+              if (typeof cu.balance === 'number' && cu.balance !== existing.balance) {
+                existing.balance = cu.balance;
+                usersChanged = true;
+              }
+            }
+          });
+          if (usersChanged) {
+            this.saveUsersDB(localUsers);
+            hasChange = true;
+          }
+        }
+
+        // 2. Đồng bộ Products (Sản phẩm tùy chỉnh bởi Admin)
+        if (Array.isArray(data.products) && data.products.length > 0) {
+          this.saveCustomProducts(data.products);
+          hasChange = true;
+          console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm từ Cloud REST API!');
+        }
+
+        // 3. Đồng bộ Vouchers (Mã giảm giá & quà tặng ví)
+        if (Array.isArray(data.vouchers) && data.vouchers.length > 0) {
+          const localVouchers = this.getVouchers();
+          const mergedVouchers = [...localVouchers];
+          data.vouchers.forEach(function (cv) {
+            if (!cv || !cv.code) return;
+            const cleanCode = cv.code.trim().toUpperCase();
+            const idx = mergedVouchers.findIndex(function (lv) {
+              return lv.code && lv.code.trim().toUpperCase() === cleanCode;
+            });
+            if (idx === -1) {
+              mergedVouchers.push(cv);
+            } else {
+              if (cv.isUsed && !mergedVouchers[idx].isUsed) {
+                mergedVouchers[idx] = Object.assign({}, mergedVouchers[idx], cv);
+              }
+            }
+          });
+          try {
+            localStorage.setItem(VOUCHERS_KEY, JSON.stringify(mergedVouchers));
+            hasChange = true;
+          } catch (e) {}
+        }
+
+        // 4. Đồng bộ Schedules (Khách hẹn lịch & Quản lý Slot Excel)
+        if (Array.isArray(data.schedules) && data.schedules.length > 0) {
+          const localSchedules = this.getSchedules();
+          const mergedSchedules = [...localSchedules];
+          data.schedules.forEach(function (cs) {
+            if (!cs || !cs.id) return;
+            const idx = mergedSchedules.findIndex(function (ls) {
+              return ls.id === cs.id;
+            });
+            if (idx === -1) {
+              mergedSchedules.push(cs);
+            } else {
+              mergedSchedules[idx] = Object.assign({}, mergedSchedules[idx], cs);
+            }
+          });
+          try {
+            localStorage.setItem(SCHEDULES_KEY, JSON.stringify(mergedSchedules));
+            hasChange = true;
+          } catch (e) {}
+        }
+
+        // 5. Đồng bộ Orders (Đơn hàng)
+        if (Array.isArray(data.orders) && data.orders.length > 0) {
+          const localOrders = this.getOrders();
+          const mergedOrders = [...localOrders];
+          let ordersChanged = false;
+          data.orders.forEach(function (co) {
+            if (!co) return;
+            const orderId = co.id || co.orderCode;
+            if (!orderId) return;
+            const idx = mergedOrders.findIndex(function (lo) {
+              return (lo.id && lo.id === orderId) || (lo.orderCode && lo.orderCode === orderId);
+            });
+            if (idx === -1) {
+              mergedOrders.unshift(co);
+              ordersChanged = true;
+            } else {
+              if (co.status && co.status !== mergedOrders[idx].status) {
+                mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co);
+                ordersChanged = true;
+              }
+            }
+          });
+          if (ordersChanged) {
+            this.state.orders = mergedOrders;
+            this.save();
+            try {
+              localStorage.setItem('shopviet_orders', JSON.stringify(mergedOrders));
+            } catch (e) {}
+            hasChange = true;
+          }
+        }
+
+        if (hasChange) {
+          this.notify('cloud_sync_completed', { timestamp: new Date().toISOString() });
+          console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
+          if (this.state && this.state.currentView === 'home') {
+            const appMount = document.getElementById('appMount');
+            const homeView = window.ShopVietViews && window.ShopVietViews.home;
+            if (appMount && homeView && typeof homeView.render === 'function') {
+              const currentScrollY = window.scrollY;
+              appMount.innerHTML = homeView.render();
+              if (typeof homeView.afterRender === 'function') {
+                homeView.afterRender();
+              }
+              if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+              }
+              window.scrollTo(0, currentScrollY);
+            }
+          }
+        }
+        return true;
+      } catch (err) {
+        console.warn('[ShopVietState] syncAllFromCloud offline/failed:', err);
+        return false;
+      }
+    },
+
+    // Đẩy toàn bộ cơ sở dữ liệu hiện tại (Users, Products, Vouchers, Schedules, Orders) lên Cloud REST API
+    pushAllToCloud: async function () {
+      try {
+        const users = this.getUsersDB();
+        const customProducts = this.getCustomProducts();
+        const vouchers = this.getVouchers();
+        const schedules = this.getSchedules();
+        const orders = this.getOrders();
+
         const payload = {
-          name: 'ShopViet247_Users_DB',
+          name: 'ShopViet247_Unified_Cloud_DB',
           data: {
             users: users,
+            products: customProducts,
+            vouchers: vouchers,
+            schedules: schedules,
+            orders: orders,
             updatedAt: new Date().toISOString()
           }
         };
+
         const res = await fetch(CLOUD_DB_URL, {
           method: 'PUT',
           headers: {
@@ -229,11 +423,24 @@
           },
           body: JSON.stringify(payload)
         });
+
+        if (res.ok) {
+          console.log('[ShopVietState] Đã đẩy toàn bộ hệ thống lên Cloud REST API thành công!');
+        }
         return res.ok;
       } catch (err) {
-        console.warn('[ShopVietState] pushToCloud error:', err);
+        console.warn('[ShopVietState] pushAllToCloud error:', err);
         return false;
       }
+    },
+
+    // Alias tương thích ngược với code cũ
+    syncFromCloud: async function () {
+      return this.syncAllFromCloud();
+    },
+
+    pushToCloud: async function (users) {
+      return this.pushAllToCloud();
     },
 
     // Đăng ký tài khoản bất đồng bộ kèm tự động đẩy lên Cloud
@@ -419,6 +626,7 @@
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
         window.ShopVietFirebase.syncOrderToCloud(order);
       }
+      this.pushAllToCloud().catch(function () {});
 
       this.notify('orders_updated', this.state.orders);
     },
@@ -439,6 +647,7 @@
         this.save();
         this.notify('user_balance_updated', this.state.user);
       }
+      this.pushAllToCloud().catch(function () {});
     },
 
     // Đăng ký listener khi state thay đổi
@@ -542,6 +751,7 @@
           discountCode: this.state.discountCode
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        localStorage.setItem('shopviet_orders', JSON.stringify(this.state.orders || []));
       } catch (e) {
         console.warn('[ShopVietState] Không thể lưu vào LocalStorage:', e);
       }
@@ -550,7 +760,7 @@
     // Khởi tạo hệ thống toàn cục và tự động đồng bộ tài khoản đa thiết bị
     init: function () {
       this.load();
-      this.syncFromCloud().catch(function () {});
+      this.syncAllFromCloud().catch(function () {});
       return this;
     },
 
@@ -561,7 +771,7 @@
         this.getUsersDB();
 
         // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền
-        this.syncFromCloud().catch(function () {});
+        this.syncAllFromCloud().catch(function () {});
 
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -784,6 +994,7 @@
     saveVouchers: function (vouchers) {
       try {
         localStorage.setItem(VOUCHERS_KEY, JSON.stringify(vouchers || []));
+        this.pushAllToCloud().catch(function () {});
       } catch (e) {
         console.warn('[ShopVietState] Lỗi lưu vouchers:', e);
       }
@@ -962,6 +1173,7 @@
       try {
         localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules || []));
         this.notify('schedules_updated', schedules);
+        this.pushAllToCloud().catch(function () {});
         return true;
       } catch (e) {
         console.warn('[ShopVietState] Lỗi lưu schedules:', e);

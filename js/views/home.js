@@ -25,24 +25,67 @@ window.ShopVietViews.home = (function () {
 
     const gradientClass = brandGradients[prod.iconType] || 'from-slate-950 via-indigo-950 to-slate-900 border-slate-800';
 
+    // Nhận diện sản phẩm Bán Chạy Nhất (Hot Best Seller)
+    const isBestSeller = Boolean(
+      prod.isBestSeller || 
+      (prod.badge && (
+        prod.badge.toLowerCase().includes('bán chạy') || 
+        prod.badge.toLowerCase().includes('best seller')
+      ))
+    );
+
     return `
       <div class="relative w-full aspect-square bg-gradient-to-br ${gradientClass} rounded-xl overflow-hidden flex items-center justify-center p-6 border transition-transform duration-300 group-hover:scale-[1.02]">
         <!-- Ambient radial glow -->
-        <div class="absolute inset-0 bg-radial from-indigo-500/10 via-transparent to-transparent opacity-60"></div>
+        <div class="absolute inset-0 bg-radial from-indigo-500/10 via-transparent to-transparent opacity-60 pointer-events-none"></div>
 
-        <!-- Top Badges -->
-        <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
+        <!-- Top Left: Huy hiệu Giảm Giá (Sale Tag) & Huy hiệu phụ -->
+        <div class="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
           ${prod.discount ? `
-            <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-rose-500 text-white shadow-sm shadow-rose-500/30">
-              ${prod.discount}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/35 border border-white/20 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+              <svg class="w-2.5 h-2.5 text-white/90 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="5" x2="5" y2="19"/>
+                <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+              </svg>
+              <span>${prod.discount}</span>
             </span>
           ` : ''}
-          ${prod.badge ? `
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-lg ${prod.badgeColor || 'bg-indigo-600 text-white'} shadow-sm">
+
+          ${(prod.badge && !isBestSeller) ? `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-lg ${prod.badgeColor || 'bg-indigo-600 text-white'} shadow-sm border border-white/10 backdrop-blur-xs">
               ${prod.badge}
             </span>
           ` : ''}
         </div>
+
+        <!-- Top Right: Bookmark Ribbon "BÁN CHẠY NHẤT" đè dọc mép ảnh -->
+        ${isBestSeller ? `
+          <div 
+            class="absolute top-0 right-3 sm:right-3.5 z-20 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5"
+            style="filter: drop-shadow(0 4px 6px rgba(234, 88, 12, 0.5));"
+          >
+            <div 
+              class="w-8 sm:w-9 pt-1.5 pb-3 px-0.5 bg-gradient-to-b from-amber-300 via-amber-500 to-orange-600 text-white font-black flex flex-col items-center justify-center text-center relative"
+              style="clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%); -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%);"
+            >
+              <!-- Highlight viền trên ruy băng -->
+              <div class="absolute top-0 inset-x-0 h-0.5 bg-yellow-200/90"></div>
+              <!-- Vệt sáng phản chiếu (Shimmer Overlay) -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></div>
+
+              <!-- Icon Ngôi Sao Vàng Đẳng Cấp -->
+              <svg class="w-3.5 h-3.5 text-yellow-100 fill-current drop-shadow-sm mb-0.5 animate-pulse" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+
+              <!-- Chữ BÁN CHẠY -->
+              <span class="text-[7.5px] sm:text-[8px] font-black uppercase tracking-tight text-white leading-[1.05] drop-shadow">
+                BÁN<br/>CHẠY
+              </span>
+            </div>
+          </div>
+        ` : ''}
 
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
         <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">

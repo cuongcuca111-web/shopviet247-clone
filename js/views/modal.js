@@ -10,6 +10,7 @@ window.ShopVietViews.modal = (function () {
 
   let currentProduct = null;
   let currentQty = 1;
+  let appliedVoucher = null; // Voucher đang áp dụng trong Modal Mua Nhanh
   let quickPayTimer = null;
 
   // Lắng nghe phím Escape để đóng modal tiện lợi
@@ -125,6 +126,7 @@ window.ShopVietViews.modal = (function () {
       }
 
       currentQty = 1;
+      appliedVoucher = null;
       const modalMount = document.getElementById('modalMount');
       if (!modalMount) return;
 
@@ -278,12 +280,46 @@ window.ShopVietViews.modal = (function () {
                   </div>
                 </div>
 
+                <!-- Ô NHẬP MÃ GIẢM GIÁ / VOUCHER -->
+                <div class="pt-2 pb-1 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label for="quickBuyVoucherInput" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <line x1="7" y1="7" x2="7.01" y2="7"/>
+                      </svg>
+                      <span>Mã giảm giá</span>
+                    </label>
+                    <span class="text-[10px] text-slate-400 font-medium">DISCOUNT20K, VIP50K...</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="quickBuyVoucherInput" 
+                      placeholder="Nhập mã giảm giá (VD: DISCOUNT20K...)" 
+                      class="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 font-mono text-xs uppercase font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();ShopVietViews.modal.applyVoucherInQuickBuy();}"
+                    />
+                    <button 
+                      type="button" 
+                      id="quickBuyVoucherBtn"
+                      onclick="ShopVietViews.modal.applyVoucherInQuickBuy()" 
+                      class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shrink-0 shadow-xs active:scale-95 cursor-pointer"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                  <div id="quickBuyVoucherMsg" class="text-[11px] font-medium hidden"></div>
+                </div>
+
                 <!-- HIỂN THỊ TỔNG TẠM TÍNH -->
                 <div class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
                   <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tổng tạm tính:</span>
-                  <span id="modalTotalPrice" class="text-lg font-black text-indigo-600 dark:text-indigo-400">
-                    ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.price * currentQty) : `${(currentProduct.price * currentQty).toLocaleString('vi-VN')} đ`}
-                  </span>
+                  <div id="modalTotalPrice" class="text-right">
+                    <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">
+                      ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.price * currentQty) : `${(currentProduct.price * currentQty).toLocaleString('vi-VN')} đ`}
+                    </span>
+                  </div>
                 </div>
               ` : `
                 <div class="py-4 text-center p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40 text-xs font-semibold text-rose-600 dark:text-rose-400">
@@ -373,14 +409,177 @@ window.ShopVietViews.modal = (function () {
 
       if (input) input.value = currentQty;
 
-      if (currentProduct && totalEl && window.ShopVietState) {
-        totalEl.textContent = window.ShopVietState.formatCurrency(currentProduct.price * currentQty);
+      if (currentProduct && totalEl) {
+        const subtotal = currentProduct.price * currentQty;
+        if (appliedVoucher) {
+          let discount = 0;
+          if (appliedVoucher.percent) {
+            discount = Math.round(subtotal * appliedVoucher.percent / 100);
+          } else {
+            discount = appliedVoucher.value || appliedVoucher.amount || 0;
+          }
+          discount = Math.min(discount, subtotal);
+          const finalPrice = Math.max(0, subtotal - discount);
+
+          totalEl.innerHTML = `
+            <div class="flex flex-col items-end">
+              <div class="flex items-center gap-1.5">
+                <span class="line-through text-slate-400 text-xs font-semibold">${formatMoney(subtotal)}đ</span>
+                <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/70 px-1.5 py-0.5 rounded">- ${formatMoney(discount)}đ</span>
+              </div>
+              <span class="text-lg font-black text-emerald-600 dark:text-emerald-400">${formatMoney(finalPrice)}đ</span>
+            </div>
+          `;
+        } else {
+          const formatted = window.ShopVietState ? window.ShopVietState.formatCurrency(subtotal) : `${formatMoney(subtotal)} đ`;
+          totalEl.innerHTML = `<span class="text-lg font-black text-indigo-600 dark:text-indigo-400">${formatted}</span>`;
+        }
       }
 
       if (currentProduct) {
         const maxStock = currentProduct.stock || 99;
         if (btnMinus) btnMinus.disabled = currentQty <= 1;
         if (btnPlus) btnPlus.disabled = currentQty >= maxStock;
+      }
+    },
+
+    // Áp dụng mã giảm giá trong Modal Mua Nhanh (Ảnh 4)
+    applyVoucherInQuickBuy: function () {
+      const input = document.getElementById('quickBuyVoucherInput');
+      const msgEl = document.getElementById('quickBuyVoucherMsg');
+      const btn = document.getElementById('quickBuyVoucherBtn');
+      const rawCode = input ? input.value.trim().toUpperCase() : '';
+
+      if (!rawCode) {
+        if (msgEl) {
+          msgEl.className = 'text-[11px] font-medium text-rose-500 block';
+          msgEl.textContent = 'Vui lòng nhập mã giảm giá!';
+        }
+        return;
+      }
+
+      // Đảm bảo getVouchers và applyVoucher sẵn sàng
+      if (window.ShopVietState) {
+        if (typeof window.ShopVietState.getVouchers !== 'function') {
+          window.ShopVietState.getVouchers = function () {
+            try {
+              const raw = localStorage.getItem('shopviet_vouchers');
+              if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            return [
+              { code: 'DISCOUNT20K', type: 'order_discount', value: 20000, singleUse: true, isUsed: false },
+              { code: 'VIP50K', type: 'order_discount', value: 50000, singleUse: true, isUsed: false },
+              { code: 'AI2026', type: 'order_discount', value: 15000, singleUse: true, isUsed: false },
+              { code: 'HSSV', type: 'order_discount', value: 10000, singleUse: true, isUsed: false },
+              { code: 'SHOPVIET', type: 'order_discount', value: 20000, singleUse: true, isUsed: false }
+            ];
+          };
+        }
+      }
+
+      const vouchers = (window.ShopVietState && typeof window.ShopVietState.getVouchers === 'function')
+        ? window.ShopVietState.getVouchers()
+        : [];
+
+      let v = vouchers.find(function (item) {
+        return (item.code || '').toUpperCase() === rawCode;
+      });
+
+      // Kiểm tra danh sách mã tĩnh bổ sung nếu không tìm thấy trong vouchers
+      if (!v) {
+        const staticVouchers = {
+          'AI2026': { code: 'AI2026', percent: 15, isUsed: false, desc: 'Giảm 15% tổng đơn' },
+          'HSSV': { code: 'HSSV', percent: 10, isUsed: false, desc: 'Ưu đãi sinh viên giảm 10%' },
+          'SHOPVIET': { code: 'SHOPVIET', value: 20000, isUsed: false, desc: 'Giảm 20.000đ cho đơn đầu' },
+          'ANTIGRAVITY': { code: 'ANTIGRAVITY', percent: 20, isUsed: false, desc: 'Giảm 20% công cụ coding AI' }
+        };
+        if (staticVouchers[rawCode]) {
+          v = staticVouchers[rawCode];
+        }
+      }
+
+      if (!v) {
+        if (msgEl) {
+          msgEl.className = 'text-[11px] font-medium text-rose-500 dark:text-rose-400 block';
+          msgEl.textContent = 'Mã giảm giá không hợp lệ hoặc không tồn tại!';
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Mã giảm giá không hợp lệ hoặc không tồn tại!', 'error');
+        }
+        return;
+      }
+
+      if (v.isUsed) {
+        if (msgEl) {
+          msgEl.className = 'text-[11px] font-medium text-rose-500 dark:text-rose-400 block';
+          msgEl.textContent = `Mã này đã được sử dụng bởi ${v.usedBy || 'khách hàng khác'}!`;
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Mã giảm giá này đã được sử dụng!', 'error');
+        }
+        return;
+      }
+
+      // Áp dụng thành công
+      appliedVoucher = v;
+      this.refreshQtyUI();
+
+      const subtotal = currentProduct ? currentProduct.price * currentQty : 0;
+      let discount = 0;
+      if (v.percent) {
+        discount = Math.round(subtotal * v.percent / 100);
+      } else {
+        discount = v.value || v.amount || 0;
+      }
+      discount = Math.min(discount, subtotal);
+
+      if (msgEl) {
+        msgEl.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-1';
+        msgEl.innerHTML = `
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Đã áp dụng mã <strong class="font-mono">${v.code}</strong> (-${formatMoney(discount)}đ)</span>
+          </span>
+          <button type="button" onclick="ShopVietViews.modal.removeVoucherInQuickBuy()" class="text-rose-500 hover:text-rose-700 underline text-[10px] cursor-pointer ml-2">Gỡ mã</button>
+        `;
+      }
+
+      if (input) {
+        input.disabled = true;
+        input.classList.add('opacity-75', 'bg-slate-100', 'dark:bg-slate-800');
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast(`Áp dụng mã ${v.code} thành công! (-${formatMoney(discount)}đ)`, 'success');
+      }
+    },
+
+    // Gỡ mã giảm giá trong Modal Mua Nhanh
+    removeVoucherInQuickBuy: function () {
+      appliedVoucher = null;
+      const input = document.getElementById('quickBuyVoucherInput');
+      const msgEl = document.getElementById('quickBuyVoucherMsg');
+      const btn = document.getElementById('quickBuyVoucherBtn');
+      if (input) {
+        input.value = '';
+        input.disabled = false;
+        input.classList.remove('opacity-75', 'bg-slate-100', 'dark:bg-slate-800');
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      if (msgEl) {
+        msgEl.className = 'hidden';
+        msgEl.innerHTML = '';
+      }
+      this.refreshQtyUI();
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Đã gỡ mã giảm giá', 'info');
       }
     },
 
@@ -427,7 +626,21 @@ window.ShopVietViews.modal = (function () {
 
       // Nạp cấu hình VietQR động từ Portal Admin (Mặc định: Sacombank 100071864927 LE BUI MINH CUONG)
       const vietqrConfig = getActiveVietQRConfig();
-      const totalAmount = currentProduct.price * currentQty;
+      const subtotal = currentProduct.price * currentQty;
+      let discount = 0;
+      let voucherCode = null;
+
+      if (appliedVoucher) {
+        voucherCode = appliedVoucher.code;
+        if (appliedVoucher.percent) {
+          discount = Math.round(subtotal * appliedVoucher.percent / 100);
+        } else {
+          discount = appliedVoucher.value || appliedVoucher.amount || 0;
+        }
+        discount = Math.min(discount, subtotal);
+      }
+
+      const totalAmount = Math.max(0, subtotal - discount);
       const orderDate = new Date();
 
       const order = {
@@ -445,9 +658,11 @@ window.ShopVietViews.modal = (function () {
           iconType: currentProduct.iconType
         }],
         totalItems: currentQty,
-        subtotal: totalAmount,
-        discount: 0,
+        subtotal: subtotal,
+        discount: discount,
         amount: totalAmount,
+        voucherCode: voucherCode,
+        appliedVoucher: voucherCode,
         paymentMethod: `${vietqrConfig.shortName || 'Sacombank'} (VietQR 24/7)`,
         bankName: vietqrConfig.bankName,
         accountNumber: vietqrConfig.accountNumber,
@@ -458,6 +673,15 @@ window.ShopVietViews.modal = (function () {
         status: 'pending',
         expiresInSeconds: 600
       };
+
+      // Đánh dấu mã voucher đã sử dụng trong hệ thống
+      if (appliedVoucher && window.ShopVietState && typeof window.ShopVietState.applyVoucher === 'function') {
+        const userEmail = (currentUser && currentUser.email) || 'guest';
+        window.ShopVietState.applyVoucher(appliedVoucher.code, userEmail, orderCode);
+      }
+
+      // Đặt lại appliedVoucher
+      appliedVoucher = null;
 
       if (window.ShopVietState) {
         window.ShopVietState.currentOrder = order;
@@ -581,9 +805,20 @@ window.ShopVietViews.modal = (function () {
                     
                     <!-- 1. Số tiền cần chuyển -->
                     <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/40">
-                      <span class="text-slate-600 dark:text-slate-400 font-medium">Số tiền cần chuyển:</span>
+                      <div>
+                        <span class="text-slate-600 dark:text-slate-400 font-medium block">Số tiền cần chuyển:</span>
+                        ${order.discount > 0 ? `
+                          <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                            <svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>Đã áp dụng voucher <strong class="font-mono">${order.voucherCode || order.appliedVoucher || ''}</strong> (-${formatMoney(order.discount)}đ)</span>
+                          </span>
+                        ` : ''}
+                      </div>
                       <div class="flex items-center gap-2">
-                        <span id="quickpay-display-amount" class="font-bold text-base sm:text-lg text-slate-900 dark:text-white font-mono">${formatMoney(order.amount)}đ</span>
+                        <div class="text-right">
+                          ${order.discount > 0 ? `<div class="text-[11px] text-slate-400 line-through">${formatMoney(order.subtotal)}đ</div>` : ''}
+                          <span id="quickpay-display-amount" class="font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400 font-mono">${formatMoney(order.amount)}đ</span>
+                        </div>
                         <button type="button" id="btn-quickpay-copy-amount" onclick="ShopVietViews.modal.copyField('${order.amount}', 'Số tiền')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">Copy</button>
                       </div>
                     </div>
@@ -627,26 +862,6 @@ window.ShopVietViews.modal = (function () {
                       </div>
                     </div>
 
-                  </div>
-
-                  <!-- Ô nhập mã giảm giá Voucher -->
-                  <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2">
-                    <div class="flex items-center gap-2">
-                      <input 
-                        type="text" 
-                        id="quickpay-coupon-input" 
-                        placeholder="Nhập mã giảm giá (VD: DISCOUNT20K...)" 
-                        class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-xs uppercase font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                      <button 
-                        type="button" 
-                        onclick="ShopVietViews.modal.applyCoupon('${order.orderCode}')" 
-                        class="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition shrink-0 cursor-pointer"
-                      >
-                        Áp dụng
-                      </button>
-                    </div>
-                    <div id="quickpay-coupon-message" class="text-[11px] font-medium hidden"></div>
                   </div>
 
                   <!-- Radar quét tín hiệu VietQR Realtime -->
@@ -1212,6 +1427,15 @@ window.ShopVietViews.modal = (function () {
       }
       currentProduct = null;
       currentQty = 1;
+      appliedVoucher = null;
+    },
+
+    // Getter / Setter voucher đang áp dụng
+    get appliedVoucher() {
+      return appliedVoucher;
+    },
+    set appliedVoucher(v) {
+      appliedVoucher = v;
     },
 
     // Alias hỗ trợ tương thích ngược

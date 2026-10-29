@@ -62,7 +62,7 @@
   // Khôi phục sản phẩm từ LocalStorage nếu đã có trước đó
   function restoreProductsFromStorage() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS) || localStorage.getItem('shopviet_custom_products');
       if (saved && window.ShopVietData) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -291,8 +291,22 @@
               </div>
             </div>
 
-            <!-- Cụm Nút Phải Chuẩn Ảnh 3: Làm Mới, Về Trang Chủ, Đăng Xuất -->
+            <!-- Cụm Nút Phải Chuẩn: Đồng Bộ Cloud, Làm Mới, Về Trang Chủ, Đăng Xuất -->
             <div class="flex items-center gap-2">
+              <!-- Nút Đồng Bộ Đám Mây Đa Thiết Bị -->
+              <button 
+                type="button" 
+                id="adminCloudSyncBtn"
+                onclick="window.ShopVietViews.admin.syncCloudAll()" 
+                title="Đồng bộ 2 chiều Đám Mây Đa Thiết Bị (Cloud REST Sync)"
+                class="px-3 py-2 rounded-xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-violet-500/10 hover:from-sky-500/20 hover:to-indigo-500/20 text-sky-600 dark:text-sky-400 border border-sky-300/60 dark:border-sky-800/60 transition text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <svg id="adminCloudSyncIcon" class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                </svg>
+                <span id="adminCloudSyncText" class="hidden sm:inline">Đồng bộ Cloud</span>
+              </button>
+
               <!-- Nút Làm Mới -->
               <button 
                 type="button" 
@@ -407,7 +421,7 @@
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span>📊 Hẹn lịch khách (Excel)</span>
+              <span>Hẹn lịch khách (Excel)</span>
               <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold" id="adminScheduleTabBadge">${schedules.length}</span>
             </button>
           </div>
@@ -459,7 +473,7 @@
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span>+ Thêm sản phẩm mới</span>
+              <span>Thêm sản phẩm mới</span>
             </button>
 
             <!-- Nút Khôi phục dữ liệu gốc -->
@@ -1000,7 +1014,7 @@
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span>+ Tạo mã mới</span>
+              <span>Tạo mã mới</span>
             </button>
 
             <!-- Nút Nạp mã mặc định mẫu -->
@@ -1035,7 +1049,14 @@
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-              <span>🎁 Kho Mã Quà Tặng & Giảm Giá</span>
+              <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Kho mã quà tặng & giảm giá</span>
               <span class="text-xs px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold" id="adminVoucherTableBadge">${vouchers.length} mã</span>
             </h4>
             <span class="text-xs text-slate-500">Mã có hiệu lực áp dụng tại trang Đặt hàng & Nạp ví</span>
@@ -1268,7 +1289,7 @@
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span>+ Thêm email khách hàng</span>
+              <span>Thêm email khách hàng</span>
             </button>
 
             <!-- Nút Xuất Excel (CSV) -->
@@ -1282,7 +1303,7 @@
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              <span>📥 Xuất Excel</span>
+              <span>Xuất Excel</span>
             </button>
 
             <!-- Nút Khôi phục dữ liệu mẫu -->
@@ -1317,8 +1338,11 @@
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
             <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <span>📊</span> Bảng Tính Excel Quản Lý Khách & Hẹn Lịch Slot
+              <span class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>
+                </svg>
+                <span>Bảng tính Excel quản lý khách & hẹn lịch slot</span>
               </span>
               <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 text-xs font-semibold" id="adminScheduleTableBadge">
                 ${schedules.length} bản ghi
@@ -1369,11 +1393,11 @@
 
     let statusBadge = '';
     if (daysLeft > 7) {
-      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>🟢 Còn ${daysLeft} ngày</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Còn ${daysLeft} ngày</span>`;
     } else if (daysLeft > 0) {
-      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse"><span class="w-2 h-2 rounded-full bg-amber-500"></span>🟡 Sắp hết (${daysLeft} ngày)</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Sắp hết (${daysLeft} ngày)</span>`;
     } else {
-      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300 dark:border-rose-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-rose-500"></span>🔴 Đã hết hạn</span>`;
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300 dark:border-rose-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Đã hết hạn</span>`;
     }
 
     const customerEmail = s.customerEmail || 'cuongcuca111@gmail.com';
@@ -1623,7 +1647,12 @@
                 type="submit" 
                 class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 text-xs"
               >
-                <span>💾 Lưu vào bảng Excel</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>Lưu vào bảng Excel</span>
               </button>
             </div>
 
@@ -1920,8 +1949,13 @@
             <!-- ẢNH ĐẠI DIỆN SẢN PHẨM (TẢI LÊN FILE HOẶC DÁN URL) -->
             <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
               <div class="flex items-center justify-between">
-                <label class="block font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                  🖼️ Ảnh đại diện sản phẩm (Tải lên hoặc URL)
+                <label class="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <span>Ảnh đại diện sản phẩm (Tải lên hoặc URL)</span>
                 </label>
                 <span class="text-[11px] text-slate-400">Ưu tiên ảnh vuông 1:1 hoặc 16:9</span>
               </div>
@@ -2129,8 +2163,10 @@
 
           <!-- Header -->
           <div class="flex items-start gap-3.5">
-            <div class="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 text-2xl shadow-inner">
-              👑
+            <div class="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 shadow-inner">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
+              </svg>
             </div>
             <div>
               <h3 class="text-base font-bold text-slate-900 dark:text-white">Duyệt Đơn & Gửi Link Riêng Cho Khách</h3>
@@ -2157,8 +2193,12 @@
           <!-- Form nhập liệu -->
           <div class="space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                🔗 Link kích hoạt bản quyền riêng:
+              <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                <span>Link kích hoạt bản quyền riêng:</span>
               </label>
               <input 
                 type="text" 
@@ -2171,8 +2211,11 @@
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                💬 Lời nhắn / Hướng dẫn dặn dò riêng cho khách:
+              <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Lời nhắn / Hướng dẫn dặn dò riêng cho khách:</span>
               </label>
               <textarea 
                 id="adminDeliveryMessageInput" 
@@ -2197,7 +2240,10 @@
               onclick="window.ShopVietViews.admin.submitApproveWithDelivery('${code}')" 
               class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5 cursor-pointer"
             >
-              <span>✓ Phê Duyệt & Gửi Ngay</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Phê duyệt & gửi ngay</span>
             </button>
           </div>
         </div>
@@ -2337,14 +2383,49 @@
       }
     },
 
-    // 9. Làm mới dữ liệu
-    refreshData: function () {
+    // 9. Làm mới dữ liệu kèm đồng bộ từ Đám Mây
+    refreshData: async function () {
+      if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+        await window.ShopVietState.syncAllFromCloud().catch(function () {});
+      }
       restoreProductsFromStorage();
       const tabContent = document.getElementById('adminTabContent');
       if (tabContent) {
         tabContent.innerHTML = renderTabBody(currentActiveTab);
       }
-      notify('Đã làm mới dữ liệu phiên quản trị!', 'info');
+      notify('Đã làm mới dữ liệu và đồng bộ với Đám Mây!', 'info');
+    },
+
+    // 9b. Đồng bộ Đám Mây 2 chiều tức thì cho Toàn Hệ Thống (Sản phẩm, Voucher, Excel, Đơn hàng)
+    syncCloudAll: async function () {
+      const btn = document.getElementById('adminCloudSyncBtn');
+      const icon = document.getElementById('adminCloudSyncIcon');
+      const text = document.getElementById('adminCloudSyncText');
+      if (icon) icon.classList.add('animate-spin');
+      if (text) text.textContent = 'Đang đồng bộ...';
+      if (btn) btn.disabled = true;
+
+      try {
+        if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+          await window.ShopVietState.syncAllFromCloud();
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          await window.ShopVietState.pushAllToCloud();
+        }
+        restoreProductsFromStorage();
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent) {
+          tabContent.innerHTML = renderTabBody(currentActiveTab);
+        }
+        notify('Đã đồng bộ toàn hệ thống (Sản phẩm, Voucher, Excel, Đơn hàng) lên Cloud thành công!', 'success');
+      } catch (err) {
+        console.error('[Admin Cloud Sync Error]:', err);
+        notify('Lỗi trong quá trình đồng bộ Cloud: ' + (err.message || err), 'error');
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+        if (text) text.textContent = 'Đồng bộ Cloud';
+        if (btn) btn.disabled = false;
+      }
     },
 
     // 10. Mở Modal Thêm / Sửa Sản phẩm
@@ -2507,11 +2588,19 @@
         window.ShopVietData.products.unshift(newProd);
       }
 
-      // Lưu trữ xuống localStorage
+      // Lưu trữ xuống localStorage và đồng bộ Đám Mây Đa Thiết Bị
       try {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(window.ShopVietData.products));
+        const jsonStr = JSON.stringify(window.ShopVietData.products);
+        localStorage.setItem(STORAGE_KEYS.PRODUCTS, jsonStr);
+        localStorage.setItem('shopviet_custom_products', jsonStr);
       } catch (e) {
         console.warn('[Save Products LocalStorage Error]:', e);
+      }
+
+      if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+        window.ShopVietState.pushAllToCloud().catch(function (e) {
+          console.warn('[Admin Save Product Cloud Sync Error]:', e);
+        });
       }
 
       // Đóng modal sửa
@@ -2529,7 +2618,7 @@
         window.ShopVietState.navigate('home');
       }
 
-      notify(`Đã lưu sản phẩm "${name.slice(0, 30)}..." thành công!`, 'success');
+      notify(`Đã lưu sản phẩm "${name.slice(0, 30)}..." và đồng bộ Cloud thành công!`, 'success');
     },
 
     // 12. Xóa Sản Phẩm
@@ -2539,9 +2628,17 @@
       if (window.ShopVietData && window.ShopVietData.products) {
         window.ShopVietData.products = window.ShopVietData.products.filter(p => p.id !== productId);
         try {
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(window.ShopVietData.products));
+          const jsonStr = JSON.stringify(window.ShopVietData.products);
+          localStorage.setItem(STORAGE_KEYS.PRODUCTS, jsonStr);
+          localStorage.setItem('shopviet_custom_products', jsonStr);
         } catch (e) {
           console.warn('[Delete Product LocalStorage Error]:', e);
+        }
+
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(function (e) {
+            console.warn('[Admin Delete Product Cloud Sync Error]:', e);
+          });
         }
 
         // Cập nhật lại bảng tab pricing
@@ -2555,7 +2652,7 @@
           window.ShopVietState.navigate('home');
         }
 
-        notify('Đã xóa sản phẩm thành công!', 'info');
+        notify('Đã xóa sản phẩm và đồng bộ Cloud thành công!', 'info');
       }
     },
 
@@ -2597,6 +2694,9 @@
           window.ShopVietState.save();
           if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
             window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
+          }
+          if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(() => {});
           }
         }
       }
@@ -2666,6 +2766,9 @@
           // Đồng bộ nếu có Cloud Sync / Firebase
           if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
             window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
+          }
+          if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(() => {});
           }
         }
       }
@@ -2823,6 +2926,9 @@
         });
 
         if (res.success) {
+          if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
           this.closeVoucherModal();
           this.switchTab('vouchers');
           const tabBadge = document.getElementById('adminVoucherTabBadge');
@@ -2843,6 +2949,9 @@
       if (window.ShopVietState && window.ShopVietState.deleteVoucher) {
         const res = window.ShopVietState.deleteVoucher(code);
         if (res.success) {
+          if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
           this.switchTab('vouchers');
           const tabBadge = document.getElementById('adminVoucherTabBadge');
           if (tabBadge && window.ShopVietState.getVouchers) {
@@ -2882,6 +2991,9 @@
           }
         ];
         window.ShopVietState.saveVouchers(list);
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(function () {});
+        }
         this.switchTab('vouchers');
         const tabBadge = document.getElementById('adminVoucherTabBadge');
         if (tabBadge) {
@@ -2992,6 +3104,10 @@
           notify(`Đã thêm ${customerEmail} vào bảng tính Excel!`, 'success');
         }
 
+        if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(function () {});
+        }
+
         this.closeScheduleModal();
         this.switchTab('schedules');
 
@@ -3009,6 +3125,9 @@
       if (window.ShopVietState && window.ShopVietState.deleteSchedule) {
         const ok = window.ShopVietState.deleteSchedule(id);
         if (ok) {
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
           this.switchTab('schedules');
           const tabBadge = document.getElementById('adminScheduleTabBadge');
           if (tabBadge && window.ShopVietState.getSchedules) {
@@ -3030,6 +3149,9 @@
         const newVal = prompt('Nhập Email Quản Lý / Slot mới:', item.managerEmail);
         if (newVal !== null && newVal.trim()) {
           window.ShopVietState.updateSchedule(id, { managerEmail: newVal.trim() });
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
           this.switchTab('schedules');
           notify('Đã cập nhật Email Quản Lý!', 'success');
         }
@@ -3037,6 +3159,9 @@
         const newVal = prompt('Nhập Ngày Hết Hạn mới (YYYY-MM-DD):', item.expireDate);
         if (newVal !== null && newVal.trim()) {
           window.ShopVietState.updateSchedule(id, { expireDate: newVal.trim() });
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
           this.switchTab('schedules');
           notify('Đã cập nhật Ngày Hết Hạn!', 'success');
         }
@@ -3144,6 +3269,9 @@
           }
         ];
         window.ShopVietState.saveSchedules(DEFAULT_SCHEDULES);
+        if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(function () {});
+        }
         this.switchTab('schedules');
         const tabBadge = document.getElementById('adminScheduleTabBadge');
         if (tabBadge) {
