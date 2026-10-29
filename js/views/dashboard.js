@@ -701,11 +701,8 @@
                 </svg>
               </div>
             </div>
-            <div class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center gap-2">
+            <div class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-2">
               <span>Thành viên chính thức</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                Đã xác thực
-              </span>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1">
               <span>Đã kích hoạt bảo mật & bảo hành 1 đổi 1</span>
@@ -1287,12 +1284,7 @@
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Địa chỉ Email (Cố định tài khoản)
               </label>
-              <div class="relative">
-                <input type="email" id="profileEmailInput" readonly value="${user.email || 'minhcuong.dev@gmail.com'}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-500 dark:text-slate-400 font-mono focus:outline-none cursor-not-allowed">
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200">
-                  Đã xác thực
-                </span>
-              </div>
+              <input type="email" id="profileEmailInput" readonly value="${user.email || 'minhcuong.dev@gmail.com'}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-500 dark:text-slate-400 font-mono focus:outline-none cursor-not-allowed">
             </div>
 
             <div>

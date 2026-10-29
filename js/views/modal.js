@@ -313,13 +313,12 @@ window.ShopVietViews.modal = (function () {
                       </svg>
                       <span>Mã giảm giá</span>
                     </label>
-                    <span class="text-[10px] text-slate-400 font-medium">DISCOUNT20K, VIP50K...</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <input 
                       type="text" 
                       id="quickBuyVoucherInput" 
-                      placeholder="Nhập mã giảm giá (VD: DISCOUNT20K...)" 
+                      placeholder="" 
                       class="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 font-mono text-xs uppercase font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       onkeydown="if(event.key==='Enter'){event.preventDefault();ShopVietViews.modal.applyVoucherInQuickBuy();}"
                     />

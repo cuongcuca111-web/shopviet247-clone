@@ -254,10 +254,10 @@ window.ShopVietViews.home = (function () {
                       <button 
                         type="button" 
                         onclick="ShopVietViews.home.filterByTag('${tag}')" 
-                        class="px-3 py-1.5 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
+                        class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 ease-out transform active:scale-95 cursor-pointer select-none ${
                           isSelected 
-                            ? 'bg-slate-900 text-white font-medium dark:bg-indigo-600 shadow-sm' 
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                            ? 'bg-slate-900 text-white dark:bg-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/20 scale-[1.02]' 
+                            : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white hover:scale-[1.02]'
                         }"
                       >
                         ${tag}
@@ -497,10 +497,10 @@ window.ShopVietViews.home = (function () {
                     <button 
                       type="button" 
                       onclick="ShopVietViews.home.filterByTag('${tag}')" 
-                      class="px-3 py-1.5 rounded-full text-xs font-semibold transition shrink-0 cursor-pointer ${
+                      class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ease-out transform active:scale-95 shrink-0 cursor-pointer select-none ${
                         isSelected 
-                          ? 'bg-slate-900 text-white font-medium dark:bg-indigo-600 shadow-xs' 
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                          ? 'bg-slate-900 text-white dark:bg-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/20 scale-[1.02]' 
+                          : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white hover:scale-[1.02]'
                       }"
                     >
                       ${tag}
@@ -512,7 +512,7 @@ window.ShopVietViews.home = (function () {
 
             <!-- LƯỚI 5 CỘT TRÊN DESKTOP: grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 -->
             ${displayedProducts.length === 0 ? `
-              <div class="py-16 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">
+              <div id="productListGrid" class="py-16 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 transition-all duration-300 ease-out opacity-100 transform scale-100">
                 <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
@@ -523,7 +523,7 @@ window.ShopVietViews.home = (function () {
                 </button>
               </div>
             ` : `
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div id="productListGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 transition-all duration-300 ease-out opacity-100 transform scale-100">
                 ${displayedProducts.map(prod => {
                   const isOutOfStock = prod.status === 'out_of_stock' || prod.stock <= 0;
 
@@ -602,18 +602,44 @@ window.ShopVietViews.home = (function () {
 
     // Hàm filter theo Tag
     filterByTag: function (tag) {
-      if (window.ShopVietState) {
+      if (!window.ShopVietState) return;
+
+      const currentFilter = window.ShopVietState.state.activeFilter || 'Tất cả';
+      if (currentFilter === tag) return;
+
+      const grid = document.getElementById('productListGrid');
+      if (grid) {
+        // Fade-out 60fps mượt mà trước khi chuyển tab
+        grid.style.transition = 'opacity 120ms ease-out, transform 120ms ease-out';
+        grid.style.opacity = '0';
+        grid.style.transform = 'scale(0.98)';
+      }
+
+      setTimeout(() => {
         window.ShopVietState.state.activeFilter = tag;
-        // Nếu đang có tìm kiếm mà đổi danh mục, giữ nguyên hoặc xóa
         const appMount = document.getElementById('appMount');
         if (appMount) {
           appMount.innerHTML = this.render();
+
+          const newGrid = document.getElementById('productListGrid');
+          if (newGrid) {
+            newGrid.style.opacity = '0';
+            newGrid.style.transform = 'scale(0.98)';
+            newGrid.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                newGrid.style.opacity = '1';
+                newGrid.style.transform = 'scale(1)';
+              });
+            });
+          }
+
           const target = document.getElementById('productsSection');
           if (target && tag !== 'Tất cả') {
             target.scrollIntoView({ behavior: 'smooth' });
           }
         }
-      }
+      }, grid ? 100 : 0);
     },
 
     // Xử lý gửi form tìm kiếm
