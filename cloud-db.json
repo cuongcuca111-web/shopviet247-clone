@@ -20,6 +20,17 @@
       "password": "123456",
       "balance": 250000,
       "createdAt": "2026-03-20T10:00:00.000Z"
+    },
+    {
+      "id": "usr_mvtr2ifpaymj",
+      "email": "minhcuong111aa@gmail.com",
+      "password": "minhcuong111",
+      "name": "Minh Cường",
+      "phone": "",
+      "balance": 0,
+      "role": "user",
+      "avatar": "M",
+      "createdAt": "2026-10-29T16:20:48.469Z"
     }
   ],
   "products": [
@@ -141,5 +152,5 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-29T16:17:36.642Z"
+  "updatedAt": "2026-10-29T16:20:48.469Z"
 }
