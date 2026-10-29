@@ -743,23 +743,26 @@
         <!-- THAO TÁC -->
         <td class="py-3 px-4 text-right">
           <div class="flex items-center justify-end gap-1.5 flex-wrap">
-            <button 
-              type="button" 
-              onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
-              class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
-            >
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>Duyệt đơn</span>
-            </button>
-            <button 
-              type="button" 
-              onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
-              class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-sm transition flex items-center gap-1 cursor-pointer" 
-              title="Cập nhật link kích hoạt hoặc lời nhắn riêng"
-            >
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <span>Gửi link</span>
-            </button>
+            ${!isCompleted ? `
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
+                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Duyệt đơn</span>
+              </button>
+            ` : `
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.openDeliveryModal('${code}')" 
+                class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-sm transition flex items-center gap-1 cursor-pointer" 
+                title="Sửa link bản quyền riêng hoặc gửi lại tin nhắn dặn dò"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Tùy chỉnh gửi link</span>
+              </button>
+            `}
           </div>
           ${order.customDeliveryLink ? `
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-mono mt-1">Đã gửi link riêng</span>
@@ -1295,6 +1298,7 @@
       stock: 100,
       status: 'in_stock',
       iconType: 'gemini',
+      imageUrl: '',
       badge: 'Bán chạy nhất',
       warranty: '18 tháng (1 đổi 1)',
       desc: 'Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...'
@@ -1427,6 +1431,66 @@
                   <option value="low_stock" ${prod.status === 'low_stock' ? 'selected' : ''}>Sắp hết hàng (Low Stock)</option>
                   <option value="out_of_stock" ${prod.status === 'out_of_stock' ? 'selected' : ''}>Hết hàng (Out of Stock)</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- ẢNH ĐẠI DIỆN SẢN PHẨM (TẢI LÊN FILE HOẶC DÁN URL) -->
+            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="block font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                  🖼️ Ảnh đại diện sản phẩm (Tải lên hoặc URL)
+                </label>
+                <span class="text-[11px] text-slate-400">Ưu tiên ảnh vuông 1:1 hoặc 16:9</span>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <!-- Khung Preview Ảnh Trực Quan -->
+                <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                  <img 
+                    id="adminProdImagePreview" 
+                    src="${prod.imageUrl || ''}" 
+                    alt="Xem trước ảnh" 
+                    class="${prod.imageUrl ? '' : 'hidden'} w-full h-full object-cover"
+                  />
+                  <div id="adminProdImagePlaceholder" class="${prod.imageUrl ? 'hidden' : 'flex'} flex-col items-center justify-center text-slate-400 p-2 text-center">
+                    <svg class="w-6 h-6 mb-1 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <span class="text-[9px] font-medium leading-tight">Chưa có ảnh</span>
+                  </div>
+                </div>
+
+                <!-- Cột Nút Hành Động & Input URL -->
+                <div class="flex-1 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <input type="file" id="adminProdFileInput" accept="image/*" class="hidden" onchange="window.ShopVietViews.admin.handleProductImageUpload(this)">
+                    <button 
+                      type="button" 
+                      onclick="document.getElementById('adminProdFileInput').click()" 
+                      class="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200/60 dark:border-indigo-800 transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <span>Chọn ảnh từ máy...</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      onclick="window.ShopVietViews.admin.clearProductImage()" 
+                      class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-xs transition cursor-pointer"
+                      title="Xóa ảnh về mặc định"
+                    >
+                      Xóa ảnh
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <input 
+                      type="text" 
+                      id="editProdImageUrl" 
+                      value="${prod.imageUrl || ''}" 
+                      placeholder="Hoặc dán link URL ảnh (https://...)" 
+                      oninput="window.ShopVietViews.admin.handleProductImageUrlInput(this.value)"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                    >
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1810,6 +1874,74 @@
       document.body.appendChild(container.firstElementChild);
     },
 
+    // 10.1 Xử lý Tải ảnh sản phẩm từ máy (Base64)
+    handleProductImageUpload: function (input) {
+      if (!input || !input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const preview = document.getElementById('adminProdImagePreview');
+        const placeholder = document.getElementById('adminProdImagePlaceholder');
+        const urlInput = document.getElementById('editProdImageUrl');
+        if (preview) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+        }
+        if (placeholder) {
+          placeholder.classList.add('hidden');
+          placeholder.classList.remove('flex');
+        }
+        if (urlInput) {
+          urlInput.value = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+
+    // 10.2 Xử lý Nhập URL ảnh trực tiếp
+    handleProductImageUrlInput: function (url) {
+      const preview = document.getElementById('adminProdImagePreview');
+      const placeholder = document.getElementById('adminProdImagePlaceholder');
+      const trimmed = (url || '').trim();
+      if (trimmed) {
+        if (preview) {
+          preview.src = trimmed;
+          preview.classList.remove('hidden');
+        }
+        if (placeholder) {
+          placeholder.classList.add('hidden');
+          placeholder.classList.remove('flex');
+        }
+      } else {
+        if (preview) {
+          preview.src = '';
+          preview.classList.add('hidden');
+        }
+        if (placeholder) {
+          placeholder.classList.remove('hidden');
+          placeholder.classList.add('flex');
+        }
+      }
+    },
+
+    // 10.3 Xóa ảnh đại diện sản phẩm
+    clearProductImage: function () {
+      const urlInput = document.getElementById('editProdImageUrl');
+      const fileInput = document.getElementById('adminProdFileInput');
+      const preview = document.getElementById('adminProdImagePreview');
+      const placeholder = document.getElementById('adminProdImagePlaceholder');
+      if (urlInput) urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      if (preview) {
+        preview.src = '';
+        preview.classList.add('hidden');
+      }
+      if (placeholder) {
+        placeholder.classList.remove('hidden');
+        placeholder.classList.add('flex');
+      }
+    },
+
     // 11. Lưu Sản Phẩm (Thêm hoặc Sửa)
     saveProduct: function (productId, isEdit) {
       const name = document.getElementById('editProdName').value.trim();
@@ -1823,6 +1955,8 @@
       const badge = document.getElementById('editProdBadge').value.trim();
       const warranty = document.getElementById('editProdWarranty').value.trim();
       const desc = document.getElementById('editProdDesc').value.trim();
+      const imageUrlInput = document.getElementById('editProdImageUrl');
+      const imageUrl = imageUrlInput ? imageUrlInput.value.trim() : '';
 
       if (!name) {
         notify('Vui lòng nhập tên sản phẩm!', 'warning');
@@ -1855,7 +1989,8 @@
             iconType,
             badge,
             warranty,
-            desc
+            desc,
+            imageUrl
           });
         }
       } else {
@@ -1879,6 +2014,7 @@
           warranty: warranty || '12 tháng (1 đổi 1)',
           desc,
           iconType: iconType || 'gemini',
+          imageUrl: imageUrl || '',
           features: [
             'Bản quyền kích hoạt nhanh chóng 24/7',
             'Bảo hành 1 đổi 1 nhanh chóng',

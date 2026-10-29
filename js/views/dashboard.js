@@ -395,21 +395,7 @@
                   </span>
                 </button>
 
-                <!-- 3. "Ví của tôi" -->
-                <button type="button" data-tab="wallet" id="tabBtn-wallet" class="dashboard-tab-btn w-full ${activeTab === 'wallet' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'} rounded-xl px-4 py-2.5 flex items-center justify-between transition-all text-left cursor-pointer">
-                  <div class="flex items-center gap-3">
-                    <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <rect width="20" height="14" x="2" y="5" rx="2" />
-                      <line x1="2" x2="22" y1="10" y2="10" />
-                    </svg>
-                    <span>Ví của tôi</span>
-                  </div>
-                  <span id="sidebarWalletBadge" class="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                    ${userBalanceFormatted}
-                  </span>
-                </button>
-
-                <!-- 4. "Thẻ quà tặng" -->
+                <!-- 3. "Thẻ quà tặng" -->
                 <button type="button" data-tab="giftcards" id="tabBtn-giftcards" class="dashboard-tab-btn w-full ${activeTab === 'giftcards' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'} rounded-xl px-4 py-2.5 flex items-center justify-between transition-all text-left cursor-pointer">
                   <div class="flex items-center gap-3">
                     <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -650,8 +636,6 @@
       switch (tabKey) {
         case 'orders':
           return this.renderOrdersTab(user, orders);
-        case 'wallet':
-          return this.renderWalletTab(user);
         case 'referral':
           return this.renderReferralTab(user);
         case 'giftcards':
@@ -672,11 +656,10 @@
     renderOverviewTab: function (user, orders) {
       const orderCount = orders.length;
       const pendingCount = orders.filter(o => o.status === 'pending').length;
-      const userBalanceFormatted = (user.balance || 0).toLocaleString('vi-VN') + 'đ';
       const recentOrders = orders.slice(0, 5);
 
       return `
-        <!-- Header: Tiêu đề lớn & 2 nút thao tác nhanh -->
+        <!-- Header: Tiêu đề lớn & nút thao tác nhanh -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/80 dark:border-slate-800">
           <div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
@@ -687,20 +670,8 @@
             </p>
           </div>
 
-          <!-- Cụm 2 nút: "Nạp tiền VietQR" & "Mua tiếp" -->
+          <!-- Nút thao tác nhanh: "Mua tiếp" -->
           <div class="flex items-center gap-2.5 shrink-0">
-            <button type="button" id="overviewOpenQrBtn" class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 text-sm font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer">
-              <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect width="5" height="5" x="3" y="3" rx="1" />
-                <rect width="5" height="5" x="16" y="3" rx="1" />
-                <rect width="5" height="5" x="3" y="16" rx="1" />
-                <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-                <path d="M21 21v.01" />
-                <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-              </svg>
-              <span>Nạp tiền VietQR</span>
-            </button>
-
             <button type="button" id="overviewBuyMoreBtn" class="bg-slate-900 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 flex items-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
@@ -715,24 +686,27 @@
         <!-- 3 Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           
-          <!-- Thẻ 1: Số dư ví -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
+          <!-- Thẻ 1: Trạng thái tài khoản -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Số dư ví
+                Trạng thái tài khoản
               </span>
-              <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="20" height="14" x="2" y="5" rx="2" />
-                  <line x1="2" x2="22" y1="10" y2="10" />
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
                 </svg>
               </div>
             </div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-2">
-              ${userBalanceFormatted}
+            <div class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center gap-2">
+              <span>Thành viên chính thức</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                Đã xác thực
+              </span>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1">
-              <span>Nạp thêm VietQR Sacombank tự động 5s</span>
+              <span>Đã kích hoạt bảo mật & bảo hành 1 đổi 1</span>
             </p>
           </div>
 
@@ -1024,144 +998,10 @@
     },
 
     // ==========================================
-    // TAB 3: VÍ CỦA TÔI (WALLET)
+    // TAB 3: VÍ CỦA TÔI (ĐÃ VÔ HIỆU HÓA HOÀN TOÀN)
     // ==========================================
     renderWalletTab: function (user) {
-      const userBalanceFormatted = (user.balance || 0).toLocaleString('vi-VN') + 'đ';
-      const transactions = getWalletTransactions(user.email);
-
-      return `
-        <!-- Header Ví của tôi -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/80 dark:border-slate-800">
-          <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-              Ví của tôi
-            </h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Nạp tiền qua VietQR Sacombank 24/7 để thanh toán đơn hàng 1 chạm không cần nhập thẻ.
-            </p>
-          </div>
-
-          <button type="button" id="walletDepositModalBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect width="5" height="5" x="3" y="3" rx="1" />
-              <rect width="5" height="5" x="16" y="3" rx="1" />
-              <rect width="5" height="5" x="3" y="16" rx="1" />
-              <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-              <path d="M21 21v.01" />
-              <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-            </svg>
-            <span>Nạp tiền VietQR Sacombank</span>
-          </button>
-        </div>
-
-        <!-- Thẻ Số Dư Lớn Đậm (Hero Wallet Card) -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl border border-indigo-900/40">
-          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="space-y-2">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-indigo-200 border border-white/10">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Ví điện tử Shopviet247 Khả dụng</span>
-              </div>
-              <p class="text-xs text-indigo-300 font-medium">Số dư khả dụng hiện tại</p>
-              <h2 id="walletCurrentBalanceHero" class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-                ${userBalanceFormatted}
-              </h2>
-              <p class="text-xs text-slate-300 pt-1">
-                Tài khoản liên kết: <strong class="text-white">${user.email}</strong> • Xác thực 1-chạm
-              </p>
-            </div>
-
-            <!-- Cụm nút hành động trên thẻ -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <button type="button" id="walletCardDepositBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                <span>Nạp tiền ngay</span>
-              </button>
-
-              <button type="button" onclick="ShopVietViews.dashboard.switchTab('giftcards')" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-4 py-3 rounded-xl backdrop-blur-md transition-all flex items-center justify-center gap-2 border border-white/10 cursor-pointer">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="8" width="18" height="14" rx="2" />
-                  <path d="M12 8v14" />
-                </svg>
-                <span>Đổi mã quà tặng</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Background decoration -->
-          <div class="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
-        </div>
-
-        <!-- Bảng Lịch sử biến động số dư ví -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
-              <span>Lịch sử biến động số dư ví</span>
-            </h3>
-            <span class="text-xs text-slate-400">${transactions.length} giao dịch gần nhất</span>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-              <thead class="bg-slate-50/80 dark:bg-slate-800/60 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-800">
-                <tr>
-                  <th scope="col" class="py-3 px-4 sm:px-5">MÃ GIAO DỊCH</th>
-                  <th scope="col" class="py-3 px-4">LOẠI GIAO DỊCH / NỘI DUNG</th>
-                  <th scope="col" class="py-3 px-4">THỜI GIAN</th>
-                  <th scope="col" class="py-3 px-4">BIẾN ĐỘNG</th>
-                  <th scope="col" class="py-3 px-4">SỐ DƯ CUỐI</th>
-                  <th scope="col" class="py-3 px-4 sm:px-5 text-right">TRẠNG THÁI</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                ${transactions.length === 0 ? `
-                  <tr>
-                    <td colspan="6" class="py-10 text-center text-slate-400">Chưa có giao dịch biến động số dư nào.</td>
-                  </tr>
-                ` : transactions.map(function (tx) {
-                  const isPlus = tx.amount > 0;
-                  return `
-                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      <td class="py-3.5 px-4 sm:px-5 font-mono text-xs font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                        ${tx.id}
-                      </td>
-                      <td class="py-3.5 px-4">
-                        <div class="font-semibold text-slate-900 dark:text-white">
-                          ${tx.typeName || (isPlus ? 'Nạp tiền vào ví' : 'Thanh toán đơn hàng')}
-                        </div>
-                        <div class="text-[11px] text-slate-400 truncate max-w-[240px]">
-                          ${tx.note || ''}
-                        </div>
-                      </td>
-                      <td class="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        ${tx.date}
-                      </td>
-                      <td class="py-3.5 px-4 font-bold whitespace-nowrap ${isPlus ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
-                        ${isPlus ? '+' : ''}${(tx.amount || 0).toLocaleString('vi-VN')}đ
-                      </td>
-                      <td class="py-3.5 px-4 text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        ${(tx.balanceAfter || 0).toLocaleString('vi-VN')}đ
-                      </td>
-                      <td class="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          <span>Thành công</span>
-                        </span>
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
+      return this.renderOverviewTab(user, getUserOrders(user));
     },
 
     // ==========================================
@@ -1337,8 +1177,6 @@
     // TAB 6: BẢO MẬT & MẬT KHẨ (SECURITY)
     // ==========================================
     renderSecurityTab: function (user) {
-      const is2FA = user.twoFactorEnabled === true;
-
       return `
         <!-- Header Bảo mật -->
         <div class="pb-3 border-b border-slate-200/80 dark:border-slate-800">
@@ -1346,7 +1184,7 @@
             Bảo mật & Mật khẩu
           </h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Quản lý mật khẩu đăng nhập, cấu hình xác thực 2 bước 2FA và kiểm soát các phiên đăng nhập.
+            Quản lý và cập nhật mật khẩu tài khoản của bạn để đảm bảo an toàn tối đa.
           </p>
         </div>
 
@@ -1389,80 +1227,6 @@
               Cập nhật mật khẩu
             </button>
           </form>
-        </div>
-
-        <!-- Cấu hình Xác thực 2 bước (2FA) -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                </span>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white">Xác thực 2 bước (2FA)</h3>
-              </div>
-              <p class="text-xs text-slate-500 dark:text-slate-400">
-                Gửi mã xác minh 6 số qua Email hoặc Telegram mỗi khi bạn đăng nhập từ thiết bị lạ.
-              </p>
-            </div>
-
-            <!-- Toggle Switch -->
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="twoFactorToggle" ${is2FA ? 'checked' : ''} class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Danh sách Thiết bị & Phiên đăng nhập đang hoạt động -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Thiết bị & Phiên đăng nhập</h3>
-          
-          <div class="space-y-3">
-            
-            <!-- Phiên hiện tại -->
-            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 flex items-center justify-center font-bold">
-                  PC
-                </div>
-                <div>
-                  <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>Windows 11 • Chrome 124 (Thiết bị này)</span>
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  </div>
-                  <p class="text-slate-400 text-[11px] mt-0.5">IP: 14.161.88.24 • TP. Hồ Chí Minh, Việt Nam</p>
-                </div>
-              </div>
-              <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full">Đang online</span>
-            </div>
-
-            <!-- Thiết bị 2 -->
-            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
-                  MB
-                </div>
-                <div>
-                  <div class="font-bold text-slate-900 dark:text-white">iPhone 15 Pro Max • Safari iOS 17.5</div>
-                  <p class="text-slate-400 text-[11px] mt-0.5">Hoạt động 2 giờ trước • Hà Nội, Việt Nam</p>
-                </div>
-              </div>
-              <button type="button" onclick="ShopVietState.showToast('Đã đăng xuất phiên iPhone 15 Pro Max', 'info')" class="text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold cursor-pointer">
-                Đăng xuất
-              </button>
-            </div>
-
-          </div>
-
-          <div class="pt-2">
-            <button type="button" onclick="ShopVietState.showToast('Đã đăng xuất khỏi tất cả các thiết bị khác thành công!', 'success')" class="text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 cursor-pointer">
-              <span>Đăng xuất khỏi tất cả các thiết bị khác</span>
-              <span>→</span>
-            </button>
-          </div>
         </div>
       `;
     },
@@ -1632,12 +1396,10 @@
      * Gắn sự kiện chi tiết theo từng tab
      */
     bindTabEvents: function (tabKey, user, userOrders) {
-      if (tabKey === 'overview') {
+      if (tabKey === 'overview' || tabKey === 'wallet') {
         this.bindOverviewEvents();
       } else if (tabKey === 'orders') {
         this.bindOrdersEvents(user, userOrders);
-      } else if (tabKey === 'wallet') {
-        this.bindWalletEvents(user);
       } else if (tabKey === 'referral') {
         this.bindReferralEvents(user);
       } else if (tabKey === 'giftcards') {
@@ -1705,19 +1467,10 @@
     },
 
     /**
-     * Sự kiện cho Tab 3: Ví của tôi
+     * Sự kiện cho Tab 3: Ví của tôi (Đã vô hiệu hóa)
      */
     bindWalletEvents: function (user) {
-      const openModalBtn = document.getElementById('walletDepositModalBtn');
-      const cardDepositBtn = document.getElementById('walletCardDepositBtn');
-      const vietQrModal = document.getElementById('vietQrModal');
-
-      const openModal = () => {
-        if (vietQrModal) vietQrModal.classList.remove('hidden');
-      };
-
-      if (openModalBtn) openModalBtn.addEventListener('click', openModal);
-      if (cardDepositBtn) cardDepositBtn.addEventListener('click', openModal);
+      // Đã vô hiệu hóa tính năng Ví
     },
 
     /**
@@ -1869,21 +1622,6 @@
 
           window.ShopVietState.showToast('Cập nhật mật khẩu tài khoản thành công! Hãy ghi nhớ mật khẩu mới.', 'success');
           form.reset();
-        });
-      }
-
-      // 2. Toggle 2FA
-      const twoFaToggle = document.getElementById('twoFactorToggle');
-      if (twoFaToggle) {
-        twoFaToggle.addEventListener('change', (e) => {
-          const isChecked = e.target.checked;
-          window.ShopVietState.state.user.twoFactorEnabled = isChecked;
-          window.ShopVietState.save();
-          if (isChecked) {
-            window.ShopVietState.showToast('Đã kích hoạt xác thực 2 bước 2FA an toàn qua Email & Telegram!', 'success');
-          } else {
-            window.ShopVietState.showToast('Đã tắt tính năng xác thực 2 bước 2FA.', 'info');
-          }
         });
       }
     },
@@ -2173,9 +1911,9 @@
 
       window.ShopVietState.showToast(`Nạp thành công +${amount.toLocaleString('vi-VN')}đ vào ví qua Sacombank! Số dư mới: ${window.ShopVietState.state.user.balance.toLocaleString('vi-VN')}đ`, 'success');
 
-      // Cập nhật tab nếu đang ở wallet hoặc overview
-      if (activeTab === 'wallet' || activeTab === 'overview') {
-        this.switchTab(activeTab);
+      // Cập nhật tab nếu đang ở overview
+      if (activeTab === 'overview') {
+        this.switchTab('overview');
       }
     }
   };

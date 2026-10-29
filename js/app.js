@@ -435,7 +435,6 @@ function updateHeaderAuthUI() {
     const displayName = user.name || 'Minh Cường';
     const email = user.email || 'minhcuong.dev@gmail.com';
     const avatarChar = (user.avatar && user.avatar.length <= 2) ? user.avatar : displayName.charAt(0).toUpperCase();
-    const balance = user.balance || 0;
 
     container.innerHTML = `
       <div class="relative flex items-center gap-2">
@@ -477,10 +476,6 @@ function updateHeaderAuthUI() {
             </div>
             <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${displayName}</p>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${email}</p>
-            <div class="mt-2 flex items-center justify-between text-[11px] bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
-              <span class="text-slate-500 dark:text-slate-400">Số dư ví:</span>
-              <span class="font-bold text-indigo-600 dark:text-indigo-400">${window.ShopVietState.formatCurrency(balance)}</span>
-            </div>
           </div>
 
           <!-- Các chức năng Menu -->
@@ -500,17 +495,6 @@ function updateHeaderAuthUI() {
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
               <span>Đơn hàng của tôi</span>
-            </button>
-
-            <button id="dropdownDepositBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
-              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <rect width="20" height="14" x="2" y="5" rx="2"/>
-                <line x1="2" x2="22" y1="10" y2="10"/>
-              </svg>
-              <div class="flex items-center justify-between flex-1">
-                <span>Nạp tiền ví</span>
-                <span class="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">+10%</span>
-              </div>
             </button>
 
             ${isAdminUser ? `
@@ -569,7 +553,6 @@ function updateHeaderAuthUI() {
     // Các mục bên trong Dropdown
     const profileBtn = document.getElementById('dropdownProfileBtn');
     const ordersBtn = document.getElementById('dropdownOrdersBtn');
-    const depositBtn = document.getElementById('dropdownDepositBtn');
     const adminBtn = document.getElementById('dropdownAdminBtn');
     const logoutBtn = document.getElementById('dropdownLogoutBtn');
 
@@ -584,13 +567,6 @@ function updateHeaderAuthUI() {
       ordersBtn.addEventListener('click', function () {
         if (userDropdown) userDropdown.classList.add('hidden');
         window.ShopVietState.navigate('dashboard', { tab: 'orders' });
-      });
-    }
-
-    if (depositBtn) {
-      depositBtn.addEventListener('click', function () {
-        if (userDropdown) userDropdown.classList.add('hidden');
-        window.ShopVietState.navigate('dashboard', { tab: 'wallet' });
       });
     }
 

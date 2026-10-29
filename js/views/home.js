@@ -42,9 +42,11 @@ window.ShopVietViews.home = (function () {
           ` : ''}
         </div>
 
-        <!-- Product SVG Center Icon with Glowing Backdrop -->
-        <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center p-3.5 shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-          ${window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : ''}
+        <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
+        <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
+          ${prod.imageUrl 
+            ? `<img src="${prod.imageUrl}" alt="${prod.name}" class="w-full h-full object-cover rounded-2xl" />`
+            : (window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : '')}
         </div>
 
         <!-- Bottom brand label overlay -->
@@ -298,21 +300,22 @@ window.ShopVietViews.home = (function () {
                   </div>
                 </div>
 
-                <!-- Card 4: Ví nội bộ -->
-                <div onclick="ShopVietState.navigate('dashboard')" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-amber-300 dark:hover:border-amber-600/50 hover:shadow-sm transition-all cursor-pointer">
-                  <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <!-- Card 4: Lịch sử mua hàng -->
+                <div onclick="ShopVietState.navigate('dashboard', { tab: 'orders' })" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all cursor-pointer group">
+                  <div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
-                      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
-                      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                      <path d="M3 6h18" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
                   </div>
-                  <div>
-                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                      <span>Ví nội bộ</span>
-                      <span class="text-[10px] text-emerald-600 font-semibold">(250k)</span>
-                    </h4>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Nạp 1 lần, thanh toán 1 chạm</p>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                      <span>Lịch sử mua hàng</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      Tra cứu đơn & nhận link bản quyền
+                    </p>
                   </div>
                 </div>
 
