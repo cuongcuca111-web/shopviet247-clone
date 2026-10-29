@@ -92,11 +92,11 @@ function setupHeaderEvents() {
     });
   }
 
-  // Click "Liên hệ & Hỗ trợ"
+  // Click "Liên hệ & Hỗ trợ" -> Mở trực tiếp Zalo CSKH 0868668809
   if (navSupport) {
     navSupport.addEventListener('click', function (e) {
       e.preventDefault();
-      window.ShopVietState.showToast('CSKH Zalo 24/7: 0987.654.321 | Hỗ trợ kích hoạt siêu tốc', 'info');
+      window.open('https://zalo.me/0868668809', '_blank');
     });
   }
 

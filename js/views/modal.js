@@ -188,10 +188,6 @@ window.ShopVietViews.modal = (function () {
                   </h4>
 
                   <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200/60 dark:border-emerald-800/50">
-                      ⚡ Giao tự động
-                    </span>
-
                     ${isOutOfStock ? `
                       <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 text-[10px] font-bold border border-rose-200/60 dark:border-rose-800/50">
                         Hết hàng

@@ -67,10 +67,9 @@
               <span class="text-[10px] bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-semibold">Online Cloud Sync</span>
             </div>
 
-            <!-- 2 Nút Đăng nhập Mạng Xã Hội Nằm Ngang -->
-            <div class="grid grid-cols-2 gap-3 mb-5">
-              <!-- Nút Google -->
-              <button id="googleLoginBtn" type="button" class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer">
+            <!-- Nút Đăng nhập Google Toàn Chiều Rộng (Đã loại bỏ Telegram) -->
+            <div class="mb-5">
+              <button type="button" id="googleLoginBtn" class="w-full flex items-center justify-center gap-2.5 py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-semibold text-sm transition shadow-2xs cursor-pointer active:scale-[0.99]">
                 <!-- Logo Google SVG Đa Sắc Chuẩn 4 Màu -->
                 <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
@@ -78,16 +77,7 @@
                   <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                 </svg>
-                <span class="truncate">Google</span>
-              </button>
-
-              <!-- Nút Telegram -->
-              <button id="telegramLoginBtn" type="button" class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-sm font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer">
-                <!-- Logo Telegram Xanh Cyan SVG -->
-                <svg class="w-4 h-4 text-[#229ED9] shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.196 1.006.128.832.946z"/>
-                </svg>
-                <span class="truncate">Telegram</span>
+                <span>Đăng nhập nhanh bằng Google</span>
               </button>
             </div>
 
@@ -404,30 +394,6 @@
         });
       }
 
-      // 5. Đăng nhập Telegram Social
-      const telegramLoginBtn = document.getElementById('telegramLoginBtn');
-      if (telegramLoginBtn) {
-        telegramLoginBtn.addEventListener('click', function () {
-          const teleEmail = 'huy.telegram@shopviet247.com';
-          let matched = window.ShopVietState.findUserByEmail(teleEmail);
-          if (!matched) {
-            const regRes = window.ShopVietState.registerUser({
-              email: teleEmail,
-              password: 'telegram_sso_verified',
-              name: 'Huy Nguyễn (@huy_shopviet)'
-            });
-            matched = regRes.user;
-          }
-          if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncUserToCloud === 'function') {
-            window.ShopVietFirebase.syncUserToCloud(matched);
-          }
-          if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
-            window.ShopVietState.login(matched);
-          }
-          window.ShopVietState.showToast('Kết nối & Đăng nhập bằng Telegram thành công!', 'success');
-          window.ShopVietState.navigate('dashboard');
-        });
-      }
 
       // 6. Quên mật khẩu
       const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');

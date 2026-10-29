@@ -42,15 +42,6 @@ window.ShopVietViews.home = (function () {
           ` : ''}
         </div>
 
-        ${prod.autoDelivery ? `
-          <div class="absolute top-2.5 right-2.5 z-10">
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/90 text-white text-[10px] font-bold backdrop-blur-sm shadow-sm" title="Giao key/tài khoản tự động 24/7">
-              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Tự động</span>
-            </span>
-          </div>
-        ` : ''}
-
         <!-- Product SVG Center Icon with Glowing Backdrop -->
         <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center p-3.5 shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
           ${window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : ''}

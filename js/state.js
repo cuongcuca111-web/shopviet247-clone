@@ -676,78 +676,22 @@
       this.notify('view_changed', { view: viewName, params: params });
     },
 
-    // Cập nhật trạng thái active của Menu Header
+    // Cập nhật trạng thái active của Menu Header dạng viên thuốc chuẩn
     updateNavUI: function (viewName) {
       const navButtons = document.querySelectorAll('.nav-btn');
       navButtons.forEach(function (btn) {
         const btnView = btn.getAttribute('data-view');
         if (btnView === viewName && !btn.hasAttribute('data-scroll')) {
-          btn.className = 'nav-btn px-4 py-1.5 rounded-full font-semibold transition-all duration-200 bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white';
+          btn.className = 'nav-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-200 bg-slate-900 text-white shadow-xs dark:bg-white dark:text-slate-900';
         } else {
-          btn.className = 'nav-btn px-4 py-1.5 rounded-full font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-200';
+          btn.className = 'nav-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60';
         }
       });
     },
 
-    // Hiển thị Toast Notification nổi bật
+    // Hiển thị Toast Notification (Đã tắt pop-up DOM theo yêu cầu người dùng)
     showToast: function (message, type) {
-      type = type || 'info'; // 'success' | 'error' | 'warning' | 'info'
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
-
-      const toast = document.createElement('div');
-      toast.className = 'pointer-events-auto flex items-center gap-3 p-4 rounded-2xl shadow-xl border backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 text-sm font-medium';
-
-      // Màu sắc theo Type
-      let iconSvg = '';
-      let colorClass = '';
-
-      if (type === 'success') {
-        colorClass = 'bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white border-emerald-500/30 shadow-emerald-500/10';
-        iconSvg = `<span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>`;
-      } else if (type === 'error') {
-        colorClass = 'bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white border-rose-500/30 shadow-rose-500/10';
-        iconSvg = `<span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/80 dark:text-rose-400 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </span>`;
-      } else if (type === 'warning') {
-        colorClass = 'bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white border-amber-500/30 shadow-amber-500/10';
-        iconSvg = `<span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </span>`;
-      } else {
-        colorClass = 'bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white border-indigo-500/30 shadow-indigo-500/10';
-        iconSvg = `<span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        </span>`;
-      }
-
-      toast.className += ' ' + colorClass;
-      toast.innerHTML = `
-        ${iconSvg}
-        <div class="flex-1 pr-2">${message}</div>
-        <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1" onclick="this.parentElement.remove()">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      `;
-
-      container.appendChild(toast);
-
-      // Animation in
-      requestAnimationFrame(function () {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-        toast.classList.add('translate-y-0', 'opacity-100');
-      });
-
-      // Tự động gỡ sau 3.8s
-      setTimeout(function () {
-        toast.classList.add('opacity-0', 'translate-x-4');
-        setTimeout(function () {
-          if (toast.parentElement) toast.remove();
-        }, 300);
-      }, 3800);
+      console.log(`[Toast ${type || 'info'}]:`, message);
     },
 
     // Định dạng tiền tệ VNĐ

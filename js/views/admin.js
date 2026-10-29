@@ -1330,14 +1330,14 @@
           soldCount: 0,
           badge: badge || 'Mới',
           badgeColor: 'bg-indigo-600 text-white',
-          autoDelivery: true,
+          autoDelivery: false,
           warranty: warranty || '12 tháng (1 đổi 1)',
           desc,
           iconType: iconType || 'gemini',
           features: [
-            'Bản quyền tự động kích hoạt 24/7',
+            'Bản quyền kích hoạt nhanh chóng 24/7',
             'Bảo hành 1 đổi 1 nhanh chóng',
-            'Hỗ trợ kỹ thuật qua Zalo/Telegram'
+            'Hỗ trợ kỹ thuật qua Zalo 0868668809'
           ]
         };
         window.ShopVietData.products.unshift(newProd);
