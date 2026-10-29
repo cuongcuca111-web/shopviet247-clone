@@ -25,14 +25,39 @@
     }
   };
 
-  // Thông tin cấu hình thanh toán Sacombank chuẩn
+  // Helper nạp động cấu hình VietQR từ Portal Admin (Mặc định: Sacombank 100071864927 LE BUI MINH CUONG)
+  function getActiveVietQRConfig() {
+    if (window.ShopVietState && typeof window.ShopVietState.getVietQRConfig === 'function') {
+      return window.ShopVietState.getVietQRConfig();
+    }
+    if (window.ShopVietViews && window.ShopVietViews.admin && typeof window.ShopVietViews.admin.getVietQRConfig === 'function') {
+      return window.ShopVietViews.admin.getVietQRConfig();
+    }
+    try {
+      const saved = localStorage.getItem('shopviet_vietqr_config');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      bankId: '970403',
+      bin: '970403',
+      bankName: 'Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)',
+      shortName: 'Sacombank',
+      accountNumber: '100071864927',
+      accountName: 'LE BUI MINH CUONG',
+      memoPrefix: 'SHOPVIET',
+      brandColor: '#004b91'
+    };
+  }
+
+  // Thông tin cấu hình thanh toán nạp động theo Portal Admin
   const SACOMBANK_CONFIG = {
-    bankName: 'Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)',
-    shortName: 'Sacombank',
-    accountNumber: '100071864927',
-    accountName: 'LE BUI MINH CUONG',
-    bin: '970403',
-    brandColor: '#004b91'
+    get bankName() { return getActiveVietQRConfig().bankName; },
+    get shortName() { return getActiveVietQRConfig().shortName || 'Sacombank'; },
+    get accountNumber() { return getActiveVietQRConfig().accountNumber; },
+    get accountName() { return getActiveVietQRConfig().accountName; },
+    get bin() { return getActiveVietQRConfig().bin || getActiveVietQRConfig().bankId || '970403'; },
+    get brandColor() { return getActiveVietQRConfig().brandColor || '#004b91'; },
+    get memoPrefix() { return getActiveVietQRConfig().memoPrefix || 'SHOPVIET'; }
   };
 
   // Biến lưu trữ Timer toàn cục để dọn dẹp sạch sẽ
@@ -713,9 +738,20 @@
           const memo = generateTransferMemo();
           const orderDate = new Date();
 
+          const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) || {};
+          const userEmail = (currentUser.isLoggedIn && currentUser.email)
+            ? currentUser.email.trim().toLowerCase()
+            : 'khachhang@gmail.com';
+
           const newOrder = {
             id: orderId,
             orderCode: orderId,
+            userEmail: userEmail,
+            customer: {
+              name: currentUser.name || 'Khách Hàng',
+              email: userEmail,
+              phone: currentUser.phone || ''
+            },
             memo: memo,
             items: JSON.parse(JSON.stringify(cart)),
             totalItems: totalItems,
@@ -1357,9 +1393,26 @@
         order.status = 'completed';
         order.paidAt = new Date().toISOString();
 
-        // Lưu vào danh sách đơn hàng đã mua
-        window.ShopVietState.orders = window.ShopVietState.orders || [];
-        window.ShopVietState.orders.unshift(order);
+        // Đảm bảo đơn hàng gắn đúng userEmail thuộc tài khoản hiện tại
+        const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) || {};
+        if (!order.userEmail) {
+          order.userEmail = (currentUser.isLoggedIn && currentUser.email)
+            ? currentUser.email.trim().toLowerCase()
+            : ((order.customer && order.customer.email) ? order.customer.email.trim().toLowerCase() : 'khachhang@gmail.com');
+        }
+        order.customer = order.customer || {};
+        order.customer.email = order.userEmail;
+
+        // Lưu vào danh sách đơn hàng đã mua trong State
+        if (window.ShopVietState && typeof window.ShopVietState.addOrder === 'function') {
+          window.ShopVietState.addOrder(order);
+        } else {
+          window.ShopVietState.orders = window.ShopVietState.orders || [];
+          window.ShopVietState.orders.unshift(order);
+          if (typeof window.ShopVietState.save === 'function') {
+            window.ShopVietState.save();
+          }
+        }
 
         // Đồng bộ đơn hàng lên Firebase Firestore Cloud
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {

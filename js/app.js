@@ -140,24 +140,31 @@ function setupHeaderEvents() {
     });
   }
 
-  // Click Cổng Quản Trị Bí Mật (Header & Footer)
+  // Click Cổng Quản Trị Bí Mật (Header & Footer) - Phân quyền chỉ minhcuong111aaa@gmail.com
   const adminPortalHeaderBtn = document.getElementById('adminPortalHeaderBtn');
   const adminPortalFooterBtn = document.getElementById('adminPortalFooterBtn');
-  if (adminPortalHeaderBtn) {
-    adminPortalHeaderBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (window.ShopVietViews && window.ShopVietViews.admin) {
-        window.ShopVietViews.admin.open();
+  
+  function handleAdminClick(e) {
+    e.preventDefault();
+    const isAdmin = window.ShopVietState && typeof window.ShopVietState.isAdmin === 'function'
+      ? window.ShopVietState.isAdmin()
+      : false;
+    if (!isAdmin) {
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Truy cập bị từ chối: Cổng quản trị chỉ dành riêng cho tài khoản minhcuong111aaa@gmail.com!', 'error');
       }
-    });
+      return;
+    }
+    if (window.ShopVietViews && window.ShopVietViews.admin) {
+      window.ShopVietViews.admin.open();
+    }
+  }
+
+  if (adminPortalHeaderBtn) {
+    adminPortalHeaderBtn.addEventListener('click', handleAdminClick);
   }
   if (adminPortalFooterBtn) {
-    adminPortalFooterBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (window.ShopVietViews && window.ShopVietViews.admin) {
-        window.ShopVietViews.admin.open();
-      }
-    });
+    adminPortalFooterBtn.addEventListener('click', handleAdminClick);
   }
 }
 
@@ -166,9 +173,18 @@ function setupHeaderEvents() {
  */
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', function (e) {
-    // Ctrl + Shift + A hoặc Cmd + Shift + A -> Mở Portal Admin Bí Mật
+    // Ctrl + Shift + A hoặc Cmd + Shift + A -> Mở Portal Admin Bí Mật (Bảo mật: Chỉ minhcuong111aaa@gmail.com)
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
       e.preventDefault();
+      const isAdmin = window.ShopVietState && typeof window.ShopVietState.isAdmin === 'function'
+        ? window.ShopVietState.isAdmin()
+        : false;
+      if (!isAdmin) {
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Truy cập bị từ chối: Cổng quản trị chỉ dành riêng cho tài khoản minhcuong111aaa@gmail.com!', 'error');
+        }
+        return;
+      }
       if (window.ShopVietViews && window.ShopVietViews.admin) {
         window.ShopVietViews.admin.open();
       }
@@ -332,6 +348,25 @@ function updateHeaderAuthUI() {
 
   const user = window.ShopVietState.state.user;
   const isLoggedIn = user && user.isLoggedIn === true;
+  const isAdminUser = Boolean(window.ShopVietState && typeof window.ShopVietState.isAdmin === 'function' && window.ShopVietState.isAdmin());
+
+  // Cập nhật ẩn/hiển thị cổng Portal Admin trên Header và Footer (Chỉ minhcuong111aaa@gmail.com)
+  const adminHeaderBtn = document.getElementById('adminPortalHeaderBtn');
+  if (adminHeaderBtn) {
+    if (isAdminUser) {
+      adminHeaderBtn.classList.remove('hidden');
+    } else {
+      adminHeaderBtn.classList.add('hidden');
+    }
+  }
+  const adminFooterBtn = document.getElementById('adminPortalFooterBtn');
+  if (adminFooterBtn) {
+    if (isAdminUser) {
+      adminFooterBtn.classList.remove('hidden');
+    } else {
+      adminFooterBtn.classList.add('hidden');
+    }
+  }
 
   if (!isLoggedIn) {
     // ==================== TRẠNG THÁI 1: CHƯA ĐĂNG NHẬP ====================
@@ -436,12 +471,14 @@ function updateHeaderAuthUI() {
               </div>
             </button>
 
+            ${isAdminUser ? `
             <button id="dropdownAdminBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
               <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
               <span>Portal Admin</span>
             </button>
+            ` : ''}
           </div>
 
           <!-- Đăng xuất -->

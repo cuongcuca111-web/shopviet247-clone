@@ -328,61 +328,59 @@
 
     // ==================== CƠ CHẾ MOCK CLOUD NỘI BỘ BỀN BỈ ====================
     _mockLogin: function (email, password) {
-      // Mô phỏng người dùng chuẩn theo phong cách Ảnh 1 ("Minh Cường" hoặc "Văn Huy")
-      let name = 'Minh Cường';
-      if (email.includes('huy')) {
-        name = 'Nguyễn Văn Huy';
-      } else if (email.includes('cuong')) {
-        name = 'Minh Cường';
-      } else {
-        const part = email.split('@')[0];
-        name = part.charAt(0).toUpperCase() + part.slice(1);
+      if (window.ShopVietState && typeof window.ShopVietState.authenticateUser === 'function') {
+        const res = window.ShopVietState.authenticateUser(email, password);
+        if (!res.success) {
+          return { success: false, error: res.error, message: res.message };
+        }
+        this.currentUser = res.user;
+        this.syncUserToCloud(res.user);
+        return { success: true, user: res.user, isCloud: true };
       }
 
-      const userData = {
-        uid: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: name,
-        email: email,
-        avatar: name.charAt(0).toUpperCase(),
-        balance: 250000,
-        phone: '0987654321',
-        isLoggedIn: true,
-        isOnline: true,
-        authProvider: 'firebase_email'
+      return {
+        success: false,
+        error: 'AUTH_UNAVAILABLE',
+        message: 'Hệ thống xác thực tạm thời chưa sẵn sàng!'
       };
-
-      this.currentUser = userData;
-      this.syncUserToCloud(userData);
-      return { success: true, user: userData, isCloud: true };
     },
 
     _mockRegister: function (email, password, name) {
-      const displayName = name || 'Khách Hàng Mới';
-      const userData = {
-        uid: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: displayName,
-        email: email,
-        avatar: displayName.charAt(0).toUpperCase(),
-        balance: 100000,
-        phone: '0987654321',
-        isLoggedIn: true,
-        isOnline: true,
-        authProvider: 'firebase_email'
-      };
+      if (window.ShopVietState && typeof window.ShopVietState.registerUser === 'function') {
+        const res = window.ShopVietState.registerUser({ email, password, name });
+        if (!res.success) {
+          return { success: false, error: res.error, message: res.message };
+        }
+        this.currentUser = res.user;
+        this.syncUserToCloud(res.user);
+        return { success: true, user: res.user, isCloud: true };
+      }
 
-      this.currentUser = userData;
-      this.syncUserToCloud(userData);
-      return { success: true, user: userData, isCloud: true };
+      return {
+        success: false,
+        error: 'REGISTER_UNAVAILABLE',
+        message: 'Không thể đăng ký lúc này!'
+      };
     },
 
     _mockGoogleLogin: function () {
-      const userData = {
-        uid: 'goog_' + Math.random().toString(36).substring(2, 9),
+      const gEmail = 'minhcuong111aaa@gmail.com';
+      let matched = window.ShopVietState ? window.ShopVietState.findUserByEmail(gEmail) : null;
+      if (!matched && window.ShopVietState) {
+        const regRes = window.ShopVietState.registerUser({
+          email: gEmail,
+          password: 'google_sso_verified',
+          name: 'Minh Cường'
+        });
+        matched = regRes.user;
+      }
+      const userData = matched || {
+        uid: 'goog_minhcuong',
         name: 'Minh Cường',
-        email: 'minhcuong.dev@gmail.com',
+        email: gEmail,
         avatar: 'C',
-        balance: 350000,
-        phone: '0912345678',
+        balance: 250000,
+        phone: '0987654321',
         isLoggedIn: true,
         isOnline: true,
         authProvider: 'google_cloud'

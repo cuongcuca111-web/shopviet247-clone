@@ -27,14 +27,23 @@
   // Mã PIN quản trị hợp lệ
   const VALID_PINS = ['minhcuong111', 'admin2026'];
 
-  // Cấu hình VietQR mặc định
+  // Cấu hình VietQR mặc định - Chuẩn Sacombank 100071864927 LE BUI MINH CUONG
   const DEFAULT_VIETQR_CONFIG = {
-    bankId: '970422', // MB Bank
-    bankName: 'MB Bank (Ngân hàng Quân Đội)',
-    accountNumber: '00223366888',
-    accountName: 'NGUYEN VAN HUY',
-    memoPrefix: 'SHOPVIET'
+    bankId: '970403', // Sacombank BIN 970403
+    bin: '970403',
+    bankName: 'Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)',
+    shortName: 'Sacombank',
+    accountNumber: '100071864927',
+    accountName: 'LE BUI MINH CUONG',
+    memoPrefix: 'SHOPVIET',
+    brandColor: '#004b91'
   };
+
+  // Hàm kiểm tra quyền Admin tối cao: Chỉ email minhcuong111aaa@gmail.com
+  function isAllowedAdminUser() {
+    const u = window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user;
+    return Boolean(u && u.isLoggedIn && u.email === 'minhcuong111aaa@gmail.com');
+  }
 
   // Danh sách ngân hàng hỗ trợ VietQR
   const SUPPORTED_BANKS = [
@@ -94,10 +103,11 @@
     }
   }
 
-  // Kiểm tra trạng thái xác thực Admin
+  // Kiểm tra trạng thái xác thực Admin (hỗ trợ kiểm tra trực tiếp quyền từ ShopVietState.isAdmin)
   function isAuthenticated() {
     return sessionStorage.getItem(STORAGE_KEYS.ADMIN_AUTH) === 'true' ||
-           localStorage.getItem(STORAGE_KEYS.ADMIN_AUTH) === 'true';
+           localStorage.getItem(STORAGE_KEYS.ADMIN_AUTH) === 'true' ||
+           (window.ShopVietState && typeof window.ShopVietState.isAdmin === 'function' && window.ShopVietState.isAdmin());
   }
 
   // Đặt trạng thái xác thực
@@ -1109,6 +1119,16 @@
   window.ShopVietViews.admin = {
     // 1. Mở Cổng Portal Admin
     open: function () {
+      // Kiểm tra bảo mật tài khoản admin
+      if (!isAllowedAdminUser()) {
+        notify('Truy cập bị từ chối: Cổng quản trị chỉ dành riêng cho tài khoản minhcuong111aaa@gmail.com!', 'error');
+        if (window.location.hash === '#admin') {
+          window.location.hash = '#home';
+        }
+        this.close();
+        return;
+      }
+
       let modalMount = document.getElementById('adminMount');
       if (!modalMount) {
         modalMount = document.createElement('div');
@@ -1116,17 +1136,10 @@
         document.body.appendChild(modalMount);
       }
 
-      // Kiểm tra xác thực
-      if (isAuthenticated()) {
-        modalMount.innerHTML = renderAdminPortalModal();
-        this.startSessionTimer();
-      } else {
-        modalMount.innerHTML = renderPinAuthModal();
-        setTimeout(() => {
-          const pinInp = document.getElementById('adminPinInput');
-          if (pinInp) pinInp.focus();
-        }, 100);
-      }
+      // Khi là minhcuong111aaa@gmail.com, cấp quyền xác thực và mở thẳng phiên quản trị
+      setAuthenticated(true);
+      modalMount.innerHTML = renderAdminPortalModal();
+      this.startSessionTimer();
     },
 
     // 2. Đóng Cổng Portal Admin
@@ -1143,10 +1156,26 @@
 
     // 3. Render hỗ trợ SPA View Router nếu gọi qua ShopVietState.navigate('admin')
     render: function () {
-      if (isAuthenticated()) {
-        return renderAdminPortalModal();
+      if (!isAllowedAdminUser()) {
+        notify('Truy cập bị từ chối: Cổng quản trị chỉ dành riêng cho tài khoản minhcuong111aaa@gmail.com!', 'error');
+        setTimeout(() => {
+          if (window.ShopVietState) window.ShopVietState.navigate('home');
+        }, 50);
+        return `
+          <div class="max-w-lg mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900/50 text-center space-y-4 shadow-xl">
+            <div class="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center mx-auto">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h3 class="text-lg font-black text-slate-900 dark:text-white">Truy Cập Bị Từ Chối</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Cổng quản trị Portal Admin chỉ dành riêng cho tài khoản quản trị viên tối cao: <br><strong class="text-rose-600 dark:text-rose-400 font-mono">minhcuong111aaa@gmail.com</strong></p>
+            <div class="pt-2">
+              <button onclick="ShopVietState.navigate('home')" class="px-5 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-indigo-600 font-semibold text-xs">Về Trang Chủ</button>
+            </div>
+          </div>
+        `;
       }
-      return renderPinAuthModal();
+      setAuthenticated(true);
+      return renderAdminPortalModal();
     },
 
     // 4. afterRender
@@ -1459,16 +1488,21 @@
       const ownerInput = document.getElementById('adminVietQRAccountName');
       const memoInput = document.getElementById('adminVietQRMemoPrefix');
 
+      const selectedBank = SUPPORTED_BANKS.find(b => b.id === bankSelect.value) || { name: bankSelect.options[bankSelect.selectedIndex].text, code: 'STB' };
+
       const config = {
         bankId: bankSelect.value,
-        bankName: bankSelect.options[bankSelect.selectedIndex].text,
+        bin: bankSelect.value,
+        bankName: selectedBank.name || bankSelect.options[bankSelect.selectedIndex].text,
+        shortName: selectedBank.code || 'Sacombank',
         accountNumber: accountInput.value.trim(),
         accountName: ownerInput.value.trim().toUpperCase(),
-        memoPrefix: memoInput.value.trim().toUpperCase() || 'SHOPVIET'
+        memoPrefix: memoInput.value.trim().toUpperCase() || 'SHOPVIET',
+        brandColor: '#004b91'
       };
 
       saveVietQRConfig(config);
-      notify('Đã lưu cấu hình tài khoản VietQR thành công!', 'success');
+      notify('Đã lưu cấu hình tài khoản VietQR thành công! Các luồng thanh toán sẽ cập nhật tức thì.', 'success');
     },
 
     // 19. Bộ đếm thời gian phiên (Session Countdown)
@@ -1484,7 +1518,11 @@
           timerEl.textContent = formatSessionTime(sessionCountdownSeconds);
         }
       }, 1000);
-    }
+    },
+
+    // Helper export ra ngoài
+    getVietQRConfig: getVietQRConfig,
+    isAllowedAdminUser: isAllowedAdminUser
   };
 
   // Tự động lắng nghe phím tắt toàn cục và Hash khi file script được nạp

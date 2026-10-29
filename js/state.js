@@ -7,18 +7,33 @@
   'use strict';
 
   const STORAGE_KEY = 'shopviet247_app_state_v1';
+  const USERS_DB_KEY = 'shopviet_users_database';
 
-  // Trạng thái khởi tạo mặc định
+  // Tài khoản Quản trị viên mặc định
+  const DEFAULT_ADMIN = {
+    id: 'usr_admin_minhcuong',
+    email: 'minhcuong111aaa@gmail.com',
+    password: 'minhcuong111',
+    name: 'Minh Cường',
+    role: 'admin',
+    balance: 250000,
+    phone: '0987654321',
+    avatar: 'C',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  };
+
+  // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
   const initialState = {
     currentView: 'home',
     cart: [],
     user: {
-      name: 'Minh Cường',
-      email: 'minhcuong.dev@gmail.com',
-      balance: 250000,
+      name: 'Khách',
+      email: '',
+      balance: 0,
       isLoggedIn: false,
-      phone: '0987654321',
-      avatar: 'C'
+      role: 'guest',
+      phone: '',
+      avatar: 'K'
     },
     currentOrder: null,
     orders: [],
@@ -34,6 +49,219 @@
   window.ShopVietState = {
     state: JSON.parse(JSON.stringify(initialState)),
     listeners: [],
+
+    // ==================== CƠ SỞ DỮ LIỆU TÀI KHOẢN (USERS_DB) ====================
+    // Lấy toàn bộ danh sách tài khoản từ localStorage key shopviet_users_database
+    getUsersDB: function () {
+      try {
+        const raw = localStorage.getItem(USERS_DB_KEY);
+        let list = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(list) || list.length === 0) {
+          list = [Object.assign({}, DEFAULT_ADMIN)];
+          localStorage.setItem(USERS_DB_KEY, JSON.stringify(list));
+        } else {
+          // Luôn đảm bảo tài khoản Admin chuẩn tồn tại và có quyền admin
+          const adminIdx = list.findIndex(function (u) {
+            return u.email && u.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase();
+          });
+          if (adminIdx === -1) {
+            list.unshift(Object.assign({}, DEFAULT_ADMIN));
+            localStorage.setItem(USERS_DB_KEY, JSON.stringify(list));
+          } else {
+            if (list[adminIdx].role !== 'admin') {
+              list[adminIdx].role = 'admin';
+            }
+            if (typeof list[adminIdx].balance !== 'number') {
+              list[adminIdx].balance = DEFAULT_ADMIN.balance;
+            }
+          }
+        }
+        return list;
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi đọc users_db:', e);
+        return [Object.assign({}, DEFAULT_ADMIN)];
+      }
+    },
+
+    // Lưu danh sách tài khoản vào localStorage
+    saveUsersDB: function (users) {
+      try {
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi lưu users_db:', e);
+      }
+    },
+
+    // Tìm kiếm tài khoản theo email (không phân biệt hoa/thường)
+    findUserByEmail: function (email) {
+      if (!email) return null;
+      const cleanEmail = email.trim().toLowerCase();
+      const users = this.getUsersDB();
+      return users.find(function (u) {
+        return u.email && u.email.trim().toLowerCase() === cleanEmail;
+      }) || null;
+    },
+
+    // Đăng ký tài khoản mới có kiểm tra tính hợp lệ và chống trùng lặp
+    registerUser: function (userData) {
+      userData = userData || {};
+      const email = (userData.email || '').trim().toLowerCase();
+      const password = (userData.password || '').trim();
+      const name = (userData.name || '').trim() || email.split('@')[0];
+      const phone = (userData.phone || '').trim();
+
+      if (!email || !email.includes('@')) {
+        return { success: false, error: 'INVALID_EMAIL', message: 'Địa chỉ Email không hợp lệ!' };
+      }
+      if (!password || password.length < 6) {
+        return { success: false, error: 'WEAK_PASSWORD', message: 'Mật khẩu phải có ít nhất 6 ký tự!' };
+      }
+
+      const users = this.getUsersDB();
+      const existing = users.find(function (u) {
+        return u.email && u.email.trim().toLowerCase() === email;
+      });
+
+      if (existing) {
+        return {
+          success: false,
+          error: 'EMAIL_EXISTS',
+          message: 'Email này đã được đăng ký, vui lòng đăng nhập!'
+        };
+      }
+
+      const newUser = {
+        id: 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+        email: email,
+        password: password,
+        name: name,
+        phone: phone,
+        balance: 0,
+        role: 'user',
+        avatar: name.charAt(0).toUpperCase(),
+        createdAt: new Date().toISOString()
+      };
+
+      users.push(newUser);
+      this.saveUsersDB(users);
+
+      // Đồng bộ lên Cloud Firestore nếu có
+      if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncUserToCloud === 'function') {
+        window.ShopVietFirebase.syncUserToCloud(newUser);
+      }
+
+      return { success: true, user: newUser };
+    },
+
+    // Xác thực đăng nhập tài khoản thực tế
+    authenticateUser: function (email, password) {
+      email = (email || '').trim().toLowerCase();
+      password = (password || '').trim();
+
+      if (!email) {
+        return { success: false, error: 'EMPTY_EMAIL', message: 'Vui lòng nhập địa chỉ Email!' };
+      }
+      if (!password) {
+        return { success: false, error: 'EMPTY_PASSWORD', message: 'Vui lòng nhập mật khẩu!' };
+      }
+
+      const users = this.getUsersDB();
+      const matchedUser = users.find(function (u) {
+        return u.email && u.email.trim().toLowerCase() === email;
+      });
+
+      // Nếu KHÔNG tìm thấy email: Báo lỗi rõ ràng và tuyệt đối không cho đăng nhập
+      if (!matchedUser) {
+        return {
+          success: false,
+          error: 'USER_NOT_FOUND',
+          message: 'Tài khoản không tồn tại! Vui lòng bấm Đăng ký ngay để tạo tài khoản mới.'
+        };
+      }
+
+      // Kiểm tra mật khẩu (hỗ trợ cả minhcuong111 và 123456 cho tài khoản admin Minh Cường)
+      let isPasswordCorrect = (matchedUser.password === password);
+      if (matchedUser.email === DEFAULT_ADMIN.email && (password === 'minhcuong111' || password === '123456')) {
+        isPasswordCorrect = true;
+      }
+
+      // Nếu mật khẩu không khớp: Báo lỗi và tuyệt đối không cho đăng nhập
+      if (!isPasswordCorrect) {
+        return {
+          success: false,
+          error: 'WRONG_PASSWORD',
+          message: 'Mật khẩu không chính xác! Vui lòng thử lại.'
+        };
+      }
+
+      return { success: true, user: matchedUser };
+    },
+
+    // Helper phân quyền Quản trị viên
+    isAdmin: function () {
+      return Boolean(
+        this.state.user &&
+        this.state.user.isLoggedIn &&
+        this.state.user.email &&
+        this.state.user.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase()
+      );
+    },
+
+    // ==================== CÔ LẬP ĐƠN HÀNG & DỮ LIỆU ĐỘC LẬP THEO TÀI KHOẢN ====================
+    // Lấy danh sách đơn hàng thuộc sở hữu độc lập của tài khoản đang đăng nhập
+    getUserOrders: function (email) {
+      const currentUser = this.state.user;
+      const targetEmail = (email || (currentUser && currentUser.isLoggedIn ? currentUser.email : '')).trim().toLowerCase();
+      if (!targetEmail) {
+        return [];
+      }
+      const allOrders = this.state.orders || [];
+      return allOrders.filter(function (order) {
+        const orderEmail = (order.userEmail || (order.customer && order.customer.email) || '').trim().toLowerCase();
+        return orderEmail === targetEmail;
+      });
+    },
+
+    // Thêm đơn hàng mới được gắn chặt chẽ vào email tài khoản
+    addOrder: function (order) {
+      if (!order) return;
+      const currentUser = this.state.user;
+      const userEmail = (currentUser && currentUser.isLoggedIn && currentUser.email)
+        ? currentUser.email.toLowerCase()
+        : (order.customer && order.customer.email ? order.customer.email.toLowerCase() : 'guest@shopviet247.com');
+
+      order.userEmail = userEmail;
+      order.customer = order.customer || {};
+      order.customer.email = userEmail;
+
+      this.state.orders = this.state.orders || [];
+      this.state.orders.unshift(order);
+      this.save();
+
+      if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+        window.ShopVietFirebase.syncOrderToCloud(order);
+      }
+
+      this.notify('orders_updated', this.state.orders);
+    },
+
+    // Cập nhật số dư ví độc lập cho tài khoản cụ thể
+    updateUserBalance: function (email, newBalance) {
+      email = (email || '').trim().toLowerCase();
+      const users = this.getUsersDB();
+      const idx = users.findIndex(function (u) {
+        return u.email && u.email.trim().toLowerCase() === email;
+      });
+      if (idx > -1) {
+        users[idx].balance = newBalance;
+        this.saveUsersDB(users);
+      }
+      if (this.state.user && this.state.user.email && this.state.user.email.trim().toLowerCase() === email) {
+        this.state.user.balance = newBalance;
+        this.save();
+        this.notify('user_balance_updated', this.state.user);
+      }
+    },
 
     // Đăng ký listener khi state thay đổi
     subscribe: function (fn) {
@@ -57,19 +285,42 @@
       }
     },
 
-    // Đăng nhập người dùng (hỗ trợ Firebase/Firestore Cloud Sync)
+    // Đăng nhập người dùng (đồng bộ dữ liệu thực tế từ users_db)
     login: function (userData) {
       userData = userData || {};
-      const name = userData.name || (this.state.user ? this.state.user.name : 'Minh Cường') || 'Minh Cường';
-      const email = userData.email || (this.state.user ? this.state.user.email : 'minhcuong.dev@gmail.com');
-      const avatar = userData.avatar || (name ? name.charAt(0).toUpperCase() : 'C');
-
-      this.state.user = Object.assign({}, this.state.user || {}, userData, {
-        isLoggedIn: true,
-        name: name,
-        email: email,
-        avatar: avatar
+      const email = (userData.email || (this.state.user ? this.state.user.email : '')).trim().toLowerCase();
+      const users = this.getUsersDB();
+      let matchedUser = users.find(function (u) {
+        return u.email && u.email.trim().toLowerCase() === email;
       });
+
+      if (!matchedUser) {
+        // Tự động tạo nếu đăng nhập qua bên thứ 3 (Google/Telegram)
+        matchedUser = {
+          id: userData.id || ('usr_' + Date.now().toString(36)),
+          name: userData.name || email.split('@')[0],
+          email: email,
+          phone: userData.phone || '',
+          balance: typeof userData.balance === 'number' ? userData.balance : 0,
+          role: userData.role || (email === DEFAULT_ADMIN.email ? 'admin' : 'user'),
+          avatar: userData.avatar || (userData.name || email).charAt(0).toUpperCase(),
+          createdAt: new Date().toISOString()
+        };
+        users.push(matchedUser);
+        this.saveUsersDB(users);
+      }
+
+      this.state.user = {
+        id: matchedUser.id,
+        name: matchedUser.name,
+        email: matchedUser.email,
+        phone: matchedUser.phone || '',
+        balance: typeof matchedUser.balance === 'number' ? matchedUser.balance : 0,
+        role: matchedUser.role || (matchedUser.email === DEFAULT_ADMIN.email ? 'admin' : 'user'),
+        avatar: matchedUser.avatar || (matchedUser.name || matchedUser.email).charAt(0).toUpperCase(),
+        isLoggedIn: true,
+        isOnline: true
+      };
 
       this.save();
       this.notify('user_login', this.state.user);
@@ -78,11 +329,17 @@
       }
     },
 
-    // Đăng xuất an toàn khỏi hệ thống
+    // Đăng xuất an toàn khỏi hệ thống (xóa session người dùng)
     logout: function () {
-      if (this.state.user) {
-        this.state.user.isLoggedIn = false;
-      }
+      this.state.user = {
+        name: 'Khách',
+        email: '',
+        balance: 0,
+        isLoggedIn: false,
+        role: 'guest',
+        phone: '',
+        avatar: 'K'
+      };
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.logout === 'function') {
         window.ShopVietFirebase.logout();
       }
@@ -115,21 +372,51 @@
     // Đọc từ localStorage
     load: function () {
       try {
+        // Đảm bảo users_db được khởi tạo
+        this.getUsersDB();
+
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
           this.state.cart = parsed.cart || [];
-          this.state.user = Object.assign({}, initialState.user, parsed.user || {});
-          this.state.orders = (parsed.orders && parsed.orders.length > 0) 
-            ? parsed.orders 
-            : (window.ShopVietData ? window.ShopVietData.defaultOrders : []);
+          
+          // Kiểm tra tính hợp lệ của user đã lưu
+          if (parsed.user && parsed.user.isLoggedIn && parsed.user.email) {
+            const matchedInDb = this.findUserByEmail(parsed.user.email);
+            if (matchedInDb) {
+              this.state.user = Object.assign({}, matchedInDb, { isLoggedIn: true });
+            } else {
+              this.state.user = Object.assign({}, initialState.user);
+            }
+          } else {
+            this.state.user = Object.assign({}, initialState.user);
+          }
+
+          // Khôi phục đơn hàng và đảm bảo mỗi đơn có userEmail
+          if (parsed.orders && Array.isArray(parsed.orders) && parsed.orders.length > 0) {
+            this.state.orders = parsed.orders.map(function (o) {
+              if (!o.userEmail) {
+                o.userEmail = (o.customer && o.customer.email) ? o.customer.email : DEFAULT_ADMIN.email;
+              }
+              return o;
+            });
+          } else if (window.ShopVietData && window.ShopVietData.defaultOrders) {
+            this.state.orders = window.ShopVietData.defaultOrders.map(function (o) {
+              return Object.assign({}, o, { userEmail: DEFAULT_ADMIN.email });
+            });
+          } else {
+            this.state.orders = [];
+          }
+
           this.state.theme = parsed.theme || 'light';
           this.state.lang = parsed.lang || 'VI';
           this.state.discountCode = parsed.discountCode || { code: '', percent: 0, amount: 0 };
         } else {
-          // Khởi tạo đơn hàng mẫu từ data
+          // Khởi tạo đơn hàng mẫu cho tài khoản admin
           if (window.ShopVietData && window.ShopVietData.defaultOrders) {
-            this.state.orders = JSON.parse(JSON.stringify(window.ShopVietData.defaultOrders));
+            this.state.orders = window.ShopVietData.defaultOrders.map(function (o) {
+              return Object.assign({}, o, { userEmail: DEFAULT_ADMIN.email });
+            });
           }
         }
       } catch (e) {
@@ -327,6 +614,21 @@
     // Điều hướng SPA Router
     navigate: function (viewName, params) {
       params = params || {};
+
+      // Kiểm tra bảo mật Cổng Portal Admin
+      if (viewName === 'admin') {
+        const u = this.state.user;
+        const isAdmin = Boolean(u && u.isLoggedIn && u.email === 'minhcuong111aaa@gmail.com');
+        if (!isAdmin) {
+          this.showToast('Truy cập bị từ chối: Cổng quản trị chỉ dành riêng cho tài khoản minhcuong111aaa@gmail.com!', 'error');
+          if (window.location.hash === '#admin') {
+            window.location.hash = '#home';
+          }
+          this.navigate('home');
+          return;
+        }
+      }
+
       this.state.currentView = viewName;
 
       // Cập nhật giao diện menu Nav
@@ -478,6 +780,33 @@
           </div>
         </div>
       `;
+    },
+
+    // Lấy cấu hình VietQR động từ Portal Admin (Mặc định: Sacombank 100071864927 LE BUI MINH CUONG)
+    getVietQRConfig: function () {
+      const DEFAULT_CONFIG = {
+        bankId: '970403', // Sacombank BIN 970403
+        bin: '970403',
+        bankName: 'Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)',
+        shortName: 'Sacombank',
+        accountNumber: '100071864927',
+        accountName: 'LE BUI MINH CUONG',
+        memoPrefix: 'SHOPVIET',
+        brandColor: '#004b91'
+      };
+      try {
+        const saved = localStorage.getItem('shopviet_vietqr_config');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return Object.assign({}, DEFAULT_CONFIG, parsed, {
+            bin: parsed.bin || parsed.bankId || DEFAULT_CONFIG.bin,
+            shortName: parsed.shortName || (parsed.bankName ? parsed.bankName.split(' ')[0] : DEFAULT_CONFIG.shortName)
+          });
+        }
+      } catch (e) {
+        console.warn('[Get VietQR Config error]', e);
+      }
+      return DEFAULT_CONFIG;
     }
   };
 
