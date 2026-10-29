@@ -92,6 +92,18 @@
   ],
   "vouchers": [
     {
+      "code": "SV20P-PEY6",
+      "type": "percent_discount",
+      "percent": 20,
+      "value": 20,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-10-29T16:17:13.606Z"
+    },
+    {
       "code": "SV30P-XA8S",
       "type": "percent_discount",
       "percent": 30,
@@ -346,5 +358,5 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-29T16:09:31.168Z"
+  "updatedAt": "2026-10-29T16:17:13.606Z"
 }
