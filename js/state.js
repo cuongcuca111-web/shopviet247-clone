@@ -285,8 +285,16 @@
           }
         }
 
-        // 2. Đồng bộ Products (Sản phẩm tùy chỉnh bởi Admin)
+        // 2. Đồng bộ Products (Sản phẩm tùy chỉnh bởi Admin - Chuẩn Nguồn Chân Lý Dữ Liệu Thật)
         if (Array.isArray(data.products) && data.products.length > 0) {
+          try {
+            const prodJson = JSON.stringify(data.products);
+            localStorage.setItem('shopviet_custom_products', prodJson);
+            localStorage.setItem('shopviet_admin_products', prodJson);
+          } catch (e) {}
+          if (window.ShopVietData) {
+            window.ShopVietData.products = data.products;
+          }
           this.saveCustomProducts(data.products);
           hasChange = true;
           console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm từ Cloud REST API!');
@@ -372,7 +380,7 @@
         if (hasChange) {
           this.notify('cloud_sync_completed', { timestamp: new Date().toISOString() });
           console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
-          if (this.state && this.state.currentView === 'home') {
+          if (this.state && (this.state.currentView === 'home' || this.state.currentRoute === 'home')) {
             const appMount = document.getElementById('appMount');
             const homeView = window.ShopVietViews && window.ShopVietViews.home;
             if (appMount && homeView && typeof homeView.render === 'function') {

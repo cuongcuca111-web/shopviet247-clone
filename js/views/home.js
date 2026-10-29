@@ -139,11 +139,20 @@ window.ShopVietViews.home = (function () {
       const currentFilter = window.ShopVietState ? (window.ShopVietState.state.activeFilter || 'Tất cả') : 'Tất cả';
       const searchQuery = window.ShopVietState ? (window.ShopVietState.state.searchQuery || '') : '';
 
+      // Lấy danh sách sản phẩm thật (Ưu tiên từ getCustomProducts trong State, nếu không có fallback về ShopVietData)
+      const allProducts = (window.ShopVietState && typeof window.ShopVietState.getCustomProducts === 'function' && window.ShopVietState.getCustomProducts().length > 0)
+        ? window.ShopVietState.getCustomProducts()
+        : ((window.ShopVietData && window.ShopVietData.products) ? window.ShopVietData.products : []);
+
       // Lọc danh sách sản phẩm theo Tag và Từ khóa
-      let displayedProducts = data.products || [];
+      let displayedProducts = allProducts || [];
       if (currentFilter && currentFilter !== 'Tất cả') {
         displayedProducts = displayedProducts.filter(function (p) {
-          return p.tag === currentFilter || (p.category && p.category.toLowerCase().includes(currentFilter.toLowerCase()));
+          if (p.tag === currentFilter) return true;
+          if (p.category && p.category.toLowerCase().includes(currentFilter.toLowerCase())) return true;
+          if (currentFilter.includes('Gemini') && ((p.name && p.name.includes('Gemini')) || (p.tag && p.tag.includes('Gemini')))) return true;
+          if (currentFilter.includes('Cursor') && ((p.name && p.name.includes('Cursor')) || (p.tag && p.tag.includes('Cursor')))) return true;
+          return false;
         });
       }
 
@@ -154,6 +163,23 @@ window.ShopVietViews.home = (function () {
                  (p.desc && p.desc.toLowerCase().includes(query)) ||
                  (p.tag && p.tag.toLowerCase().includes(query));
         });
+      }
+
+      // Xác định sản phẩm tiêu biểu cho Hero Banner (Ưu tiên sản phẩm isBestSeller -> hoặc sản phẩm đầu tiên có sẵn trong kho)
+      let heroProduct = allProducts.find(function (p) { return p.isBestSeller; });
+      if (!heroProduct && allProducts.length > 0) {
+        heroProduct = allProducts[0];
+      }
+      if (!heroProduct) {
+        heroProduct = {
+          id: 'prod-001',
+          name: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive - Antigravity Pro',
+          price: 19000,
+          oldPrice: 250000,
+          discount: '-92%',
+          badge: 'Bán chạy nhất',
+          desc: 'Kích hoạt ngay bằng link mời Google One chính chủ. Sử dụng Gemini Advanced 1.5 Pro/Flash, tích hợp Antigravity 2.0 Agentic coding và tặng kèm 500 Credits Veo Video AI.'
+        };
       }
 
       return `
@@ -243,10 +269,10 @@ window.ShopVietViews.home = (function () {
 
             </div>
 
-            <!-- CỘT PHẢI (7 COLS): BANNER NEON CURSOR AI & LƯỚI 2X2 FEATURES -->
+            <!-- CỘT PHẢI (7 COLS): BANNER NEON NỔI BẬT & LƯỚI 2X2 FEATURES -->
             <div class="lg:col-span-7 flex flex-col justify-between gap-4">
               
-              <!-- BANNER QUẢNG CÁO NỀN TỐI NEON CHO CURSOR -->
+              <!-- BANNER QUẢNG CÁO NỀN TỐI NEON CHO SẢN PHẨM NỔI BẬT THỰC TẾ -->
               <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 border border-slate-800 shadow-md relative overflow-hidden flex flex-col justify-between group">
                 
                 <!-- Glowing Ambient Orbs -->
@@ -257,29 +283,37 @@ window.ShopVietViews.home = (function () {
                   <div class="flex items-center gap-2">
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20">
                       <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                      Hot product 2026
+                      ${heroProduct.badge || 'Hot product 2026'}
                     </span>
                     <span class="text-xs text-indigo-300 font-semibold">• Bản quyền chính chủ</span>
                   </div>
 
-                  <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
-                    CURSOR PRO — AI CODING TOOL TỐI THƯỢNG
+                  <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug line-clamp-2">
+                    ${(heroProduct.name || 'GEMINI ARGON 4 PRO').toUpperCase()}
                   </h2>
 
-                  <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                    Tăng 500% tốc độ code với Claude 3.5 Sonnet & GPT-4o tích hợp sẵn. Nâng cấp trực tiếp trên email cá nhân, kích hoạt trong 60 giây.
+                  <p class="text-slate-300 text-xs sm:text-sm leading-relaxed line-clamp-2">
+                    ${heroProduct.desc || 'Tăng tốc độ làm việc vượt trội với AI thế hệ mới. Nâng cấp trực tiếp trên email cá nhân, kích hoạt trong vài phút.'}
                   </p>
                 </div>
 
                 <div class="relative z-10 mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
                   <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-extrabold text-white">120.000đ</span>
-                    <span class="text-xs text-slate-400 line-through">520.000đ</span>
-                    <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-800/40">-77%</span>
+                    <span class="text-2xl font-extrabold text-white">
+                      ${window.ShopVietState ? window.ShopVietState.formatCurrency(heroProduct.price) : `${(heroProduct.price || 0).toLocaleString('vi-VN')} đ`}
+                    </span>
+                    ${heroProduct.oldPrice ? `
+                      <span class="text-xs text-slate-400 line-through">
+                        ${window.ShopVietState ? window.ShopVietState.formatCurrency(heroProduct.oldPrice) : `${heroProduct.oldPrice.toLocaleString('vi-VN')} đ`}
+                      </span>
+                    ` : ''}
+                    ${heroProduct.discount ? `
+                      <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-800/40">${heroProduct.discount}</span>
+                    ` : ''}
                   </div>
 
                   <button 
-                    onclick="ShopVietViews.modal.open('prod-002')" 
+                    onclick="ShopVietViews.modal.open('${heroProduct.id || 'prod-001'}')" 
                     class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Xem chi tiết ngay</span>
@@ -382,7 +416,7 @@ window.ShopVietViews.home = (function () {
                 <h2 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                   <span>Danh mục nổi bật</span>
                   <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                    ${(data.categories || []).length} nhóm
+                    ${allProducts.length} sản phẩm sẵn có
                   </span>
                 </h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Lựa chọn giải pháp công nghệ theo nhu cầu học tập & làm việc</p>
@@ -397,9 +431,26 @@ window.ShopVietViews.home = (function () {
               </button>
             </div>
 
-            <!-- Hàng Ngang Các Thẻ Danh Mục Nhỏ Bo Tròn -->
+            <!-- Hàng Ngang Các Thẻ Danh Mục Nhỏ Bo Tròn (Đồng bộ số lượng thực tế) -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              ${(data.categories || []).map(cat => `
+              ${(data.categories || []).map(cat => {
+                const realCount = allProducts.filter(function (p) {
+                  if (p.category && p.category === cat.id) return true;
+                  if (p.tag && cat.tag && (p.tag.toLowerCase() === cat.tag.toLowerCase() || p.tag.toLowerCase().includes(cat.tag.toLowerCase()) || cat.tag.toLowerCase().includes(p.tag.toLowerCase()))) return true;
+                  if (cat.id === 'cat_gemini' && ((p.name && p.name.includes('Gemini')) || (p.tag && p.tag.includes('Gemini')))) return true;
+                  if (cat.id === 'cat_cursor' && ((p.name && p.name.includes('Cursor')) || (p.tag && p.tag.includes('Cursor')))) return true;
+                  if (cat.id === 'cat_chatgpt' && ((p.name && (p.name.includes('GPT') || p.name.includes('ChatGPT'))) || (p.tag && p.tag.includes('ChatGPT')))) return true;
+                  if (cat.id === 'cat_canva' && ((p.name && p.name.includes('Canva')) || (p.tag && p.tag.includes('Canva')))) return true;
+                  if (cat.id === 'cat_capcut' && ((p.name && p.name.includes('Capcut')) || (p.tag && p.tag.includes('Capcut')))) return true;
+                  if (cat.id === 'cat_api' && ((p.name && (p.name.includes('API') || p.name.includes('Claude') || p.name.includes('Sonnet'))) || (p.tag && p.tag.includes('API')))) return true;
+                  return false;
+                }).length;
+
+                const countBadge = realCount > 0
+                  ? `<span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">${realCount} sản phẩm</span>`
+                  : `<span class="text-[11px] text-slate-400 dark:text-slate-500">0 sản phẩm (sắp có)</span>`;
+
+                return `
                 <div 
                   onclick="ShopVietViews.home.filterByTag('${cat.tag}')" 
                   class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3.5 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600/60 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
@@ -411,10 +462,11 @@ window.ShopVietViews.home = (function () {
                     <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       ${cat.name}
                     </h3>
-                    <p class="text-[11px] text-slate-400 font-medium truncate mt-0.5">${cat.count}</p>
+                    <p class="font-medium truncate mt-0.5">${countBadge}</p>
                   </div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           </section>
 

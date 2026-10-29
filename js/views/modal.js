@@ -175,22 +175,47 @@ window.ShopVietViews.modal = (function () {
             <!-- BODY MODAL -->
             <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
               
-              <!-- THÔNG TIN SẢN PHẨM -->
+              <!-- THÔNG TIN SẢN PHẨM (ĐỒNG BỘ CHUẨN XÁC THEO CARD SẢN PHẨM ẢNH 4) -->
               <div class="flex items-start gap-3.5 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
-                <!-- Square Thumbnail (64x64px) -->
-                <div class="w-16 h-16 rounded-xl bg-gradient-to-br ${gradient} border border-slate-700/50 flex items-center justify-center p-2.5 shrink-0 shadow-sm relative overflow-hidden">
-                  <div class="relative z-10 w-9 h-9 flex items-center justify-center">
+                <!-- Square Thumbnail Chuẩn Sang Trọng Như Card Ảnh 4 (Nền trắng/dark, bo góc 2xl, đổ bóng tinh tế) -->
+                <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center p-2.5 shrink-0 overflow-hidden relative group">
+                  <div class="relative z-10 w-10 h-10 flex items-center justify-center">
                     ${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}
                   </div>
                 </div>
 
                 <!-- Title, Badges & Price -->
                 <div class="flex-1 min-w-0">
-                  <h4 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
+                  <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
                     ${currentProduct.name}
                   </h4>
 
+                  <!-- Badges: Badge Giảm Giá, Badge Bán Chạy Nhất & Tình Trạng Hàng -->
                   <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    ${currentProduct.discount ? `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-xs">
+                        <svg class="w-2.5 h-2.5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <line x1="19" y1="5" x2="5" y2="19"/>
+                          <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                          <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+                        </svg>
+                        <span>${currentProduct.discount}</span>
+                      </span>
+                    ` : `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-xs">
+                        <span>-68%</span>
+                      </span>
+                    `}
+
+                    ${currentProduct.badge ? `
+                      <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500 text-white shadow-xs uppercase tracking-wider flex items-center gap-1">
+                        <svg class="w-3 h-3 text-yellow-100 fill-current" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span>${currentProduct.badge}</span>
+                      </span>
+                    ` : ''}
+
                     ${isOutOfStock ? `
                       <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 text-[10px] font-bold border border-rose-200/60 dark:border-rose-800/50">
                         Hết hàng
@@ -199,35 +224,33 @@ window.ShopVietViews.modal = (function () {
                       <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 text-[10px] font-bold border border-amber-200/60 dark:border-amber-800/50">
                         Sắp hết hàng
                       </span>
-                    ` : `
-                      <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 text-[10px] font-bold border border-indigo-200/60 dark:border-indigo-800/50">
-                        Còn hàng
-                      </span>
-                    `}
+                    ` : ''}
                   </div>
 
+                  <!-- Giá bán & Giá gốc gạch ngang chuẩn xác Ảnh 4 -->
                   <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                      ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.price) : `${currentProduct.price.toLocaleString('vi-VN')} đ`}
+                    <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                      ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.price || 19000) : `${(currentProduct.price || 19000).toLocaleString('vi-VN')} đ`}
                     </span>
-                    ${currentProduct.oldPrice ? `
-                      <span class="text-xs text-slate-400 line-through">
-                        ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.oldPrice) : `${currentProduct.oldPrice.toLocaleString('vi-VN')} đ`}
-                      </span>
-                    ` : ''}
+                    <span class="line-through text-slate-400 text-xs sm:text-sm font-semibold">
+                      ${window.ShopVietState ? window.ShopVietState.formatCurrency(currentProduct.oldPrice || 59000) : `${(currentProduct.oldPrice || 59000).toLocaleString('vi-VN')} đ`}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <!-- DÒNG TRẠNG THÁI TỒN KHO & BẢO HÀNH -->
+              <!-- DÒNG TRẠNG THÁI TỒN KHO & BẢO HÀNH (ĐỒNG BỘ 100% THEO CARD ẢNH 4, LOẠI BỎ CHỮ 1 THÁNG) -->
               <div class="flex items-center justify-between text-xs py-1 px-1">
-                <span class="font-semibold ${isOutOfStock ? 'text-rose-500' : isLowStock ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'} flex items-center gap-1.5">
+                <span class="font-bold ${isOutOfStock ? 'text-rose-500' : isLowStock ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'} flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${isOutOfStock ? 'bg-rose-500' : isLowStock ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}"></span>
-                  Tồn kho • ${isOutOfStock ? 'Hết hàng tạm thời' : `Còn ${currentProduct.stock} slot`}
+                  • Tồn kho • ${isOutOfStock ? 'Hết hàng tạm thời' : `Còn ${currentProduct.stock || 110} slot`}
                 </span>
-                <span class="text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <svg class="w-4 h-4 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                  <span>${currentProduct.warranty || 'Bảo hành 1 đổi 1'}</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                  <span>${currentProduct.warranty || 'Bảo hành chính chủ'}</span>
                 </span>
               </div>
 

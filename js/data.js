@@ -9,7 +9,7 @@
   // SVG Helper Icons for Product Brands (100% SVG độc bản, chuẩn nét 2px, bo góc, tương thích Light/Dark mode)
   const BRAND_ICONS = {
     cursor: `<svg class="w-8 h-8 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07 4 4z"/><path d="m13.58 13.58 6.42 6.42"/></svg>`,
-    gemini: `<svg class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z"/><path d="M19 3v4M17 5h4"/></svg>`,
+    gemini: `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285F4"/><stop offset="30%" stop-color="#9B72CB"/><stop offset="70%" stop-color="#D96570"/><stop offset="100%" stop-color="#F4B400"/></linearGradient></defs><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z" fill="url(#geminiGrad)"/><path d="M19 3v4M17 5h4" stroke="#F4B400" stroke-width="2" stroke-linecap="round"/></svg>`,
     chatgpt: `<svg class="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(120 12 12)"/></svg>`,
     claude: `<svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2-1.5 5L3 8.5l5 1.5 1.5 5 1.5-5 5-1.5-5-1.5-1.5-5z"/><path d="m18 13-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3z"/></svg>`,
     sonnet: `<svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2-1.5 5L3 8.5l5 1.5 1.5 5 1.5-5 5-1.5-5-1.5-1.5-5z"/><path d="m18 13-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3z"/></svg>`,
@@ -101,17 +101,17 @@
       "Canva"
     ],
 
-    // Danh sách 10 Sản Phẩm Hot
+    // Danh sách Sản Phẩm Thật Duy Nhất (Chuẩn Nguồn Chân Lý Đồng Bộ Toàn Hệ Thống)
     products: [
       {
         id: 'prod-001',
-        name: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive - Antigravity Pro',
+        name: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
         category: 'cat_gemini',
         tag: 'Gemini - Antigravity - Veo',
-        price: 79000,
-        oldPrice: 250000,
+        price: 19000,
+        oldPrice: 59000,
         discount: '-68%',
-        stock: 111,
+        stock: 110,
         status: 'in_stock', // 'in_stock' | 'low_stock' | 'out_of_stock'
         rating: 5.0,
         reviewsCount: 342,
@@ -120,258 +120,15 @@
         isBestSeller: true,
         badgeColor: 'bg-emerald-500 text-white',
         autoDelivery: false,
-        warranty: '18 tháng (1 đổi 1)',
+        warranty: 'Bảo hành chính chủ',
         desc: 'Kích hoạt ngay bằng link mời Google One chính chủ. Sử dụng Gemini Advanced 1.5 Pro/Flash, tích hợp Antigravity 2.0 Agentic coding và tặng kèm 500 Credits Veo Video AI.',
         instructions: 'Sau khi thanh toán thành công, hệ thống gửi ngay Link kích hoạt vào màn hình và email. Click link để nhận tài khoản ngay lập tức!',
         iconType: 'gemini',
         features: [
           'Kích hoạt qua link mời chính chủ Google',
           'Tích hợp Antigravity 2.0 & Veo Video AI',
-          'Bảo hành trọn vẹn 18 tháng',
-          'Tự động gửi link sau 5 giây thanh toán'
-        ]
-      },
-      {
-        id: 'prod-002',
-        name: 'Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email Cá Nhân',
-        category: 'cat_cursor',
-        tag: 'Cursor New',
-        price: 120000,
-        oldPrice: 520000,
-        discount: '-77%',
-        stock: 45,
-        status: 'in_stock',
-        rating: 4.9,
-        reviewsCount: 218,
-        soldCount: 980,
-        badge: 'Hot Dev',
-        badgeColor: 'bg-indigo-600 text-white',
-        autoDelivery: false,
-        warranty: '30 ngày (1 đổi 1)',
-        desc: 'Tài khoản Cursor Pro nâng cấp trực tiếp trên email bạn đang dùng. Không giới hạn Fast Requests GPT-4o, Claude 3.5 Sonnet và tính năng Agent Composer.',
-        instructions: 'Nhập email tài khoản Cursor của bạn vào ô ghi chú. Hệ thống kích hoạt gói Pro tự động trong 1 phút.',
-        iconType: 'cursor',
-        features: [
-          'Nâng cấp chính chủ email cá nhân',
-          'Dùng full Claude 3.5 Sonnet & GPT-4o',
-          'Không giới hạn Composer & Chat AI',
-          'Hỗ trợ gia hạn liên tục các tháng sau'
-        ]
-      },
-      {
-        id: 'prod-003',
-        name: 'ChatGPT Plus 1 Tháng Private - Full O1 & GPT-4o Riêng Tư',
-        category: 'cat_chatgpt',
-        tag: 'Tất cả',
-        price: 180000,
-        oldPrice: 499000,
-        discount: '-64%',
-        stock: 28,
-        status: 'in_stock',
-        rating: 5.0,
-        reviewsCount: 520,
-        soldCount: 2310,
-        badge: 'Riêng tư 100%',
-        badgeColor: 'bg-blue-600 text-white',
-        autoDelivery: false,
-        warranty: '30 ngày (1 đổi 1)',
-        desc: 'Tài khoản OpenAI ChatGPT Plus riêng biệt 1 người dùng, đổi mật khẩu tùy thích. Trải nghiệm O1-preview, O1-mini, Canvas, DALL-E 3 và Voice Mode tốc độ cao.',
-        instructions: 'Tài khoản và mật khẩu gốc được cấp ngay lập tức kèm mã 2FA trực tiếp trên web.',
-        iconType: 'chatgpt',
-        features: [
-          'Tài khoản cấp mới 1 người dùng riêng tư',
-          'Đầy đủ mô hình O1, GPT-4o, DALL-E 3',
-          'Advanced Voice Mode cực mượt',
-          'Bảo hành full 30 ngày 1 đổi 1'
-        ]
-      },
-      {
-        id: 'prod-004',
-        name: 'API Claude 3.5 Sonnet 10M Token/Ngày Tốc Độ Cao Cho Dev',
-        category: 'cat_api',
-        tag: 'API AI CODING',
-        price: 95000,
-        oldPrice: 250000,
-        discount: '-62%',
-        stock: 67,
-        status: 'in_stock',
-        rating: 4.9,
-        reviewsCount: 129,
-        soldCount: 640,
-        badge: 'Dành cho Coder',
-        badgeColor: 'bg-amber-500 text-slate-950 font-bold',
-        autoDelivery: false,
-        warranty: '30 ngày',
-        desc: 'API Endpoint proxy tiêu chuẩn OpenAI compatible, tương thích 100% với Antigravity, Cline, Roo Code, Aider, Cursor IDE và Continue.dev.',
-        instructions: 'Key API và đường dẫn Base URL proxy được tạo tự động và hiển thị ngay sau khi quét mã QR.',
-        iconType: 'api',
-        features: [
-          'Chuẩn OpenAI Endpoint Format',
-          'Hạn mức 10.000.000 Tokens/ngày',
-          'Độ trễ thấp < 350ms từ VN Server',
-          'Tương thích Antigravity & Cline'
-        ]
-      },
-      {
-        id: 'prod-005',
-        name: 'Capcut Pro 1 Năm Bản Quyền - Hỗ Trợ PC & Điện Thoại',
-        category: 'cat_capcut',
-        tag: 'Capcut',
-        price: 150000,
-        oldPrice: 990000,
-        discount: '-85%',
-        stock: 14,
-        status: 'in_stock',
-        rating: 4.8,
-        reviewsCount: 310,
-        soldCount: 1850,
-        badge: 'Tiết kiệm 85%',
-        badgeColor: 'bg-pink-600 text-white',
-        autoDelivery: false,
-        warranty: '12 tháng (1 đổi 1)',
-        desc: 'Mở khóa toàn bộ tính năng VIP: xóa phông tự động bằng AI, trích xuất phụ đề tự động nhiều thứ tiếng, voice AI lồng tiếng chuẩn và toàn bộ kho hiệu ứng Pro.',
-        instructions: 'Cấp mã kích hoạt tài khoản hoặc mail đăng nhập, đồng bộ dữ liệu trên cả máy tính lẫn điện thoại.',
-        iconType: 'capcut',
-        features: [
-          'Dùng đồng thời cả PC Windows/Mac & Mobile',
-          'Mở khóa 100% hiệu ứng & lọc VIP',
-          'Render video 4K 60fps không watermark',
-          'Bảo hành chính sách 12 tháng trọn gói'
-        ]
-      },
-      {
-        id: 'prod-006',
-        name: 'Canva Pro Giáo Viên Không Giới Hạn - Kích Hoạt Mail Riêng',
-        category: 'cat_canva',
-        tag: 'Canva',
-        price: 45000,
-        oldPrice: 199000,
-        discount: '-77%',
-        stock: 99,
-        status: 'in_stock',
-        rating: 4.9,
-        reviewsCount: 485,
-        soldCount: 3120,
-        badge: 'Giá rẻ HSSV',
-        badgeColor: 'bg-cyan-600 text-white',
-        autoDelivery: false,
-        warranty: 'Vĩnh viễn',
-        desc: 'Kích hoạt Canva Pro qua lời mời vào lớp học giáo viên vĩnh viễn trên chính Gmail của bạn. Truy cập kho 100+ triệu tài nguyên ảnh, video, đồ họa bản quyền.',
-        instructions: 'Nhập email Canva vào đơn, hệ thống gửi email mời tham gia nhóm Edu Pro ngay lập tức.',
-        iconType: 'canva',
-        features: [
-          'Kích hoạt trên chính Gmail cá nhân',
-          'Kho 100M+ hình ảnh, template bản quyền',
-          'Tính năng Xóa phông Magic 1-click',
-          'Không giới hạn thời gian sử dụng'
-        ]
-      },
-      {
-        id: 'prod-007',
-        name: 'Veo AI Video Generator 500 Credits - Tạo Video 1080p Siêu Thực',
-        category: 'cat_gemini',
-        tag: 'Gemini - Antigravity - Veo',
-        price: 85000,
-        oldPrice: 220000,
-        discount: '-61%',
-        stock: 3,
-        status: 'low_stock',
-        rating: 4.9,
-        reviewsCount: 88,
-        soldCount: 290,
-        badge: 'Sắp hết hàng',
-        badgeColor: 'bg-rose-500 text-white animate-pulse',
-        autoDelivery: false,
-        warranty: '30 ngày',
-        desc: 'Gói 500 Credits tạo video điện ảnh siêu thực độ phân giải Full HD bằng mô hình DeepMind Veo thế hệ mới nhất. Render video 6-10s chỉ trong vài chục giây.',
-        instructions: 'Cấp token tài khoản Google AI Studio có sẵn Credits để sử dụng trực tiếp qua web studio.',
-        iconType: 'gemini',
-        features: [
-          'Mô hình DeepMind Veo mới nhất',
-          'Độ phân giải video 1080p sắc nét',
-          '500 Credits tạo được ~50 video',
-          'Hỗ trợ Prompt tiếng Việt & tiếng Anh'
-        ]
-      },
-      {
-        id: 'prod-008',
-        name: 'Midjourney Standard 1 Tháng - Private Mode & Fast Hours',
-        category: 'cat_chatgpt',
-        tag: 'Tất cả',
-        price: 210000,
-        oldPrice: 750000,
-        discount: '-72%',
-        stock: 8,
-        status: 'in_stock',
-        rating: 5.0,
-        reviewsCount: 156,
-        soldCount: 710,
-        badge: 'Đồ họa đỉnh cao',
-        badgeColor: 'bg-purple-600 text-white',
-        autoDelivery: false,
-        warranty: '30 ngày',
-        desc: 'Tài khoản Midjourney v6.1 Standard với 15 giờ tạo ảnh nhanh Fast GPU, chế độ Relax Mode không giới hạn và chế độ riêng tư Stealth Mode.',
-        instructions: 'Hệ thống gửi ngay thông tin tài khoản Discord độc lập đã kích hoạt sẵn gói Standard.',
-        iconType: 'chatgpt',
-        features: [
-          '15 giờ tạo ảnh Fast GPU v6.1',
-          'Tạo ảnh Relax không giới hạn',
-          'Dùng bot riêng trong server cá nhân',
-          'Bảo hành 30 ngày 1 đổi 1'
-        ]
-      },
-      {
-        id: 'prod-009',
-        name: 'GitHub Copilot Business 1 Năm - Kích Hoạt Mail Chính Chủ',
-        category: 'cat_api',
-        tag: 'API AI CODING',
-        price: 290000,
-        oldPrice: 1200000,
-        discount: '-76%',
-        stock: 0,
-        status: 'out_of_stock',
-        rating: 4.9,
-        reviewsCount: 94,
-        soldCount: 420,
-        badge: 'Tạm hết hàng',
-        badgeColor: 'bg-slate-500 text-white',
-        autoDelivery: false,
-        warranty: '12 tháng',
-        desc: 'Gói Copilot Business hỗ trợ lập trình viên autocomplete siêu tốc trên VS Code, JetBrains, Visual Studio. Tích hợp Chat Copilot và PR summarization.',
-        instructions: 'Vui lòng nhấn nhận thông báo khi có hàng lại. Dự kiến bổ sung kho trong 24 giờ tới.',
-        iconType: 'copilot',
-        features: [
-          'Hỗ trợ autocomplete code theo ngữ cảnh',
-          'Tích hợp GPT-4o Copilot Chat trong IDE',
-          'Bảo mật code doanh nghiệp',
-          'Bảo hành 1 năm trọn gói'
-        ]
-      },
-      {
-        id: 'prod-010',
-        name: 'VPS AI 4 vCPU 8GB RAM Chạy Bot 24/7 Tốc Độ Cao VN',
-        category: 'cat_api',
-        tag: 'API AI CODING',
-        price: 160000,
-        oldPrice: 450000,
-        discount: '-64%',
-        stock: 19,
-        status: 'in_stock',
-        rating: 4.8,
-        reviewsCount: 67,
-        soldCount: 310,
-        badge: 'Server riêng',
-        badgeColor: 'bg-slate-900 text-emerald-400 border border-emerald-500/40',
-        autoDelivery: false,
-        warranty: '30 ngày',
-        desc: 'Máy chủ ảo VPS NVMe tốc độ cao đặt tại Datacenter Viettel/VNPT. Cấu hình 4 Core vCPU, 8GB RAM, 80GB SSD NVMe tối ưu chạy Docker, Bot Telegram, Cronjob AI.',
-        instructions: 'IP và mật khẩu root SSH được gửi tự động sau khi giao dịch thành công.',
-        iconType: 'server',
-        features: [
-          '4 vCPU Intel Xeon / AMD EPYC',
-          '8GB RAM DDR4 ECC & 80GB NVMe SSD',
-          'Băng thông 1Gbps không giới hạn',
-          'Hỗ trợ cài sẵn Ubuntu 22.04 / 24.04 Docker'
+          'Bảo hành chính chủ 1 đổi 1',
+          'Tự động cấp link ngay sau khi thanh toán'
         ]
       }
     ],
@@ -382,29 +139,15 @@
         id: 'DJ2026889',
         date: '2026-03-28 14:20:35',
         productId: 'prod-001',
-        productName: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive - Antigravity Pro',
-        price: 79000,
+        productName: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+        price: 19000,
         quantity: 1,
-        total: 79000,
+        total: 19000,
         status: 'completed', // completed | pending | failed
         statusText: 'Đã hoàn tất',
         paymentMethod: 'VietQR (MB Bank - Tự động)',
         deliveryType: 'Link mời Google One',
         licenseKey: 'INVITE-LINK: https://one.google.com/inv/gemini-pro-ag26-889-subviet'
-      },
-      {
-        id: 'DJ2026771',
-        date: '2026-03-25 09:15:10',
-        productId: 'prod-002',
-        productName: 'Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email Cá Nhân',
-        price: 120000,
-        quantity: 1,
-        total: 120000,
-        status: 'completed',
-        statusText: 'Đã hoàn tất',
-        paymentMethod: 'VietQR (Techcombank)',
-        deliveryType: 'Email mời Cursor Team',
-        licenseKey: 'CURSOR-PRO-TEAM: Đã gán gói Pro thành công cho email: huy.nguyen@example.com'
       }
     ],
 
@@ -430,9 +173,9 @@
     }
   };
 
-  // Tự động khôi phục danh sách sản phẩm đã được Admin tùy chỉnh từ LocalStorage
+  // Tự động khôi phục danh sách sản phẩm đã được Admin tùy chỉnh từ LocalStorage (Đồng bộ đa nguồn)
   try {
-    const savedCustomProds = localStorage.getItem('shopviet_admin_products');
+    const savedCustomProds = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
     if (savedCustomProds) {
       const parsed = JSON.parse(savedCustomProds);
       if (Array.isArray(parsed) && parsed.length > 0) {
