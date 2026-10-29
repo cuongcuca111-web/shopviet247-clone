@@ -14,6 +14,8 @@ window.ShopVietViews.home = (function () {
       cursor: 'from-slate-950 via-indigo-950 to-indigo-900 border-indigo-800/40',
       gemini: 'from-slate-950 via-blue-950 to-blue-900 border-blue-800/40',
       chatgpt: 'from-slate-950 via-emerald-950 to-teal-900 border-emerald-800/40',
+      claude: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
+      sonnet: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       api: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       canva: 'from-slate-950 via-cyan-950 to-sky-900 border-cyan-800/40',
       capcut: 'from-slate-950 via-pink-950 to-rose-900 border-pink-800/40',
@@ -123,7 +125,7 @@ window.ShopVietViews.home = (function () {
               <div>
                 <!-- Badge Xanh Lá Nhạt -->
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50 font-medium text-xs">
-                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                   <span>Tự động giao hàng sau khi thanh toán</span>
                 </div>
 
@@ -247,7 +249,7 @@ window.ShopVietViews.home = (function () {
                 <!-- Card 1: Thanh toán VietQR -->
                 <div class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all">
                   <div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect width="5" height="5" x="3" y="3" rx="1"/>
                       <rect width="5" height="5" x="16" y="3" rx="1"/>
                       <rect width="5" height="5" x="3" y="16" rx="1"/>
@@ -271,8 +273,8 @@ window.ShopVietViews.home = (function () {
                 <!-- Card 2: Giao hàng tự động -->
                 <div class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-emerald-300 dark:hover:border-emerald-600/50 hover:shadow-sm transition-all">
                   <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
                   </div>
                   <div>
@@ -284,7 +286,7 @@ window.ShopVietViews.home = (function () {
                 <!-- Card 3: Dashboard đơn hàng -->
                 <div onclick="ShopVietState.navigate('dashboard')" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all cursor-pointer">
                   <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect width="7" height="9" x="3" y="3" rx="1"/>
                       <rect width="7" height="5" x="14" y="3" rx="1"/>
                       <rect width="7" height="9" x="14" y="12" rx="1"/>
@@ -294,7 +296,7 @@ window.ShopVietViews.home = (function () {
                   <div>
                     <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1">
                       <span>Dashboard đơn hàng</span>
-                      <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </h4>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Quản lý gói & gia hạn dễ dàng</p>
                   </div>
@@ -303,7 +305,7 @@ window.ShopVietViews.home = (function () {
                 <!-- Card 4: Lịch sử mua hàng -->
                 <div onclick="ShopVietState.navigate('dashboard', { tab: 'orders' })" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all cursor-pointer group">
                   <div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                       <path d="M3 6h18" />
                       <path d="M16 10a4 4 0 0 1-8 0" />
@@ -478,8 +480,9 @@ window.ShopVietViews.home = (function () {
                         ` : `
                           <button 
                             onclick="event.stopPropagation(); ShopVietViews.modal.open('${prod.id}')" 
-                            class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-xs font-semibold px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1 shrink-0 cursor-pointer"
+                            class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-xs font-semibold px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
                           >
+                            <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                             <span>Mua ngay</span>
                           </button>
                         `}

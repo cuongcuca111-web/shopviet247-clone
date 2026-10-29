@@ -252,6 +252,7 @@
     const products = (window.ShopVietData && window.ShopVietData.products) || [];
     const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
     const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
+    const schedules = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
     const vietqr = getVietQRConfig();
 
     return `
@@ -392,6 +393,23 @@
               <span>Mã quà tặng & Giảm giá</span>
               <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold" id="adminVoucherTabBadge">${vouchers.length}</span>
             </button>
+
+            <!-- Tab 5: Quản lý khách & Hẹn lịch (Excel) -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.switchTab('schedules')" 
+              id="adminTabBtn-schedules"
+              class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'schedules' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>📊 Hẹn lịch khách (Excel)</span>
+              <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold" id="adminScheduleTabBadge">${schedules.length}</span>
+            </button>
           </div>
 
           <!-- ==================== BODY CONTENT THEO TAB ==================== -->
@@ -412,6 +430,8 @@
       return renderTabVietQR();
     } else if (tabName === 'vouchers') {
       return renderTabVouchers();
+    } else if (tabName === 'schedules') {
+      return renderTabSchedules();
     }
     return renderTabPricing();
   }
@@ -675,7 +695,8 @@
   function renderOrderTableRow(order, index) {
     const code = order.orderCode || order.id || `DJ2026${index + 100}`;
     const dateStr = order.createdAtFormatted || order.date || 'Hôm nay';
-    const customer = order.customerName || (order.user && order.user.name) || 'Khách vãng lai';
+    const customerEmail = order.userEmail || (order.user && order.user.email) || (order.customer && order.customer.email) || (order.email) || 'cuongcuca111@gmail.com';
+    const customerName = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Minh Cường';
     const productName = order.productName || (order.items && order.items[0] && order.items[0].name) || 'Antigravity + Gemini Pro';
     const amount = order.amount || order.total || order.price || 69000;
     const isCompleted = order.status === 'completed';
@@ -693,9 +714,13 @@
         </td>
 
         <!-- KHÁCH HÀNG -->
-        <td class="py-3 px-3.5">
-          <div class="font-semibold text-slate-800 dark:text-slate-200">${customer}</div>
-          <div class="text-[10px] text-slate-400">VietQR MB Bank</div>
+        <td class="py-3 px-3">
+          <div class="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[200px]" title="${customerEmail}">
+            ${customerEmail}
+          </div>
+          <div class="text-[10px] text-slate-400 font-medium">
+            ${customerName} • VietQR Sacombank
+          </div>
         </td>
 
         <!-- GÓI SẢN PHẨM -->
@@ -1148,6 +1173,464 @@
           </button>
         </td>
       </tr>
+    `;
+  }
+
+  // =========================================================================
+  // TAB 5: QUẢN LÝ KHÁCH & HẸN LỊCH (EXCEL / SPREADSHEET)
+  // =========================================================================
+  function renderTabSchedules() {
+    const schedules = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
+    
+    // Thống kê hạn dùng
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let activeCount = 0;
+    let expiringCount = 0;
+    let expiredCount = 0;
+
+    schedules.forEach(s => {
+      const exp = new Date(s.expireDate);
+      exp.setHours(0, 0, 0, 0);
+      const diffMs = exp.getTime() - today.getTime();
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (daysLeft > 7) {
+        activeCount++;
+      } else if (daysLeft > 0) {
+        expiringCount++;
+      } else {
+        expiredCount++;
+      }
+    });
+
+    return `
+      <div class="space-y-5">
+        
+        <!-- Thống Kê 4 Khối Thẻ Hiện Đại -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <!-- Tổng khách hẹn lịch -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng khách hẹn lịch</div>
+              <div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">${schedules.length} khách</div>
+            </div>
+          </div>
+
+          <!-- Đang hoạt động -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Đang sử dụng (>7 ngày)</div>
+              <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">${activeCount} khách</div>
+            </div>
+          </div>
+
+          <!-- Sắp hết hạn -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Sắp hết hạn (≤7 ngày)</div>
+              <div class="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">${expiringCount} khách</div>
+            </div>
+          </div>
+
+          <!-- Đã hết hạn -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div>
+              <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Đã hết hạn</div>
+              <div class="text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">${expiredCount} khách</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar Phía Trên: Nút + Thêm email khách hàng, Xuất Excel & Ô Tìm kiếm -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          
+          <div class="flex items-center flex-wrap gap-2">
+            <!-- Nút + Thêm email khách hàng -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.openScheduleModal(null)" 
+              class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-colors shrink-0"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>+ Thêm email khách hàng</span>
+            </button>
+
+            <!-- Nút Xuất Excel (CSV) -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.exportSchedulesToExcel()" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-colors shrink-0"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>📥 Xuất Excel</span>
+            </button>
+
+            <!-- Nút Khôi phục dữ liệu mẫu -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.resetDefaultSchedules()" 
+              title="Khôi phục danh sách hẹn lịch mẫu" 
+              class="p-2 sm:px-3 sm:py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition shrink-0"
+            >
+              Khôi phục mẫu
+            </button>
+          </div>
+
+          <!-- Ô Tìm Kiếm Email khách, Quản lý, Gói -->
+          <div class="relative w-full sm:w-72">
+            <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input 
+              type="text" 
+              id="adminScheduleSearchInput"
+              oninput="window.ShopVietViews.admin.filterSchedules(this.value)" 
+              placeholder="Tìm email khách, slot, gói..." 
+              class="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            >
+          </div>
+
+        </div>
+
+        <!-- Bảng Tính Excel Thông Minh (Smart Spreadsheet Table) -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>📊</span> Bảng Tính Excel Quản Lý Khách & Hẹn Lịch Slot
+              </span>
+              <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 text-xs font-semibold" id="adminScheduleTableBadge">
+                ${schedules.length} bản ghi
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              * Tự động đồng bộ thời hạn & tính số ngày còn lại theo thời gian thực
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/50 text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                  <th class="py-3 px-3 text-center w-12">STT</th>
+                  <th class="py-3 px-3.5">Email Khách Hàng</th>
+                  <th class="py-3 px-3.5">Email Quản Lý / Slot</th>
+                  <th class="py-3 px-3.5">Gói Dịch Vụ</th>
+                  <th class="py-3 px-3 text-center">Ngày Bắt Đầu</th>
+                  <th class="py-3 px-3 text-center">Ngày Hết Hạn</th>
+                  <th class="py-3 px-3.5 text-center">Trạng Thái Hạn Dùng</th>
+                  <th class="py-3 px-3 text-right">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="adminScheduleTableTbody" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                ${schedules.length > 0 ? schedules.map((s, idx) => renderScheduleTableRow(s, idx)).join('') : `
+                  <tr>
+                    <td colspan="8" class="py-12 text-center text-slate-400">Chưa có lịch hẹn khách hàng nào được tạo</td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  // Render 1 dòng trong Bảng Excel Hẹn Lịch
+  function renderScheduleTableRow(s, index) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const exp = new Date(s.expireDate);
+    exp.setHours(0, 0, 0, 0);
+    const diffMs = exp.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    let statusBadge = '';
+    if (daysLeft > 7) {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>🟢 Còn ${daysLeft} ngày</span>`;
+    } else if (daysLeft > 0) {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse"><span class="w-2 h-2 rounded-full bg-amber-500"></span>🟡 Sắp hết (${daysLeft} ngày)</span>`;
+    } else {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300 dark:border-rose-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-rose-500"></span>🔴 Đã hết hạn</span>`;
+    }
+
+    const customerEmail = s.customerEmail || 'cuongcuca111@gmail.com';
+    const customerName = s.customerName || 'Minh Cường';
+    const managerEmail = s.managerEmail || 'admin-slot@shopviet.vip';
+    const serviceName = s.serviceName || '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive';
+    const notes = s.notes || '';
+
+    return `
+      <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors" data-id="${s.id}" data-customer="${customerEmail.toLowerCase()}" data-manager="${managerEmail.toLowerCase()}" data-service="${serviceName.toLowerCase()}" data-notes="${notes.toLowerCase()}">
+        <!-- STT -->
+        <td class="py-3 px-3 text-center font-mono text-slate-400 font-semibold">
+          ${index + 1}
+        </td>
+
+        <!-- EMAIL KHÁCH HÀNG -->
+        <td class="py-3 px-3.5">
+          <div class="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[200px]" title="${customerEmail}">
+            ${customerEmail}
+          </div>
+          <div class="text-[10px] text-slate-400 font-medium">
+            ${customerName}
+          </div>
+        </td>
+
+        <!-- EMAIL QUẢN LÝ / SLOT -->
+        <td class="py-3 px-3.5">
+          <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-mono text-xs font-semibold border border-indigo-200/60 dark:border-indigo-800/40">
+            <span>${managerEmail}</span>
+          </div>
+        </td>
+
+        <!-- GÓI DỊCH VỤ -->
+        <td class="py-3 px-3.5 max-w-[220px]">
+          <div class="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1" title="${serviceName}">
+            ${serviceName}
+          </div>
+          ${notes ? `<div class="text-[10px] text-slate-400 line-clamp-1 italic">${notes}</div>` : ''}
+        </td>
+
+        <!-- NGÀY BẮT ĐẦU -->
+        <td class="py-3 px-3 text-center font-mono text-slate-500 text-xs">
+          ${s.startDate || '-'}
+        </td>
+
+        <!-- NGÀY HẾT HẠN -->
+        <td class="py-3 px-3 text-center font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+          ${s.expireDate || '-'}
+        </td>
+
+        <!-- TRẠNG THÁI HẠN DÙNG -->
+        <td class="py-3 px-3.5 text-center whitespace-nowrap">
+          ${statusBadge}
+        </td>
+
+        <!-- THAO TÁC -->
+        <td class="py-3 px-3 text-right whitespace-nowrap">
+          <div class="flex items-center justify-end gap-1">
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.openScheduleModal('${s.id}')" 
+              title="Chỉnh sửa thông tin lịch" 
+              class="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg transition"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.deleteSchedule('${s.id}')" 
+              title="Xóa lịch hẹn" 
+              class="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  // =========================================================================
+  // MODAL THÊM / SỬA KHÁCH HÀNG HẸN LỊCH EXCEL (#adminAddScheduleModal)
+  // =========================================================================
+  function renderScheduleModal(scheduleId) {
+    let schedule = null;
+    if (scheduleId) {
+      const list = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
+      schedule = list.find(s => s.id === scheduleId);
+    }
+
+    const isEdit = !!schedule;
+    const customerEmail = schedule ? schedule.customerEmail : 'cuongcuca111@gmail.com';
+    const customerName = schedule ? schedule.customerName : 'Minh Cường';
+    const managerEmail = schedule ? schedule.managerEmail : 'slot1-pro@shopviet.vip';
+    const serviceName = schedule ? schedule.serviceName : '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive';
+    const startDate = schedule ? schedule.startDate : new Date().toISOString().split('T')[0];
+    const defaultExpire = new Date();
+    defaultExpire.setMonth(defaultExpire.getMonth() + 1);
+    const expireDate = schedule ? schedule.expireDate : defaultExpire.toISOString().split('T')[0];
+    const notes = schedule ? schedule.notes : '';
+
+    return `
+      <div id="adminAddScheduleModal" class="fixed inset-0 z-[65] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up">
+          
+          <!-- Header Modal -->
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950/70">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/30">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-extrabold text-base text-slate-900 dark:text-white">${isEdit ? 'Cập Nhật Lịch Hẹn Khách Hàng' : 'Thêm Email Khách Hàng Vào Bảng Excel'}</h3>
+                <p class="text-xs text-slate-500">${isEdit ? `Mã lịch: ${schedule.id}` : 'Quản lý lịch hẹn slot bản quyền trực tiếp trên bảng tính'}</p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.closeScheduleModal()" 
+              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Body Form -->
+          <form id="scheduleForm" onsubmit="event.preventDefault(); window.ShopVietViews.admin.saveScheduleFromModal('${scheduleId || ''}');" class="p-6 space-y-4 text-xs sm:text-sm">
+            
+            <!-- Email & Tên khách hàng -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Email Khách Hàng (*)</label>
+                <input 
+                  type="email" 
+                  id="modalSchCustomerEmail" 
+                  required 
+                  value="${customerEmail}"
+                  placeholder="cuongcuca111@gmail.com" 
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tên Khách Hàng</label>
+                <input 
+                  type="text" 
+                  id="modalSchCustomerName" 
+                  value="${customerName}"
+                  placeholder="Minh Cường" 
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+            </div>
+
+            <!-- Email Quản Lý (Slot) -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Email Quản Lý Slot (*)</label>
+              <input 
+                type="text" 
+                id="modalSchManagerEmail" 
+                required 
+                value="${managerEmail}"
+                placeholder="slot1-pro@shopviet.vip hoặc admin-slot@shopviet.vip" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+              <p class="text-[11px] text-slate-400 mt-1">Dùng để phân chia slot quản trị và thông báo khi gia hạn.</p>
+            </div>
+
+            <!-- Gói Dịch Vụ -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Gói Dịch Vụ (*)</label>
+              <select 
+                id="modalSchService" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+              >
+                <option value="[1 Tháng] Gemini Argon 4 Pro + 5TB Drive" ${serviceName.includes('Argon') || serviceName.includes('Gemini') ? 'selected' : ''}>[1 Tháng] Gemini Argon 4 Pro + 5TB Drive</option>
+                <option value="[1 Năm] Gemini Argon 4 Pro + 2TB Google One" ${serviceName.includes('1 Năm] Gemini') ? 'selected' : ''}>[1 Năm] Gemini Argon 4 Pro + 2TB Google One</option>
+                <option value="Cursor Pro 1 Tháng Chính Chủ" ${serviceName.includes('Cursor') ? 'selected' : ''}>Cursor Pro 1 Tháng Chính Chủ</option>
+                <option value="ChatGPT Plus Chính Chủ GPT-4o" ${serviceName.includes('ChatGPT') ? 'selected' : ''}>ChatGPT Plus Chính Chủ GPT-4o</option>
+                <option value="Canva Pro Edu 1 Năm Vĩnh Viễn" ${serviceName.includes('Canva') ? 'selected' : ''}>Canva Pro Edu 1 Năm Vĩnh Viễn</option>
+                <option value="CapCut Pro 1 Năm Bản Quyền" ${serviceName.includes('CapCut') ? 'selected' : ''}>CapCut Pro 1 Năm Bản Quyền</option>
+                <option value="Claude 3.5 Sonnet / Opus Pro" ${serviceName.includes('Claude') ? 'selected' : ''}>Claude 3.5 Sonnet / Opus Pro</option>
+              </select>
+            </div>
+
+            <!-- Ngày bắt đầu & Ngày hết hạn -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ngày Bắt Đầu</label>
+                <input 
+                  type="date" 
+                  id="modalSchStartDate" 
+                  value="${startDate}" 
+                  class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ngày Hết Hạn (*)</label>
+                <input 
+                  type="date" 
+                  id="modalSchExpireDate" 
+                  required 
+                  value="${expireDate}" 
+                  class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+            </div>
+
+            <!-- Nút chọn nhanh thời hạn -->
+            <div>
+              <span class="block text-[11px] font-bold text-slate-500 mb-1.5">Chọn nhanh thời hạn (tính từ ngày bắt đầu):</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="window.ShopVietViews.admin.setScheduleQuickExpire(1)" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition">+1 Tháng</button>
+                <button type="button" onclick="window.ShopVietViews.admin.setScheduleQuickExpire(3)" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition">+3 Tháng</button>
+                <button type="button" onclick="window.ShopVietViews.admin.setScheduleQuickExpire(6)" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition">+6 Tháng</button>
+                <button type="button" onclick="window.ShopVietViews.admin.setScheduleQuickExpire(12)" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition">+1 Năm</button>
+                <button type="button" onclick="window.ShopVietViews.admin.setScheduleQuickExpire(18)" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition">+18 Tháng</button>
+              </div>
+            </div>
+
+            <!-- Ghi Chú -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ghi Chú</label>
+              <textarea 
+                id="modalSchNotes" 
+                rows="2" 
+                placeholder="Khách VIP nâng cấp chính chủ, cần gọi nhắc trước 3 ngày..." 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >${notes}</textarea>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5">
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.closeScheduleModal()" 
+                class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold transition text-xs"
+              >
+                Hủy
+              </button>
+              <button 
+                type="submit" 
+                class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 text-xs"
+              >
+                <span>💾 Lưu vào bảng Excel</span>
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
     `;
   }
 
@@ -1625,8 +2108,8 @@
   // Modal Admin Duyệt Đơn & Gửi Link Riêng Cho Khách
   function renderDeliveryModal(order) {
     const code = order.orderCode || order.id || 'ORDER';
-    const customer = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Khách vãng lai';
-    const customerEmail = (order.customer && order.customer.email) || (order.user && order.user.email) || order.customerEmail || 'cuongcuca111@gmail.com';
+    const customerEmail = order.userEmail || (order.customer && order.customer.email) || (order.user && order.user.email) || (order.email) || 'cuongcuca111@gmail.com';
+    const customerName = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Minh Cường';
     const productName = order.productName || (order.items && order.items[0] && order.items[0].name) || 'Gói Bản Quyền Pro';
     const amount = order.amount || order.total || order.price || 69000;
     const currentLink = order.customDeliveryLink || (order.licenseKey && order.licenseKey.startsWith('http') ? order.licenseKey : '') || 'https://one.google.com/inv/gemini-pro-shopviet247-vip';
@@ -1659,7 +2142,7 @@
           <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 space-y-1.5 text-xs">
             <div class="flex justify-between items-center">
               <span class="text-slate-500">Khách hàng:</span>
-              <span class="font-semibold text-slate-800 dark:text-slate-200">${customer} <span class="text-slate-400 font-normal">(${customerEmail})</span></span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">${customerName} <span class="text-slate-400 font-normal">(${customerEmail})</span></span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-slate-500">Gói sản phẩm:</span>
@@ -2426,6 +2909,247 @@
       const badge = document.getElementById('adminVoucherTableBadge');
       if (badge) {
         badge.textContent = `${matchCount} mã`;
+      }
+    },
+
+    // ==================== QUẢN LÝ LỊCH HẸN KHÁCH & SLOT EXCEL ====================
+    openScheduleModal: function (scheduleId) {
+      this.closeScheduleModal();
+      const div = document.createElement('div');
+      div.id = 'adminScheduleModalContainer';
+      div.innerHTML = renderScheduleModal(scheduleId);
+      document.body.appendChild(div);
+    },
+
+    closeScheduleModal: function () {
+      const modal = document.getElementById('adminAddScheduleModal');
+      if (modal) modal.remove();
+      const cont = document.getElementById('adminScheduleModalContainer');
+      if (cont) cont.remove();
+    },
+
+    setScheduleQuickExpire: function (months) {
+      const startInput = document.getElementById('modalSchStartDate');
+      let baseDate = new Date();
+      if (startInput && startInput.value) {
+        const parsed = new Date(startInput.value);
+        if (!isNaN(parsed.getTime())) {
+          baseDate = parsed;
+        }
+      }
+      const expDate = new Date(baseDate);
+      expDate.setMonth(expDate.getMonth() + Number(months));
+      const expInput = document.getElementById('modalSchExpireDate');
+      if (expInput) {
+        expInput.value = expDate.toISOString().split('T')[0];
+      }
+    },
+
+    saveScheduleFromModal: function (scheduleId) {
+      const emailInput = document.getElementById('modalSchCustomerEmail');
+      const nameInput = document.getElementById('modalSchCustomerName');
+      const managerInput = document.getElementById('modalSchManagerEmail');
+      const serviceInput = document.getElementById('modalSchService');
+      const startInput = document.getElementById('modalSchStartDate');
+      const expInput = document.getElementById('modalSchExpireDate');
+      const notesInput = document.getElementById('modalSchNotes');
+
+      if (!emailInput || !expInput) return;
+
+      const customerEmail = emailInput.value.trim().toLowerCase();
+      const customerName = (nameInput ? nameInput.value : '').trim() || customerEmail.split('@')[0];
+      const managerEmail = (managerInput ? managerInput.value : '').trim() || 'admin-slot@shopviet.vip';
+      const serviceName = (serviceInput ? serviceInput.value : '').trim() || '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive';
+      const startDate = (startInput ? startInput.value : '').trim() || new Date().toISOString().split('T')[0];
+      const expireDate = expInput.value.trim();
+      const notes = (notesInput ? notesInput.value : '').trim();
+
+      if (!customerEmail || !customerEmail.includes('@')) {
+        notify('Vui lòng nhập địa chỉ email khách hàng hợp lệ!', 'error');
+        return;
+      }
+      if (!expireDate) {
+        notify('Vui lòng chọn ngày hết hạn cho khách!', 'error');
+        return;
+      }
+
+      const scheduleData = {
+        customerEmail: customerEmail,
+        customerName: customerName,
+        managerEmail: managerEmail,
+        serviceName: serviceName,
+        startDate: startDate,
+        expireDate: expireDate,
+        notes: notes
+      };
+
+      if (window.ShopVietState) {
+        if (scheduleId) {
+          window.ShopVietState.updateSchedule(scheduleId, scheduleData);
+          notify(`Đã cập nhật lịch hẹn cho ${customerEmail}!`, 'success');
+        } else {
+          window.ShopVietState.addSchedule(scheduleData);
+          notify(`Đã thêm ${customerEmail} vào bảng tính Excel!`, 'success');
+        }
+
+        this.closeScheduleModal();
+        this.switchTab('schedules');
+
+        const tabBadge = document.getElementById('adminScheduleTabBadge');
+        if (tabBadge && window.ShopVietState.getSchedules) {
+          tabBadge.textContent = window.ShopVietState.getSchedules().length;
+        }
+      }
+    },
+
+    deleteSchedule: function (id) {
+      if (!confirm('Bạn có chắc chắn muốn xóa lịch hẹn này khỏi bảng Excel không?')) {
+        return;
+      }
+      if (window.ShopVietState && window.ShopVietState.deleteSchedule) {
+        const ok = window.ShopVietState.deleteSchedule(id);
+        if (ok) {
+          this.switchTab('schedules');
+          const tabBadge = document.getElementById('adminScheduleTabBadge');
+          if (tabBadge && window.ShopVietState.getSchedules) {
+            tabBadge.textContent = window.ShopVietState.getSchedules().length;
+          }
+          notify('Đã xóa lịch hẹn khỏi bảng Excel thành công!', 'info');
+        } else {
+          notify('Không tìm thấy lịch hẹn cần xóa!', 'error');
+        }
+      }
+    },
+
+    quickEditSchedule: function (id, field) {
+      const list = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
+      const item = list.find(s => s.id === id);
+      if (!item) return;
+
+      if (field === 'managerEmail') {
+        const newVal = prompt('Nhập Email Quản Lý / Slot mới:', item.managerEmail);
+        if (newVal !== null && newVal.trim()) {
+          window.ShopVietState.updateSchedule(id, { managerEmail: newVal.trim() });
+          this.switchTab('schedules');
+          notify('Đã cập nhật Email Quản Lý!', 'success');
+        }
+      } else if (field === 'expireDate') {
+        const newVal = prompt('Nhập Ngày Hết Hạn mới (YYYY-MM-DD):', item.expireDate);
+        if (newVal !== null && newVal.trim()) {
+          window.ShopVietState.updateSchedule(id, { expireDate: newVal.trim() });
+          this.switchTab('schedules');
+          notify('Đã cập nhật Ngày Hết Hạn!', 'success');
+        }
+      }
+    },
+
+    exportSchedulesToExcel: function () {
+      const schedules = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
+      if (!schedules || schedules.length === 0) {
+        notify('Danh sách khách hàng đang trống, không thể xuất file!', 'warning');
+        return;
+      }
+
+      const BOM = '\uFEFF';
+      let csv = BOM + 'STT,Mã Lịch,Email Khách Hàng,Tên Khách Hàng,Email Quản Lý (Slot),Gói Dịch Vụ,Ngày Bắt Đầu,Ngày Hết Hạn,Số Ngày Còn Lại,Trạng Thái Hạn Dùng,Ghi Chú\r\n';
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const escapeCsv = function (str) {
+        return `"${String(str || '').replace(/"/g, '""')}"`;
+      };
+
+      schedules.forEach(function (s, idx) {
+        const exp = new Date(s.expireDate);
+        exp.setHours(0, 0, 0, 0);
+        const diffMs = exp.getTime() - today.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const status = daysLeft > 7 ? `Còn ${daysLeft} ngày` : (daysLeft > 0 ? `Sắp hết (${daysLeft} ngày)` : 'Đã hết hạn');
+
+        const row = [
+          idx + 1,
+          escapeCsv(s.id),
+          escapeCsv(s.customerEmail),
+          escapeCsv(s.customerName),
+          escapeCsv(s.managerEmail),
+          escapeCsv(s.serviceName),
+          escapeCsv(s.startDate),
+          escapeCsv(s.expireDate),
+          daysLeft,
+          escapeCsv(status),
+          escapeCsv(s.notes)
+        ];
+        csv += row.join(',') + '\r\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'danh_sach_khach_hang_shopviet247.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      notify('Đã xuất danh sách khách hàng sang file Excel (CSV) thành công!', 'success');
+    },
+
+    filterSchedules: function (query) {
+      const q = (query || '').trim().toLowerCase();
+      const rows = document.querySelectorAll('#adminScheduleTableTbody tr');
+      let matchCount = 0;
+      rows.forEach(row => {
+        const customer = row.getAttribute('data-customer') || '';
+        const manager = row.getAttribute('data-manager') || '';
+        const service = row.getAttribute('data-service') || '';
+        const notes = row.getAttribute('data-notes') || '';
+        const text = row.innerText.toLowerCase();
+        if (!q || customer.includes(q) || manager.includes(q) || service.includes(q) || notes.includes(q) || text.includes(q)) {
+          row.style.display = '';
+          matchCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      const badge = document.getElementById('adminScheduleTableBadge');
+      if (badge) {
+        badge.textContent = `${matchCount} bản ghi`;
+      }
+    },
+
+    resetDefaultSchedules: function () {
+      if (window.ShopVietState && window.ShopVietState.saveSchedules) {
+        const DEFAULT_SCHEDULES = [
+          {
+            id: 'SCH-001',
+            customerEmail: 'cuongcuca111@gmail.com',
+            customerName: 'Minh Cường',
+            managerEmail: 'slot1-pro@shopviet.vip',
+            serviceName: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+            startDate: '2026-10-29',
+            expireDate: '2026-11-29',
+            notes: 'Khách VIP nâng cấp chính chủ'
+          },
+          {
+            id: 'SCH-002',
+            customerEmail: 'huy.dev99@gmail.com',
+            customerName: 'Nguyễn Huy',
+            managerEmail: 'slot2-cursor@shopviet.vip',
+            serviceName: 'Cursor Pro 1 Tháng Chính Chủ',
+            startDate: '2026-10-25',
+            expireDate: '2026-11-01',
+            notes: 'Sắp hết hạn cần nhắc gia hạn'
+          }
+        ];
+        window.ShopVietState.saveSchedules(DEFAULT_SCHEDULES);
+        this.switchTab('schedules');
+        const tabBadge = document.getElementById('adminScheduleTabBadge');
+        if (tabBadge) {
+          tabBadge.textContent = DEFAULT_SCHEDULES.length;
+        }
+        notify('Đã khôi phục danh sách hẹn lịch mẫu ban đầu!', 'success');
       }
     },
 

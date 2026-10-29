@@ -62,6 +62,31 @@
     }
   ];
 
+  // Cấu hình danh sách khách hẹn lịch & quản lý slot Excel
+  const SCHEDULES_KEY = 'shopviet_customer_schedules_db';
+  const DEFAULT_SCHEDULES = [
+    {
+      id: 'SCH-001',
+      customerEmail: 'cuongcuca111@gmail.com',
+      customerName: 'Minh Cường',
+      managerEmail: 'slot1-pro@shopviet.vip',
+      serviceName: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+      startDate: '2026-10-29',
+      expireDate: '2026-11-29',
+      notes: 'Khách VIP nâng cấp chính chủ'
+    },
+    {
+      id: 'SCH-002',
+      customerEmail: 'huy.dev99@gmail.com',
+      customerName: 'Nguyễn Huy',
+      managerEmail: 'slot2-cursor@shopviet.vip',
+      serviceName: 'Cursor Pro 1 Tháng Chính Chủ',
+      startDate: '2026-10-25',
+      expireDate: '2026-11-01',
+      notes: 'Sắp hết hạn cần nhắc gia hạn'
+    }
+  ];
+
   // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
   const initialState = {
     currentView: 'home',
@@ -915,6 +940,77 @@
       }
     },
 
+    // ==================== QUẢN LÝ HẸN LỊCH KHÁCH HÀNG & SLOT (EXCEL) ====================
+    // Lấy danh sách khách hẹn lịch từ localStorage (hoặc nạp mặc định nếu rỗng)
+    getSchedules: function () {
+      try {
+        const raw = localStorage.getItem(SCHEDULES_KEY);
+        let list = raw ? JSON.parse(raw) : null;
+        if (!Array.isArray(list) || list.length === 0) {
+          list = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+          localStorage.setItem(SCHEDULES_KEY, JSON.stringify(list));
+        }
+        return list;
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi đọc schedules:', e);
+        return JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+      }
+    },
+
+    // Lưu danh sách khách hẹn lịch vào localStorage
+    saveSchedules: function (schedules) {
+      try {
+        localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules || []));
+        this.notify('schedules_updated', schedules);
+        return true;
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi lưu schedules:', e);
+        return false;
+      }
+    },
+
+    // Thêm khách hẹn lịch mới
+    addSchedule: function (data) {
+      if (!data) return null;
+      const list = this.getSchedules();
+      const newId = 'SCH-' + (list.length + 1).toString().padStart(3, '0') + '-' + Date.now().toString(36).slice(-3).toUpperCase();
+      const newSchedule = {
+        id: data.id || newId,
+        customerEmail: (data.customerEmail || '').trim(),
+        customerName: (data.customerName || '').trim() || ((data.customerEmail || '').split('@')[0] || 'Minh Cường'),
+        managerEmail: (data.managerEmail || '').trim() || 'admin-slot@shopviet.vip',
+        serviceName: (data.serviceName || '').trim() || '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+        startDate: data.startDate || new Date().toISOString().split('T')[0],
+        expireDate: data.expireDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        notes: (data.notes || '').trim()
+      };
+      list.unshift(newSchedule);
+      this.saveSchedules(list);
+      return newSchedule;
+    },
+
+    // Cập nhật thông tin khách hẹn lịch
+    updateSchedule: function (id, fields) {
+      if (!id || !fields) return false;
+      const list = this.getSchedules();
+      const idx = list.findIndex(function (s) { return s.id === id; });
+      if (idx === -1) return false;
+      list[idx] = Object.assign({}, list[idx], fields);
+      this.saveSchedules(list);
+      return list[idx];
+    },
+
+    // Xóa khách hẹn lịch theo ID
+    deleteSchedule: function (id) {
+      if (!id) return false;
+      let list = this.getSchedules();
+      const initialLen = list.length;
+      list = list.filter(function (s) { return s.id !== id; });
+      if (list.length === initialLen) return false;
+      this.saveSchedules(list);
+      return true;
+    },
+
     // Điều hướng SPA Router
     navigate: function (viewName, params) {
       params = params || {};
@@ -1079,5 +1175,8 @@
       });
     }
   });
+
+  // Alias AppState toàn cục
+  window.AppState = window.ShopVietState;
 
 })();

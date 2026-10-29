@@ -96,6 +96,7 @@ window.ShopVietViews.modal = (function () {
       cursor: 'from-slate-950 via-indigo-950 to-indigo-900 border-indigo-800/40',
       gemini: 'from-slate-950 via-blue-950 to-blue-900 border-blue-800/40',
       chatgpt: 'from-slate-950 via-emerald-950 to-teal-900 border-emerald-800/40',
+      claude: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       api: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       canva: 'from-slate-950 via-cyan-950 to-sky-900 border-cyan-800/40',
       capcut: 'from-slate-950 via-pink-950 to-rose-900 border-pink-800/40',
@@ -147,8 +148,8 @@ window.ShopVietViews.modal = (function () {
             <!-- HEADER MODAL -->
             <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </span>
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                   Mua nhanh sản phẩm
@@ -222,14 +223,17 @@ window.ShopVietViews.modal = (function () {
                   <span class="w-2 h-2 rounded-full ${isOutOfStock ? 'bg-rose-500' : isLowStock ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}"></span>
                   Tồn kho • ${isOutOfStock ? 'Hết hàng tạm thời' : `Còn ${currentProduct.stock} slot`}
                 </span>
-                <span class="text-slate-400 dark:text-slate-500">
-                  🛡️ ${currentProduct.warranty || 'Bảo hành 1 đổi 1'}
+                <span class="text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                  <span>${currentProduct.warranty || 'Bảo hành 1 đổi 1'}</span>
                 </span>
               </div>
 
               <!-- HƯỚNG DẪN NHẬN HÀNG TỰ ĐỘNG -->
               <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
-                <span class="text-amber-500 shrink-0 mt-0.5 text-sm">⚡</span>
+                <span class="text-amber-500 shrink-0 mt-0.5">
+                  <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </span>
                 <p class="leading-relaxed">
                   Tài khoản hoặc Key kích hoạt sẽ được cấp <strong class="text-slate-700 dark:text-slate-300">ngay trên màn hình và gửi qua email</strong> trong vòng 30 giây sau khi quét mã VietQR thành công.
                 </p>
@@ -307,7 +311,7 @@ window.ShopVietViews.modal = (function () {
                     onclick="ShopVietViews.modal.handleAddToCart()" 
                     class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-sm font-semibold py-2.5 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
                       <path d="M3 6h18"/>
                       <path d="M16 10a4 4 0 0 1-8 0"/>
@@ -322,7 +326,7 @@ window.ShopVietViews.modal = (function () {
                     class="bg-slate-900 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-sm font-semibold py-2.5 px-4 rounded-xl hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
                   >
                     <span>Mua ngay</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                   </button>
@@ -417,12 +421,9 @@ window.ShopVietViews.modal = (function () {
       for (let i = 0; i < 4; i++) {
         suffix += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      const orderCode = `#DJ2026${suffix}`;
-
-      let memo = '';
-      for (let i = 0; i < 8; i++) {
-        memo += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+      const rawCode = `DJ2026${suffix}`; // Mã chuẩn đồng nhất: ví dụ DJ2026MERR
+      const orderCode = `#${rawCode}`;    // Hiển thị có dấu #: #DJ2026MERR
+      const memo = rawCode;               // Nội dung CK chính là rawCode: DJ2026MERR (ĐỒNG NHẤT 100%)
 
       // Nạp cấu hình VietQR động từ Portal Admin (Mặc định: Sacombank 100071864927 LE BUI MINH CUONG)
       const vietqrConfig = getActiveVietQRConfig();
@@ -432,6 +433,7 @@ window.ShopVietViews.modal = (function () {
       const order = {
         id: orderCode,
         orderCode: orderCode,
+        rawCode: rawCode,
         memo: memo,
         items: [{
           id: currentProduct.id,
@@ -686,13 +688,16 @@ window.ShopVietViews.modal = (function () {
                 </svg>
                 <span class="absolute -top-1 -right-1 flex h-4 w-4">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500 text-[9px] font-bold text-white items-center justify-center">⏳</span>
+                  <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500 p-0.5 text-white items-center justify-center">
+                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </span>
                 </span>
               </div>
 
               <div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-800 mb-2">
-                  ⏳ Đã ghi nhận thông tin chuyển khoản
+                  <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>Đã ghi nhận thông tin chuyển khoản</span>
                 </span>
                 <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Đơn Hàng Đang Chờ Phê Duyệt</h3>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
@@ -710,6 +715,10 @@ window.ShopVietViews.modal = (function () {
                   <span class="text-slate-500">Gói sản phẩm:</span>
                   <span class="font-bold text-slate-900 dark:text-white">${order.items[0] ? order.items[0].name : 'Công cụ AI Bản Quyền'}</span>
                 </div>
+                <div class="flex items-center justify-between text-xs pb-2 border-b border-amber-200/60 dark:border-slate-700">
+                  <span class="text-slate-500">Tồn kho còn lại:</span>
+                  <span class="font-bold text-amber-700 dark:text-amber-400 font-mono" id="waiting-product-stock">Đang cập nhật...</span>
+                </div>
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-slate-500">Số tiền:</span>
                   <span class="font-bold text-emerald-600 dark:text-emerald-400">${window.ShopVietState ? window.ShopVietState.formatCurrency(order.amount) : order.amount + 'đ'}</span>
@@ -723,7 +732,8 @@ window.ShopVietViews.modal = (function () {
                   onclick="ShopVietViews.modal.goToOrdersTab()" 
                   class="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Xem đơn hàng của tôi →</span>
+                  <span>Xem đơn hàng của tôi</span>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
                 <button 
                   type="button" 
@@ -738,14 +748,15 @@ window.ShopVietViews.modal = (function () {
             <!-- SUCCESS STATE MODAL CONTAINER (Ẩn ban đầu, hiện khi thành công) -->
             <div id="quickpay-success-container" class="hidden p-6 sm:p-8 text-center space-y-5 animate-slide-up">
               <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
 
               <div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800 mb-2">
-                  ✓ Giao dịch đã khớp lệnh tức thì
+                  <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Giao dịch đã khớp lệnh tức thì</span>
                 </span>
                 <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Thanh Toán & Kích Hoạt Thành Công!</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cảm ơn bạn đã tin tưởng dịch vụ tại Shopviet247</p>
@@ -955,7 +966,7 @@ window.ShopVietViews.modal = (function () {
 
         if (msgEl) {
           msgEl.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block';
-          msgEl.textContent = `✓ Đã áp dụng mã ${v.code}! Giảm ngay ${formattedDiscount}`;
+          msgEl.textContent = `Đã áp dụng mã ${v.code}! Giảm ngay ${formattedDiscount}`;
         }
 
         if (input) {
@@ -965,7 +976,7 @@ window.ShopVietViews.modal = (function () {
 
         // Hiển thị Toast thông báo thành công
         if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-          window.ShopVietState.showToast(`✓ Đã áp dụng mã ${v.code}! Giảm ngay ${formattedDiscount}`, 'success');
+          window.ShopVietState.showToast(`Đã áp dụng mã ${v.code}! Giảm ngay ${formattedDiscount}`, 'success');
         }
       } else {
         // Nếu mã không hợp lệ hoặc đã dùng
@@ -1019,11 +1030,51 @@ window.ShopVietViews.modal = (function () {
       clearPaymentTimer();
 
       const order = window.ShopVietState ? window.ShopVietState.currentOrder : null;
+      let updatedStock = null;
+
       if (order) {
         order.status = 'pending_review';
         order.submittedAt = new Date().toISOString();
         const userEmail = (window.ShopVietState.state && window.ShopVietState.state.user && window.ShopVietState.state.user.email) || 'Khách vãng lai';
         order.userEmail = userEmail;
+
+        // Tự động trừ số lượng còn hàng (stock) của sản phẩm
+        if (!order.stockDeducted && order.items && order.items.length > 0) {
+          order.stockDeducted = true;
+          const boughtItem = order.items[0];
+          const prodId = boughtItem.id;
+          const buyQty = boughtItem.quantity || 1;
+
+          if (window.ShopVietData && Array.isArray(window.ShopVietData.products)) {
+            const targetProd = window.ShopVietData.products.find(p => p.id === prodId);
+            if (targetProd) {
+              const currentStock = typeof targetProd.stock === 'number' ? targetProd.stock : parseInt(targetProd.stock, 10) || 111;
+              const newStock = Math.max(0, currentStock - buyQty);
+              targetProd.stock = newStock;
+              updatedStock = newStock;
+              if (newStock === 0) {
+                targetProd.status = 'out_of_stock';
+              } else if (newStock <= 5) {
+                targetProd.status = 'low_stock';
+              }
+              // Lưu vào localStorage
+              try {
+                localStorage.setItem('shopviet_custom_products', JSON.stringify(window.ShopVietData.products));
+              } catch (e) {}
+
+              // Đồng bộ cập nhật giao diện Trang chủ ngay lập tức
+              if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.render === 'function') {
+                const homeContainer = document.getElementById('view-home');
+                if (homeContainer && !homeContainer.classList.contains('hidden')) {
+                  homeContainer.innerHTML = window.ShopVietViews.home.render();
+                  if (window.ShopVietViews.home.afterRender) {
+                    window.ShopVietViews.home.afterRender();
+                  }
+                }
+              }
+            }
+          }
+        }
 
         if (window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) {
           const exists = window.ShopVietState.state.orders.some(function (o) { return o.orderCode === order.orderCode; });
@@ -1050,15 +1101,23 @@ window.ShopVietViews.modal = (function () {
       const mainContent = document.getElementById('quickpay-main-content');
       const waitingContainer = document.getElementById('quickpay-waiting-container');
       const waitingCodeEl = document.getElementById('waiting-order-code');
+      const waitingStockEl = document.getElementById('waiting-product-stock');
 
       if (waitingCodeEl && orderCode) {
         waitingCodeEl.textContent = orderCode;
+      }
+      if (waitingStockEl) {
+        if (updatedStock !== null) {
+          waitingStockEl.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Còn ${updatedStock} gói</span> <span class="text-[10px] text-slate-400 font-normal">(Đã tự động trừ kho)</span>`;
+        } else {
+          waitingStockEl.textContent = 'Đã ghi nhận trừ kho';
+        }
       }
       if (mainContent) mainContent.classList.add('hidden');
       if (waitingContainer) waitingContainer.classList.remove('hidden');
 
       if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast('Đã ghi nhận giao dịch! Đơn của bạn sẽ được duyệt sau ít phút.', 'success');
+        window.ShopVietState.showToast('Đã ghi nhận giao dịch & cập nhật tồn kho! Đơn của bạn sẽ được duyệt sau ít phút.', 'success');
       }
     },
 
@@ -1073,7 +1132,7 @@ window.ShopVietViews.modal = (function () {
     // Giả lập webhook tức thì
     simulateWebhook: function (orderCode) {
       if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast('⚡ Nhận tín hiệu Webhook tức thì từ Sacombank!', 'info');
+        window.ShopVietState.showToast('Nhận tín hiệu Webhook tức thì từ Sacombank!', 'info');
       }
       setTimeout(() => {
         this.finishPaymentSuccess(orderCode);
@@ -1088,6 +1147,40 @@ window.ShopVietViews.modal = (function () {
       if (order) {
         order.status = 'completed';
         order.paidAt = new Date().toISOString();
+
+        // Tự động trừ số lượng còn hàng (stock) nếu chưa trừ
+        if (!order.stockDeducted && order.items && order.items.length > 0) {
+          order.stockDeducted = true;
+          const boughtItem = order.items[0];
+          const prodId = boughtItem.id;
+          const buyQty = boughtItem.quantity || 1;
+          if (window.ShopVietData && Array.isArray(window.ShopVietData.products)) {
+            const targetProd = window.ShopVietData.products.find(p => p.id === prodId);
+            if (targetProd) {
+              const currentStock = typeof targetProd.stock === 'number' ? targetProd.stock : parseInt(targetProd.stock, 10) || 111;
+              const newStock = Math.max(0, currentStock - buyQty);
+              targetProd.stock = newStock;
+              if (newStock === 0) {
+                targetProd.status = 'out_of_stock';
+              } else if (newStock <= 5) {
+                targetProd.status = 'low_stock';
+              }
+              try {
+                localStorage.setItem('shopviet_custom_products', JSON.stringify(window.ShopVietData.products));
+              } catch (e) {}
+              if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.render === 'function') {
+                const homeContainer = document.getElementById('view-home');
+                if (homeContainer && !homeContainer.classList.contains('hidden')) {
+                  homeContainer.innerHTML = window.ShopVietViews.home.render();
+                  if (window.ShopVietViews.home.afterRender) {
+                    window.ShopVietViews.home.afterRender();
+                  }
+                }
+              }
+            }
+          }
+        }
+
         if (window.ShopVietState.orders) {
           window.ShopVietState.orders.unshift(order);
         }
