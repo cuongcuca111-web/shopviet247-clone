@@ -814,13 +814,23 @@
 
     // Cập nhật trạng thái active của Menu Header dạng viên thuốc chuẩn
     updateNavUI: function (viewName) {
-      const navButtons = document.querySelectorAll('.nav-btn');
+      if (typeof window.setActiveNav === 'function') {
+        if (viewName === 'home') {
+          window.setActiveNav('navHome');
+        } else if (viewName === 'blog') {
+          window.setActiveNav('navBlog');
+        } else {
+          window.setActiveNav(null);
+        }
+        return;
+      }
+      const navButtons = document.querySelectorAll('.nav-btn, .nav-pill-btn');
       navButtons.forEach(function (btn) {
         const btnView = btn.getAttribute('data-view');
         if (btnView === viewName && !btn.hasAttribute('data-scroll')) {
-          btn.className = 'nav-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-200 bg-slate-900 text-white shadow-xs dark:bg-white dark:text-slate-900';
+          btn.className = 'nav-btn nav-pill-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-300 ease-in-out cursor-pointer bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900';
         } else {
-          btn.className = 'nav-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60';
+          btn.className = 'nav-btn nav-pill-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-300 ease-in-out cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60';
         }
       });
     },

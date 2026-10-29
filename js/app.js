@@ -35,10 +35,47 @@ document.addEventListener('DOMContentLoaded', function () {
     if (event === 'user_login' || event === 'user_logout' || event === 'view_changed') {
       updateHeaderAuthUI();
     }
+    if (event === 'view_changed' && payload) {
+      if (payload.view === 'blog') {
+        setActiveNav('navBlog');
+      } else if (payload.view === 'home') {
+        if (payload.params && payload.params.scrollTo === '#productsSection') {
+          setActiveNav('navProducts');
+        } else {
+          setActiveNav('navHome');
+        }
+      } else {
+        setActiveNav(null);
+      }
+    }
   });
 
   console.log('[Shopviet247] Ứng dụng đã sẵn sàng hoạt động!');
 });
+
+/**
+ * Quản lý trạng thái Active Tab dạng Viên Thuốc Đen (Floating Pill)
+ * @param {string|null} activeId - 'navHome' | 'navProducts' | 'navBlog' | 'navSupport'
+ */
+function setActiveNav(activeId) {
+  const navIds = ['navHome', 'navProducts', 'navBlog', 'navSupport'];
+  const activeClasses = ['bg-slate-900', 'text-white', 'shadow-sm', 'dark:bg-white', 'dark:text-slate-900'];
+  const inactiveClasses = ['text-slate-600', 'dark:text-slate-300', 'hover:text-slate-900', 'dark:hover:text-white', 'hover:bg-slate-200/60', 'dark:hover:bg-slate-800/60'];
+
+  navIds.forEach(function (id) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+
+    if (id === activeId) {
+      inactiveClasses.forEach(function (cls) { btn.classList.remove(cls); });
+      activeClasses.forEach(function (cls) { btn.classList.add(cls); });
+    } else {
+      activeClasses.forEach(function (cls) { btn.classList.remove(cls); });
+      inactiveClasses.forEach(function (cls) { btn.classList.add(cls); });
+    }
+  });
+}
+window.setActiveNav = setActiveNav;
 
 /**
  * Thiết lập các sự kiện trên Header
@@ -59,6 +96,7 @@ function setupHeaderEvents() {
   if (brandLogoLink) {
     brandLogoLink.addEventListener('click', function (e) {
       e.preventDefault();
+      setActiveNav('navHome');
       window.ShopVietState.navigate('home');
     });
   }
@@ -67,6 +105,7 @@ function setupHeaderEvents() {
   if (navHome) {
     navHome.addEventListener('click', function (e) {
       e.preventDefault();
+      setActiveNav('navHome');
       window.ShopVietState.navigate('home');
     });
   }
@@ -75,6 +114,7 @@ function setupHeaderEvents() {
   if (navProducts) {
     navProducts.addEventListener('click', function (e) {
       e.preventDefault();
+      setActiveNav('navProducts');
       if (window.ShopVietState.state.currentView !== 'home') {
         window.ShopVietState.navigate('home', { scrollTo: '#productsSection' });
       } else {
@@ -88,7 +128,8 @@ function setupHeaderEvents() {
   if (navBlog) {
     navBlog.addEventListener('click', function (e) {
       e.preventDefault();
-      window.ShopVietState.showToast('Chuyên mục Tin tức & Thủ thuật AI đang được biên soạn!', 'info');
+      setActiveNav('navBlog');
+      window.ShopVietState.navigate('blog');
     });
   }
 
@@ -96,6 +137,7 @@ function setupHeaderEvents() {
   if (navSupport) {
     navSupport.addEventListener('click', function (e) {
       e.preventDefault();
+      setActiveNav('navSupport');
       window.open('https://zalo.me/0868668809', '_blank');
     });
   }

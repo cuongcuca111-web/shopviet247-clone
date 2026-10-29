@@ -393,6 +393,25 @@ window.ShopVietViews.modal = (function () {
     handleBuyNow: function () {
       if (!currentProduct) return;
 
+      const currentUser = window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user;
+      if (!currentUser || !currentUser.email) {
+        // Khách chưa đăng nhập!
+        if (currentProduct) {
+          localStorage.setItem('shopviet_pending_purchase', JSON.stringify({
+            productId: currentProduct.id,
+            qty: currentQty || 1
+          }));
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Vui lòng tạo tài khoản hoặc đăng nhập để tiếp tục thanh toán và nhận license key tự động!', 'warning');
+        }
+        this.close();
+        if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+          window.ShopVietState.navigate('auth');
+        }
+        return;
+      }
+
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       let suffix = '';
       for (let i = 0; i < 4; i++) {

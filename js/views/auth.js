@@ -255,6 +255,40 @@
      * Khởi tạo các sự kiện tương tác sau khi mount view
      */
     afterRender: function () {
+      // Xử lý điều hướng sau khi xác thực thành công (ưu tiên khôi phục đơn hàng mua ngay đang chờ)
+      function handlePostAuthRedirect() {
+        const pendingRaw = localStorage.getItem('shopviet_pending_purchase');
+        if (pendingRaw) {
+          try {
+            const pending = JSON.parse(pendingRaw);
+            localStorage.removeItem('shopviet_pending_purchase');
+            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+              window.ShopVietState.showToast('Đang chuyển tới bước thanh toán gói bản quyền bạn đã chọn...', 'success');
+            }
+            if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+              window.ShopVietState.navigate('home');
+            }
+            setTimeout(() => {
+              if (window.ShopVietViews && window.ShopVietViews.modal) {
+                window.ShopVietViews.modal.open(pending.productId);
+                // Tự động kích hoạt tiếp bước thanh toán
+                setTimeout(() => {
+                  if (window.ShopVietViews.modal && typeof window.ShopVietViews.modal.handleBuyNow === 'function') {
+                    window.ShopVietViews.modal.handleBuyNow();
+                  }
+                }, 350);
+              }
+            }, 400);
+            return;
+          } catch (err) {
+            console.error('Pending purchase restore error:', err);
+          }
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+          window.ShopVietState.navigate('dashboard');
+        }
+      }
+
       // 1. Nút Về trang chủ
       const backHomeBtn = document.getElementById('authBackHomeBtn');
       if (backHomeBtn) {
@@ -373,7 +407,7 @@
             }
 
             window.ShopVietState.showToast(`Đăng nhập Google Cloud Sync thành công! Chào mừng ${matched.name}`, 'success');
-            window.ShopVietState.navigate('dashboard');
+            handlePostAuthRedirect();
           } catch (err) {
             console.error('Google login error:', err);
             window.ShopVietState.showToast('Không thể hoàn tất đăng nhập Google lúc này!', 'error');
@@ -489,7 +523,7 @@
                 // Tự động đăng nhập và lưu session
                 window.ShopVietState.login(regRes.user);
                 window.ShopVietState.showToast('Đăng ký tài khoản thành công! Chào mừng ' + regRes.user.name, 'success');
-                window.ShopVietState.navigate('dashboard');
+                handlePostAuthRedirect();
               } else {
                 // XỬ LÝ ĐĂNG NHẬP TÀI KHOẢN THỰC TẾ
                 let authRes = window.ShopVietState && typeof window.ShopVietState.authenticateUser === 'function'
@@ -513,7 +547,7 @@
                 // Đăng nhập thành công
                 window.ShopVietState.login(authRes.user);
                 window.ShopVietState.showToast('Đăng nhập thành công! Chào mừng ' + authRes.user.name, 'success');
-                window.ShopVietState.navigate('dashboard');
+                handlePostAuthRedirect();
               }
             } catch (authErr) {
               console.error('Online Auth error:', authErr);
