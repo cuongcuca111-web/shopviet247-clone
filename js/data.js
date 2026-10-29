@@ -424,4 +424,17 @@
     }
   };
 
+  // Tự động khôi phục danh sách sản phẩm đã được Admin tùy chỉnh từ LocalStorage
+  try {
+    const savedCustomProds = localStorage.getItem('shopviet_admin_products');
+    if (savedCustomProds) {
+      const parsed = JSON.parse(savedCustomProds);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        window.ShopVietData.products = parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('[ShopVietData] Không thể phục hồi sản phẩm từ localStorage:', err);
+  }
+
 })();

@@ -612,7 +612,9 @@
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function () {
-          if (window.ShopVietState) {
+          if (window.ShopVietState && typeof window.ShopVietState.logout === 'function') {
+            window.ShopVietState.logout();
+          } else if (window.ShopVietState) {
             if (window.ShopVietState.state && window.ShopVietState.state.user) {
               window.ShopVietState.state.user.isLoggedIn = false;
             }

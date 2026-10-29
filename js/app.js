@@ -11,8 +11,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // 1. Nạp trạng thái từ LocalStorage & Khởi động Theme
   const state = window.ShopVietState.load();
 
-  // 2. Lắng nghe các nút trên Header
+  // 2. Lắng nghe các nút trên Header & Render trạng thái Auth Dynamic
   setupHeaderEvents();
+  updateHeaderAuthUI();
 
   // 3. Lắng nghe phím tắt toàn cục (Ctrl+K, Esc)
   setupKeyboardShortcuts();
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
   window.ShopVietState.subscribe(function (event, payload) {
     if (event === 'cart_updated') {
       window.ShopVietState.updateCartBadge();
+    }
+    if (event === 'user_login' || event === 'user_logout' || event === 'view_changed') {
+      updateHeaderAuthUI();
     }
   });
 
@@ -135,6 +139,26 @@ function setupHeaderEvents() {
       window.ShopVietState.navigate('dashboard');
     });
   }
+
+  // Click Cổng Quản Trị Bí Mật (Header & Footer)
+  const adminPortalHeaderBtn = document.getElementById('adminPortalHeaderBtn');
+  const adminPortalFooterBtn = document.getElementById('adminPortalFooterBtn');
+  if (adminPortalHeaderBtn) {
+    adminPortalHeaderBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (window.ShopVietViews && window.ShopVietViews.admin) {
+        window.ShopVietViews.admin.open();
+      }
+    });
+  }
+  if (adminPortalFooterBtn) {
+    adminPortalFooterBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (window.ShopVietViews && window.ShopVietViews.admin) {
+        window.ShopVietViews.admin.open();
+      }
+    });
+  }
 }
 
 /**
@@ -142,6 +166,15 @@ function setupHeaderEvents() {
  */
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', function (e) {
+    // Ctrl + Shift + A hoặc Cmd + Shift + A -> Mở Portal Admin Bí Mật
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      if (window.ShopVietViews && window.ShopVietViews.admin) {
+        window.ShopVietViews.admin.open();
+      }
+      return;
+    }
+
     // Ctrl + K hoặc Cmd + K -> Mở tìm kiếm
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
@@ -153,6 +186,10 @@ function setupKeyboardShortcuts() {
       const modalMount = document.getElementById('modalMount');
       if (modalMount && modalMount.innerHTML.trim() !== '') {
         modalMount.innerHTML = '';
+      }
+      const adminMount = document.getElementById('adminMount');
+      if (adminMount && adminMount.innerHTML.trim() !== '') {
+        adminMount.innerHTML = '';
       }
     }
   });
@@ -282,5 +319,233 @@ window.ShopVietApp = {
       window.ShopVietState.addToCart(productId, 1);
       window.ShopVietState.navigate('checkout');
     }
-  }
+  },
+  updateHeaderAuthUI: updateHeaderAuthUI
 };
+
+/**
+ * Cập nhật Header Dynamic Profile / Đăng nhập theo trạng thái thực tế của người dùng
+ */
+function updateHeaderAuthUI() {
+  const container = document.getElementById('headerAuthContainer');
+  if (!container) return;
+
+  const user = window.ShopVietState.state.user;
+  const isLoggedIn = user && user.isLoggedIn === true;
+
+  if (!isLoggedIn) {
+    // ==================== TRẠNG THÁI 1: CHƯA ĐĂNG NHẬP ====================
+    // Nút "Đăng nhập" nền đen bo góc tròn chuẩn SaaS
+    container.innerHTML = `
+      <button id="headerLoginBtn" type="button" class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-4 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+        </svg>
+        <span>Đăng nhập</span>
+      </button>
+    `;
+
+    const loginBtn = document.getElementById('headerLoginBtn');
+    if (loginBtn) {
+      loginBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.ShopVietState.navigate('login');
+      });
+    }
+  } else {
+    // ==================== TRẠNG THÁI 2: ĐÃ ĐĂNG NHẬP ====================
+    // Avatar tròn mang ký tự đầu (Chữ "C" nền xanh Indigo như Ảnh 1) + Tên người dùng + Nút Dashboard / Dropdown Menu
+    const displayName = user.name || 'Minh Cường';
+    const email = user.email || 'minhcuong.dev@gmail.com';
+    const avatarChar = (user.avatar && user.avatar.length <= 2) ? user.avatar : displayName.charAt(0).toUpperCase();
+    const balance = user.balance || 0;
+
+    container.innerHTML = `
+      <div class="relative flex items-center gap-2">
+        <!-- Nút User Profile Badge (Click mở Dropdown) -->
+        <button id="headerUserMenuBtn" type="button" class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group shadow-2xs">
+          <!-- Avatar tròn chữ cái đầu (VD: C hoặc VH) -->
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+            ${avatarChar}
+          </div>
+          <!-- Tên người dùng -->
+          <span class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[90px] sm:max-w-[130px] truncate select-none">
+            ${displayName}
+          </span>
+          <!-- Mũi tên Dropdown -->
+          <svg id="userMenuChevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+
+        <!-- Nút Dashboard nhanh tiện lợi -->
+        <button id="headerDashboardQuickBtn" type="button" title="Mở trang Quản lý cá nhân & Đơn hàng" class="hidden sm:flex bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-3 py-1.5 items-center gap-1.5 text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <rect width="7" height="9" x="3" y="3" rx="1" />
+            <rect width="7" height="5" x="14" y="3" rx="1" />
+            <rect width="7" height="9" x="14" y="12" rx="1" />
+            <rect width="7" height="5" x="3" y="16" rx="1" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <!-- Dropdown Menu Tài Khoản Thông Minh -->
+        <div id="headerUserDropdown" class="hidden absolute right-0 top-full mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 animate-slide-up">
+          
+          <!-- Thông tin User tóm tắt -->
+          <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800/80">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Firebase Cloud Synced</span>
+            </div>
+            <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${displayName}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${email}</p>
+            <div class="mt-2 flex items-center justify-between text-[11px] bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+              <span class="text-slate-500 dark:text-slate-400">Số dư ví:</span>
+              <span class="font-bold text-indigo-600 dark:text-indigo-400">${window.ShopVietState.formatCurrency(balance)}</span>
+            </div>
+          </div>
+
+          <!-- Các chức năng Menu -->
+          <div class="py-1 text-xs">
+            <button id="dropdownProfileBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
+              <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Trang cá nhân</span>
+            </button>
+
+            <button id="dropdownOrdersBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
+              <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                <path d="M3 6h18"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+              <span>Đơn hàng của tôi</span>
+            </button>
+
+            <button id="dropdownDepositBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <rect width="20" height="14" x="2" y="5" rx="2"/>
+                <line x1="2" x2="22" y1="10" y2="10"/>
+              </svg>
+              <div class="flex items-center justify-between flex-1">
+                <span>Nạp tiền ví</span>
+                <span class="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">+10%</span>
+              </div>
+            </button>
+
+            <button id="dropdownAdminBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Portal Admin</span>
+            </button>
+          </div>
+
+          <!-- Đăng xuất -->
+          <div class="pt-1 border-t border-slate-100 dark:border-slate-800/80">
+            <button id="dropdownLogoutBtn" type="button" class="w-full px-4 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 font-medium transition-colors cursor-pointer">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" x2="9" y1="12" y2="12"/>
+              </svg>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    // Gắn sự kiện các nút
+    const userMenuBtn = document.getElementById('headerUserMenuBtn');
+    const userDropdown = document.getElementById('headerUserDropdown');
+    const chevron = document.getElementById('userMenuChevron');
+    const quickDashboardBtn = document.getElementById('headerDashboardQuickBtn');
+
+    if (userMenuBtn && userDropdown) {
+      userMenuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isHidden = userDropdown.classList.contains('hidden');
+        if (isHidden) {
+          userDropdown.classList.remove('hidden');
+          if (chevron) chevron.style.transform = 'rotate(180deg)';
+        } else {
+          userDropdown.classList.add('hidden');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+
+    if (quickDashboardBtn) {
+      quickDashboardBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.ShopVietState.navigate('dashboard');
+      });
+    }
+
+    // Các mục bên trong Dropdown
+    const profileBtn = document.getElementById('dropdownProfileBtn');
+    const ordersBtn = document.getElementById('dropdownOrdersBtn');
+    const depositBtn = document.getElementById('dropdownDepositBtn');
+    const adminBtn = document.getElementById('dropdownAdminBtn');
+    const logoutBtn = document.getElementById('dropdownLogoutBtn');
+
+    if (profileBtn) {
+      profileBtn.addEventListener('click', function () {
+        if (userDropdown) userDropdown.classList.add('hidden');
+        window.ShopVietState.navigate('dashboard', { tab: 'profile' });
+      });
+    }
+
+    if (ordersBtn) {
+      ordersBtn.addEventListener('click', function () {
+        if (userDropdown) userDropdown.classList.add('hidden');
+        window.ShopVietState.navigate('dashboard', { tab: 'orders' });
+      });
+    }
+
+    if (depositBtn) {
+      depositBtn.addEventListener('click', function () {
+        if (userDropdown) userDropdown.classList.add('hidden');
+        window.ShopVietState.navigate('dashboard', { tab: 'wallet' });
+      });
+    }
+
+    if (adminBtn) {
+      adminBtn.addEventListener('click', function () {
+        if (userDropdown) userDropdown.classList.add('hidden');
+        if (window.ShopVietViews && window.ShopVietViews.admin) {
+          window.ShopVietState.navigate('admin');
+        } else {
+          window.ShopVietState.navigate('dashboard', { tab: 'overview' });
+        }
+      });
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function () {
+        if (userDropdown) userDropdown.classList.add('hidden');
+        window.ShopVietState.logout();
+      });
+    }
+
+    // Lắng nghe click ngoài document để đóng dropdown
+    document.addEventListener('click', function (e) {
+      if (userDropdown && !userDropdown.classList.contains('hidden')) {
+        if (!container.contains(e.target)) {
+          userDropdown.classList.add('hidden');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      }
+    });
+  }
+
+  // Tái tạo icon nếu có
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
+}

@@ -13,12 +13,12 @@
     currentView: 'home',
     cart: [],
     user: {
-      name: 'Văn Huy',
-      email: 'huy.nguyen@example.com',
+      name: 'Minh Cường',
+      email: 'minhcuong.dev@gmail.com',
       balance: 250000,
-      isLoggedIn: true,
+      isLoggedIn: false,
       phone: '0987654321',
-      avatar: 'VH'
+      avatar: 'C'
     },
     currentOrder: null,
     orders: [],
@@ -52,6 +52,47 @@
         }
       });
       this.updateCartBadge();
+      if (window.ShopVietApp && typeof window.ShopVietApp.updateHeaderAuthUI === 'function') {
+        window.ShopVietApp.updateHeaderAuthUI();
+      }
+    },
+
+    // Đăng nhập người dùng (hỗ trợ Firebase/Firestore Cloud Sync)
+    login: function (userData) {
+      userData = userData || {};
+      const name = userData.name || (this.state.user ? this.state.user.name : 'Minh Cường') || 'Minh Cường';
+      const email = userData.email || (this.state.user ? this.state.user.email : 'minhcuong.dev@gmail.com');
+      const avatar = userData.avatar || (name ? name.charAt(0).toUpperCase() : 'C');
+
+      this.state.user = Object.assign({}, this.state.user || {}, userData, {
+        isLoggedIn: true,
+        name: name,
+        email: email,
+        avatar: avatar
+      });
+
+      this.save();
+      this.notify('user_login', this.state.user);
+      if (window.ShopVietApp && typeof window.ShopVietApp.updateHeaderAuthUI === 'function') {
+        window.ShopVietApp.updateHeaderAuthUI();
+      }
+    },
+
+    // Đăng xuất an toàn khỏi hệ thống
+    logout: function () {
+      if (this.state.user) {
+        this.state.user.isLoggedIn = false;
+      }
+      if (window.ShopVietFirebase && typeof window.ShopVietFirebase.logout === 'function') {
+        window.ShopVietFirebase.logout();
+      }
+      this.save();
+      this.notify('user_logout', this.state.user);
+      if (window.ShopVietApp && typeof window.ShopVietApp.updateHeaderAuthUI === 'function') {
+        window.ShopVietApp.updateHeaderAuthUI();
+      }
+      this.showToast('Bạn đã đăng xuất tài khoản an toàn!', 'info');
+      this.navigate('home');
     },
 
     // Lưu trữ xuống localStorage

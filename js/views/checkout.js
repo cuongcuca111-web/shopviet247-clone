@@ -1,9 +1,11 @@
 /**
  * Shopviet247 - Checkout & VietQR Payment Views
  * Tệp: js/views/checkout.js
- * Bao gồm:
- * 1. window.ShopVietViews.checkout - Màn hình Kiểm tra đơn hàng & Tạo đơn hàng (Bước 1)
- * 2. window.ShopVietViews.pay - Màn hình Quét mã VietQR Live & Bàn giao tài khoản (Bước 2)
+ * Cập nhật: Chuẩn Sacombank VietQR Napas 24/7 (Ảnh 4)
+ * - Ngân hàng: Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)
+ * - Số tài khoản: 100071864927
+ * - Chủ tài khoản: LE BUI MINH CUONG
+ * - Mã BIN Napas: 970403
  */
 
 (function () {
@@ -23,6 +25,16 @@
     }
   };
 
+  // Thông tin cấu hình thanh toán Sacombank chuẩn
+  const SACOMBANK_CONFIG = {
+    bankName: 'Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)',
+    shortName: 'Sacombank',
+    accountNumber: '100071864927',
+    accountName: 'LE BUI MINH CUONG',
+    bin: '970403',
+    brandColor: '#004b91'
+  };
+
   // Biến lưu trữ Timer toàn cục để dọn dẹp sạch sẽ
   window.__shopvietPayTimer = null;
 
@@ -31,7 +43,7 @@
     id: 'sp-chatgpt-plus',
     name: 'Tài khoản ChatGPT Plus 1 Tháng (Mail Riêng)',
     category: 'Trí tuệ nhân tạo (AI)',
-    variant: 'Mặc định',
+    variant: 'Gói Plus 1 Tháng',
     stock: 'Còn hàng',
     price: 45000,
     originalPrice: 79000,
@@ -193,20 +205,20 @@
     showToast(`Đã sao chép: ${text}`, 'success');
   }
 
-  // SVG Fallback QR Generator
+  // SVG Fallback QR Generator chuẩn Sacombank
   function getFallbackQrSvg(text) {
     return `
       <svg class="w-full h-full max-w-[260px] mx-auto text-slate-800" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="200" height="200" rx="12" fill="white"/>
         <!-- Finder top-left -->
-        <rect x="20" y="20" width="45" height="45" rx="6" stroke="#0f172a" stroke-width="8"/>
-        <rect x="33" y="33" width="19" height="19" rx="3" fill="#0f172a"/>
+        <rect x="20" y="20" width="45" height="45" rx="6" stroke="#004b91" stroke-width="8"/>
+        <rect x="33" y="33" width="19" height="19" rx="3" fill="#004b91"/>
         <!-- Finder top-right -->
-        <rect x="135" y="20" width="45" height="45" rx="6" stroke="#0f172a" stroke-width="8"/>
-        <rect x="148" y="33" width="19" height="19" rx="3" fill="#0f172a"/>
+        <rect x="135" y="20" width="45" height="45" rx="6" stroke="#004b91" stroke-width="8"/>
+        <rect x="148" y="33" width="19" height="19" rx="3" fill="#004b91"/>
         <!-- Finder bottom-left -->
-        <rect x="20" y="135" width="45" height="45" rx="6" stroke="#0f172a" stroke-width="8"/>
-        <rect x="33" y="148" width="19" height="19" rx="3" fill="#0f172a"/>
+        <rect x="20" y="135" width="45" height="45" rx="6" stroke="#004b91" stroke-width="8"/>
+        <rect x="33" y="148" width="19" height="19" rx="3" fill="#004b91"/>
         <!-- Random QR Pattern Matrix Blocks -->
         <rect x="75" y="25" width="10" height="10" fill="#0f172a"/>
         <rect x="95" y="25" width="10" height="10" fill="#0f172a"/>
@@ -220,7 +232,7 @@
         <rect x="155" y="75" width="20" height="10" fill="#0f172a"/>
         <rect x="25" y="95" width="30" height="10" fill="#0f172a"/>
         <rect x="65" y="95" width="10" height="30" fill="#0f172a"/>
-        <rect x="85" y="95" width="30" height="30" rx="4" fill="#0f172a"/>
+        <rect x="85" y="95" width="30" height="30" rx="4" fill="#004b91"/>
         <rect x="125" y="95" width="20" height="10" fill="#0f172a"/>
         <rect x="155" y="95" width="10" height="20" fill="#0f172a"/>
         <rect x="175" y="95" width="10" height="30" fill="#0f172a"/>
@@ -237,9 +249,9 @@
         <rect x="125" y="155" width="10" height="20" fill="#0f172a"/>
         <rect x="145" y="155" width="10" height="10" fill="#0f172a"/>
         <rect x="165" y="165" width="15" height="10" fill="#0f172a"/>
-        <!-- VietQR / MB Logo badge in center -->
-        <rect x="80" y="80" width="40" height="40" rx="8" fill="#1e3a8a"/>
-        <text x="100" y="104" font-family="system-ui, sans-serif" font-size="12" font-weight="900" fill="white" text-anchor="middle">MB</text>
+        <!-- VietQR / Sacombank Logo badge in center -->
+        <rect x="68" y="82" width="64" height="36" rx="8" fill="#004b91"/>
+        <text x="100" y="104" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">SACOMBANK</text>
       </svg>
     `;
   }
@@ -288,6 +300,9 @@
         // Cập nhật các trường số liệu
         const totalItemsEl = document.getElementById('checkout-total-items');
         if (totalItemsEl) totalItemsEl.textContent = totalItems;
+
+        const totalItemsSidebar = document.getElementById('checkout-total-items-sidebar');
+        if (totalItemsSidebar) totalItemsSidebar.textContent = totalItems;
 
         const subtotalEl = document.getElementById('checkout-subtotal');
         if (subtotalEl) subtotalEl.textContent = `${formatMoney(subtotal)}đ`;
@@ -445,7 +460,7 @@
                 <!-- Bước 2: Chờ -->
                 <div class="flex items-center gap-2 opacity-60">
                   <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-semibold">2</span>
-                  <span class="text-sm font-medium text-slate-600">Quét mã VietQR</span>
+                  <span class="text-sm font-medium text-slate-600">Quét mã VietQR Sacombank</span>
                 </div>
               </div>
             </div>
@@ -521,7 +536,7 @@
                 <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-5">
                   <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h3 class="text-lg font-bold text-slate-900">Tạo đơn hàng</h3>
-                    <span class="text-xs text-slate-400 font-mono">BẢO MẬT SSL 256-BIT</span>
+                    <span class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">NAPAS 24/7 LIVE</span>
                   </div>
 
                   <!-- Bảng kê chi tiết giá -->
@@ -539,12 +554,12 @@
                       <span id="checkout-voucher-amount" class="font-bold">-${formatMoney(discount)}đ</span>
                     </div>
                     <div class="flex justify-between text-slate-600">
-                      <span>Khuyến mãi:</span>
+                      <span>Khuyến mãi hệ thống:</span>
                       <span class="font-medium text-slate-700">0đ</span>
                     </div>
                     <div class="flex justify-between text-slate-600">
-                      <span>Giá sỉ:</span>
-                      <span class="font-medium text-slate-700">0đ</span>
+                      <span>Phí giao dịch:</span>
+                      <span class="font-medium text-emerald-600">Miễn phí 0đ</span>
                     </div>
 
                     <div class="border-t border-slate-200/80 pt-3 mt-2 flex justify-between items-baseline">
@@ -553,7 +568,7 @@
                     </div>
                   </div>
 
-                  <!-- KHU VỰC PHƯƠNG THỨC THANH TOÁN -->
+                  <!-- KHU VỰC PHƯƠNG THỨC THANH TOÁN SACOMBANK CHUẨN ẢNH 4 -->
                   <div class="pt-3 border-t border-slate-100 space-y-3">
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Phương thức thanh toán</h4>
                     
@@ -569,21 +584,22 @@
                       </label>
                     </div>
 
-                    <!-- Hộp chọn ngân hàng MB BANK (Active) -->
-                    <div class="border-2 border-slate-900 bg-slate-50/70 p-3.5 rounded-xl flex items-center justify-between shadow-sm cursor-pointer">
+                    <!-- Hộp chọn ngân hàng SACOMBANK (Active chuẩn Ảnh 4) -->
+                    <div class="border-2 border-[#004b91] bg-sky-50/60 p-3.5 rounded-xl flex items-center justify-between shadow-xs cursor-pointer relative overflow-hidden group">
                       <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-900 text-white flex items-center justify-center font-black text-sm tracking-tighter shadow-sm">
-                          MB
+                        <div class="w-11 h-11 rounded-xl bg-[#004b91] text-white flex flex-col items-center justify-center font-black text-xs tracking-tighter shadow-sm flex-shrink-0">
+                          <span class="leading-none text-[11px]">SCB</span>
+                          <span class="text-[8px] opacity-80 font-normal">VIETQR</span>
                         </div>
                         <div>
                           <div class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                            MB BANK
+                            Sacombank
                             <span class="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">VietQR 24/7</span>
                           </div>
-                          <div class="text-xs text-slate-500">Ngân hàng Quân Đội • Tự động duyệt đơn 30s</div>
+                          <div class="text-xs text-slate-600 mt-0.5">STK: <strong class="font-mono text-slate-800">100071864927</strong> • LE BUI MINH CUONG</div>
                         </div>
                       </div>
-                      <div class="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">
+                      <div class="w-5 h-5 rounded-full bg-[#004b91] text-white flex items-center justify-center text-xs flex-shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </div>
                     </div>
@@ -591,8 +607,8 @@
 
                   <!-- Nút bấm chính "Đặt hàng và thanh toán" -->
                   <button type="button" id="btn-proceed-checkout" 
-                          class="w-full bg-slate-900 text-white text-base font-bold py-3.5 rounded-xl hover:bg-slate-800 active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 group">
-                    <span>Đặt hàng và thanh toán</span>
+                          class="w-full bg-[#004b91] hover:bg-[#003d75] text-white text-base font-bold py-3.5 rounded-xl active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 group">
+                    <span>Đặt hàng và chuyển khoản Sacombank</span>
                     <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                     </svg>
@@ -600,7 +616,7 @@
 
                   <div class="text-[11px] text-center text-slate-400 flex items-center justify-center gap-1.5 pt-1">
                     <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    Bàn giao tài khoản tự động ngay sau khi quét mã
+                    Quét mã VietQR nhận tài khoản tức thì sau 30 giây
                   </div>
 
                 </div>
@@ -686,45 +702,46 @@
       const proceedBtn = container.querySelector('#btn-proceed-checkout');
       if (proceedBtn) {
         proceedBtn.onclick = () => {
-        const cart = window.ShopVietState.cart || [];
-        if (cart.length === 0) {
-          showToast('Giỏ hàng trống! Vui lòng chọn sản phẩm.', 'error');
-          return;
-        }
+          const cart = window.ShopVietState.cart || [];
+          if (cart.length === 0) {
+            showToast('Giỏ hàng trống! Vui lòng chọn sản phẩm.', 'error');
+            return;
+          }
 
-        const { finalTotal, subtotal, discount, totalItems } = calculateTotals();
-        const orderId = generateOrderCode();
-        const memo = generateTransferMemo();
-        const orderDate = new Date();
+          const { finalTotal, subtotal, discount, totalItems } = calculateTotals();
+          const orderId = generateOrderCode();
+          const memo = generateTransferMemo();
+          const orderDate = new Date();
 
-        const newOrder = {
-          id: orderId,
-          orderCode: orderId,
-          memo: memo,
-          items: JSON.parse(JSON.stringify(cart)),
-          totalItems: totalItems,
-          subtotal: subtotal,
-          discount: discount,
-          amount: finalTotal,
-          voucher: appliedVoucher ? appliedVoucher.code : null,
-          paymentMethod: 'MB BANK (VietQR)',
-          accountNumber: '00223366888',
-          accountName: 'NGUYEN VAN HUY',
-          bankName: 'MB Bank (Ngân hàng Quân Đội)',
-          createdAt: orderDate.toISOString(),
-          createdAtFormatted: `${orderDate.getHours().toString().padStart(2, '0')}:${orderDate.getMinutes().toString().padStart(2, '0')} ${orderDate.getDate().toString().padStart(2, '0')}/${(orderDate.getMonth() + 1).toString().padStart(2, '0')}/${orderDate.getFullYear()}`,
-          status: 'pending',
-          expiresInSeconds: 600
+          const newOrder = {
+            id: orderId,
+            orderCode: orderId,
+            memo: memo,
+            items: JSON.parse(JSON.stringify(cart)),
+            totalItems: totalItems,
+            subtotal: subtotal,
+            discount: discount,
+            amount: finalTotal,
+            voucher: appliedVoucher ? appliedVoucher.code : null,
+            paymentMethod: 'Sacombank (VietQR 24/7)',
+            bankName: SACOMBANK_CONFIG.bankName,
+            accountNumber: SACOMBANK_CONFIG.accountNumber,
+            accountName: SACOMBANK_CONFIG.accountName,
+            bin: SACOMBANK_CONFIG.bin,
+            createdAt: orderDate.toISOString(),
+            createdAtFormatted: `${orderDate.getHours().toString().padStart(2, '0')}:${orderDate.getMinutes().toString().padStart(2, '0')} ${orderDate.getDate().toString().padStart(2, '0')}/${(orderDate.getMonth() + 1).toString().padStart(2, '0')}/${orderDate.getFullYear()}`,
+            status: 'pending',
+            expiresInSeconds: 600
+          };
+
+          window.ShopVietState.currentOrder = newOrder;
+          showToast(`Đã tạo đơn hàng ${orderId}! Đang chuyển sang màn hình quét mã VietQR Sacombank...`, 'success');
+
+          // Chuyển sang màn hình 2: Quét mã VietQR Sacombank
+          setTimeout(() => {
+            navigate('pay', { order: newOrder });
+          }, 300);
         };
-
-        window.ShopVietState.currentOrder = newOrder;
-        showToast(`Đã tạo đơn hàng ${orderId}! Đang chuyển sang thanh toán...`, 'success');
-
-        // Chuyển sang màn hình 2: Quét mã VietQR
-        setTimeout(() => {
-          navigate('pay', { order: newOrder });
-        }, 350);
-      };
       }
 
       return html;
@@ -732,7 +749,7 @@
   };
 
   // =========================================================================
-  // VIEW 2: PAY (QUÉT MÃ VIETQR LIVE & XÁC NHẬN THANH TOÁN)
+  // VIEW 2: PAY (QUÉT MÃ VIETQR SACOMBANK CHUẨN ẢNH 4 & XÁC NHẬN)
   // =========================================================================
   window.ShopVietViews.pay = {
     render: function (targetOrParams, maybeParams) {
@@ -766,10 +783,11 @@
           subtotal: 45000,
           discount: 0,
           amount: 45000,
-          paymentMethod: 'MB BANK (VietQR)',
-          accountNumber: '00223366888',
-          accountName: 'NGUYEN VAN HUY',
-          bankName: 'MB Bank (Ngân hàng Quân Đội)',
+          paymentMethod: 'Sacombank (VietQR 24/7)',
+          bankName: SACOMBANK_CONFIG.bankName,
+          accountNumber: SACOMBANK_CONFIG.accountNumber,
+          accountName: SACOMBANK_CONFIG.accountName,
+          bin: SACOMBANK_CONFIG.bin,
           createdAt: orderDate.toISOString(),
           createdAtFormatted: `${orderDate.getHours().toString().padStart(2, '0')}:${orderDate.getMinutes().toString().padStart(2, '0')} ${orderDate.getDate().toString().padStart(2, '0')}/${(orderDate.getMonth() + 1).toString().padStart(2, '0')}/${orderDate.getFullYear()}`,
           status: 'pending',
@@ -778,283 +796,357 @@
         window.ShopVietState.currentOrder = order;
       }
 
-      const vietQrUrl = `https://api.vietqr.io/image/970422-00223366888-qrxY91.jpg?amount=${order.amount}&addInfo=${encodeURIComponent(order.memo)}&accountName=${encodeURIComponent(order.accountName || 'NGUYEN VAN HUY')}`;
+      // Cập nhật thông tin ngân hàng nếu đơn cũ chưa có
+      if (!order.accountNumber || order.accountNumber !== SACOMBANK_CONFIG.accountNumber) {
+        order.accountNumber = SACOMBANK_CONFIG.accountNumber;
+        order.accountName = SACOMBANK_CONFIG.accountName;
+        order.bankName = SACOMBANK_CONFIG.bankName;
+        order.bin = SACOMBANK_CONFIG.bin;
+      }
+
+      // URL VietQR Napas với Sacombank BIN 970403, STK 100071864927
+      const vietQrUrl = `https://api.vietqr.io/image/${SACOMBANK_CONFIG.bin}-${SACOMBANK_CONFIG.accountNumber}-compact2.jpg?amount=${order.amount}&addInfo=${encodeURIComponent(order.memo)}&accountName=${encodeURIComponent(order.accountName)}`;
 
       const html = `
-        <div class="pay-view-wrapper min-h-screen bg-slate-50/60 py-8 px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
-          <div class="max-w-5xl mx-auto space-y-8">
+        <div class="pay-view-wrapper min-h-screen bg-slate-50/70 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
+          <div class="max-w-6xl mx-auto space-y-6">
 
-            <!-- THANH TIẾN TRÌNH (STEPPER) 3 BƯỚC -->
-            <div class="stepper-container flex items-center justify-center max-w-2xl mx-auto px-4">
-              <div class="flex items-center gap-2 sm:gap-4 w-full justify-between sm:justify-center">
-                <!-- Bước 1: Giỏ hàng (Đã tick V xanh lá) -->
-                <div class="flex items-center gap-2">
-                  <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  </span>
-                  <span class="text-xs sm:text-sm font-medium text-slate-600 hidden xs:inline">1. Giỏ hàng</span>
+            <!-- HEADER BỐ CỤC ẢNH 4: "Thanh toán Plus", Nút Đổi gói, Đếm ngược thời gian, Mã đơn -->
+            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-[#004b91] text-white flex items-center justify-center shadow-md shadow-blue-900/20 flex-shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                  </svg>
                 </div>
-
-                <div class="flex-1 max-w-[40px] sm:max-w-[70px] h-0.5 bg-emerald-500"></div>
-
-                <!-- Bước 2: Đặt hàng (Đã tick V xanh lá) -->
-                <div class="flex items-center gap-2">
-                  <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  </span>
-                  <span class="text-xs sm:text-sm font-medium text-slate-600 hidden xs:inline">2. Đặt hàng</span>
-                </div>
-
-                <div class="flex-1 max-w-[40px] sm:max-w-[70px] h-0.5 bg-slate-300"></div>
-
-                <!-- Bước 3: Thanh toán VietQR (Đang active) -->
-                <div class="flex items-center gap-2">
-                  <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-md ring-4 ring-slate-900/10">
-                    3
-                  </span>
-                  <span class="text-xs sm:text-sm font-bold text-slate-900">3. Thanh toán VietQR</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- CARD CHÍNH: QUÉT MÃ ĐỂ THANH TOÁN -->
-            <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-md">
-              
-              <!-- THANH CÔNG CỤ GÓC TRÊN -->
-              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
                 <div>
-                  <div class="flex items-center gap-3">
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-900">Quét mã để thanh toán</h2>
-                    <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                  <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Thanh toán Plus</h1>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#004b91] border border-blue-200">
+                      Sacombank VietQR
+                    </span>
+                    <span class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                       ${order.orderCode}
                     </span>
                   </div>
-                  <p class="text-xs text-slate-500 mt-1">Đơn hàng được khởi tạo lúc ${order.createdAtFormatted || 'vừa xong'}</p>
-                </div>
-
-                <!-- 3 nút hành động -->
-                <div class="flex items-center flex-wrap gap-2 w-full sm:w-auto">
-                  <!-- Nút làm mới trạng thái -->
-                  <button type="button" id="btn-refresh-status" 
-                          class="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5" title="Kiểm tra tiền về">
-                    <svg id="icon-refresh-spin" class="w-3.5 h-3.5 text-slate-600 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    <span>Làm mới</span>
-                  </button>
-
-                  <!-- Nút đổi phương thức -->
-                  <button type="button" id="btn-change-method" 
-                          class="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5" title="Quay lại chọn phương thức khác">
-                    <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                    </svg>
-                    <span>Đổi phương thức</span>
-                  </button>
-
-                  <!-- Nút hủy đơn (viền đỏ) -->
-                  <button type="button" id="btn-cancel-order" 
-                          class="px-3 py-2 text-xs font-medium text-rose-600 hover:text-white border border-rose-200 hover:bg-rose-600 rounded-xl transition flex items-center gap-1.5" title="Hủy đơn hàng này">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    <span>Hủy đơn</span>
-                  </button>
+                  <p class="text-xs text-slate-500 mt-1">Đơn hàng được khởi tạo lúc ${order.createdAtFormatted || 'vừa xong'} • Tự động kích hoạt sau thanh toán</p>
                 </div>
               </div>
 
-              <!-- BỐ CỤC 2 CỘT BÊN TRONG -->
-              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
-
-                <!-- CỘT TRÁI (7 COLS): KHUNG MÃ QR VÀ BẢNG THÔNG TIN CHUYỂN KHOẢN -->
-                <div class="lg:col-span-7 space-y-6">
-                  
-                  <!-- Khung chứa mã QR lớn -->
-                  <div class="flex flex-col items-center justify-center p-6 bg-slate-50/70 border border-slate-200/80 rounded-2xl relative overflow-hidden group">
-                    <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                      Mã VietQR Tự Động Khớp Lệnh MB Bank
-                    </div>
-
-                    <!-- Khung ảnh QR có góc ngắm Viewfinder -->
-                    <div class="relative p-3 bg-white rounded-2xl shadow-sm border border-slate-200 max-w-[280px] w-full">
-                      <!-- 4 góc ngắm trang trí -->
-                      <div class="absolute top-1 left-1 w-4 h-4 border-t-2 border-l-2 border-slate-900 rounded-tl-sm pointer-events-none"></div>
-                      <div class="absolute top-1 right-1 w-4 h-4 border-t-2 border-r-2 border-slate-900 rounded-tr-sm pointer-events-none"></div>
-                      <div class="absolute bottom-1 left-1 w-4 h-4 border-b-2 border-l-2 border-slate-900 rounded-bl-sm pointer-events-none"></div>
-                      <div class="absolute bottom-1 right-1 w-4 h-4 border-b-2 border-r-2 border-slate-900 rounded-br-sm pointer-events-none"></div>
-
-                      <!-- Ảnh VietQR -->
-                      <div id="qr-img-wrapper" class="aspect-square w-full flex items-center justify-center overflow-hidden rounded-xl bg-white">
-                        <img id="vietqr-live-img" 
-                             src="${vietQrUrl}" 
-                             alt="VietQR MB Bank - ${order.orderCode}" 
-                             class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]" />
-                      </div>
-                    </div>
-
-                    <p class="text-[11px] text-slate-400 mt-3 text-center">
-                      Mở app ngân hàng bất kỳ (MB, Vietcombank, Techcombank, MoMo...) để quét mã
-                    </p>
+              <!-- Khu vực nút đổi gói & Đồng hồ đếm ngược -->
+              <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                <!-- Đồng hồ đếm ngược header -->
+                <div class="flex items-center gap-2 bg-rose-50 border border-rose-200/80 px-3.5 py-2 rounded-xl text-rose-700">
+                  <svg class="w-4 h-4 animate-spin text-rose-600" style="animation-duration: 3s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-linecap="round"></circle>
+                  </svg>
+                  <div class="text-xs">
+                    <span class="font-medium text-slate-600 mr-1 hidden sm:inline">Hết hạn sau:</span>
+                    <strong id="header-countdown-timer" class="font-mono font-black text-sm text-rose-700">09:59</strong>
                   </div>
-
-                  <!-- BẢNG THÔNG TIN CHUYỂN KHOẢN CHI TIẾT (5 DÒNG KÈM NÚT COPY) -->
-                  <div class="space-y-3">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                      <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                      Thông tin chuyển khoản thủ công
-                    </h3>
-
-                    <div class="bg-slate-50/80 rounded-2xl border border-slate-200/80 divide-y divide-slate-200/60 overflow-hidden text-sm">
-                      
-                      <!-- 1. Ngân hàng nhận -->
-                      <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
-                        <div class="text-slate-500 text-xs sm:text-sm">Ngân hàng nhận:</div>
-                        <div class="flex items-center gap-2 text-right">
-                          <span class="font-bold text-slate-900 text-xs sm:text-sm">MB Bank (Ngân hàng Quân Đội)</span>
-                        </div>
-                      </div>
-
-                      <!-- 2. Số tài khoản -->
-                      <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
-                        <div class="text-slate-500 text-xs sm:text-sm">Số tài khoản:</div>
-                        <div class="flex items-center gap-2">
-                          <span class="font-mono font-bold text-slate-900 text-base sm:text-lg select-all">00223366888</span>
-                          <button type="button" class="btn-copy px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition shadow-2xs" data-copy="00223366888">
-                            Sao chép
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- 3. Chủ tài khoản -->
-                      <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
-                        <div class="text-slate-500 text-xs sm:text-sm">Chủ tài khoản:</div>
-                        <div class="flex items-center gap-2">
-                          <span class="font-bold text-slate-900 uppercase text-xs sm:text-sm select-all">NGUYEN VAN HUY</span>
-                          <button type="button" class="btn-copy px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition shadow-2xs" data-copy="NGUYEN VAN HUY">
-                            Sao chép
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- 4. Số tiền -->
-                      <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
-                        <div class="text-slate-500 text-xs sm:text-sm">Số tiền:</div>
-                        <div class="flex items-center gap-2">
-                          <span class="font-mono font-black text-rose-600 text-base sm:text-lg select-all">${formatMoney(order.amount)}đ</span>
-                          <button type="button" class="btn-copy px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition shadow-2xs" data-copy="${order.amount}">
-                            Sao chép
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- 5. Nội dung chuyển khoản -->
-                      <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3 bg-amber-50/50">
-                        <div class="text-amber-900 font-semibold text-xs sm:text-sm flex items-center gap-1">
-                          Nội dung CK:
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <span class="font-mono font-black text-slate-900 text-base sm:text-lg bg-white px-2 py-0.5 rounded border border-amber-300 select-all tracking-wider">${order.memo}</span>
-                          <button type="button" class="btn-copy px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition shadow-sm" data-copy="${order.memo}">
-                            Sao chép
-                          </button>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <!-- Khung cảnh báo màu cam nhạt -->
-                  <div class="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 text-xs text-amber-800 leading-relaxed mt-4 flex items-start gap-2.5 shadow-2xs">
-                    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    <div>
-                      <strong>⚠️ Lưu ý quan trọng:</strong> Vui lòng nhập <strong>CHÍNH XÁC</strong> nội dung chuyển khoản <code class="font-mono font-bold bg-amber-100/80 px-1 py-0.5 rounded text-amber-900">${order.memo}</code> để hệ thống tự động nhận diện và hoàn tất đơn trong 30 giây.
-                    </div>
-                  </div>
-
                 </div>
 
-                <!-- CỘT PHẢI (5 COLS): HỘP ĐƠN HÀNG, RADAR VÀ NÚT DEMO WEBHOOK -->
-                <div class="lg:col-span-5 space-y-5">
+                <!-- Nút Đổi gói -->
+                <button type="button" id="btn-change-plan" 
+                        class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                  </svg>
+                  <span>Đổi gói / Quay lại</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- BỐ CỤC CHÍNH 2 CỘT CHUẨN ẢNH 4 (5 COLS TRÁI - 7 COLS PHẢI HOẶC 6 - 6) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+              <!-- ========================================== -->
+              <!-- CỘT TRÁI (5 COLS): MÃ QR, LƯU ẢNH, 3 BƯỚC, BADGE BẢO MẬT -->
+              <!-- ========================================== -->
+              <div class="lg:col-span-5 space-y-5">
+                
+                <!-- KHUNG CHÍNH QR SACOMBANK -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col items-center relative overflow-hidden">
                   
-                  <!-- Hộp 1: Thông tin đơn hàng -->
-                  <div class="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-3">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Chi tiết đơn hàng</h3>
-                    
-                    <div class="space-y-2 text-xs sm:text-sm">
-                      <div class="flex justify-between">
-                        <span class="text-slate-500">Mã đơn hàng:</span>
-                        <span class="font-mono font-bold text-slate-900">${order.orderCode}</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-slate-500">Ngày tạo:</span>
-                        <span class="text-slate-700">${order.createdAtFormatted || 'Vừa xong'}</span>
-                      </div>
-                      <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Trạng thái:</span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200/70">
-                          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                          Chờ thanh toán
-                        </span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-slate-500">Phương thức:</span>
-                        <span class="font-medium text-slate-800">MB BANK (VietQR 24/7)</span>
-                      </div>
+                  <!-- Badge "VietQR Chuẩn Napas 24/7 Tự Động" -->
+                  <div class="w-full flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                      VietQR Chuẩn Napas 24/7 Tự Động
+                    </div>
+                    <span class="text-[11px] font-mono text-slate-400 font-semibold">BIN 970403</span>
+                  </div>
+
+                  <!-- Khung ảnh QR có góc ngắm Viewfinder Sacombank -->
+                  <div class="relative p-3.5 bg-white rounded-2xl shadow-md border-2 border-slate-100 max-w-[270px] w-full">
+                    <!-- 4 góc ngắm trang trí thương hiệu Sacombank -->
+                    <div class="absolute top-1.5 left-1.5 w-5 h-5 border-t-3 border-l-3 border-[#004b91] rounded-tl-md pointer-events-none"></div>
+                    <div class="absolute top-1.5 right-1.5 w-5 h-5 border-t-3 border-r-3 border-[#004b91] rounded-tr-md pointer-events-none"></div>
+                    <div class="absolute bottom-1.5 left-1.5 w-5 h-5 border-b-3 border-l-3 border-[#004b91] rounded-bl-md pointer-events-none"></div>
+                    <div class="absolute bottom-1.5 right-1.5 w-5 h-5 border-b-3 border-r-3 border-[#004b91] rounded-br-md pointer-events-none"></div>
+
+                    <!-- Ảnh VietQR Sacombank -->
+                    <div id="qr-img-wrapper" class="aspect-square w-full flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                      <img id="vietqr-live-img" 
+                           src="${vietQrUrl}" 
+                           alt="VietQR Sacombank - ${order.memo}" 
+                           class="w-full h-full object-contain transition-transform duration-300 hover:scale-[1.02]" />
                     </div>
                   </div>
 
-                  <!-- Hộp 2: CẦN THANH TOÁN & ĐỒNG HỒ ĐẾM NGƯỢC RADAR -->
-                  <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 text-center">
-                    <div>
-                      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Số tiền cần thanh toán</span>
-                      <div class="text-3xl font-black text-slate-900 tracking-tight mt-1">
-                        ${formatMoney(order.amount)}đ
-                      </div>
-                    </div>
-
-                    <!-- Đồng hồ đếm ngược -->
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                      <div class="text-[11px] text-slate-500 font-medium">Đơn hàng sẽ tự hủy sau:</div>
-                      <div id="payment-countdown-timer" class="text-2xl font-mono font-black text-rose-600 tracking-wider mt-0.5">
-                        09:59
-                      </div>
-                      <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-2">
-                        <div id="countdown-progress-bar" class="bg-rose-500 h-full rounded-full transition-all duration-1000" style="width: 100%;"></div>
-                      </div>
-                    </div>
-
-                    <!-- Hiệu ứng Radar xoay tròn kiểm tra giao dịch -->
-                    <div class="pt-2 flex items-center justify-center gap-2.5 text-xs text-slate-500">
-                      <div class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
-                      </div>
-                      <span class="font-medium animate-pulse">Đang lắng nghe giao dịch từ MB Bank...</span>
-                    </div>
-                  </div>
-
-                  <!-- Hộp 3: NÚT GIẢ LẬP DEMO "⚡ Xác nhận đã thanh toán (Demo Webhook)" -->
-                  <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-5 border border-emerald-200/80 space-y-3">
-                    <div class="flex items-center gap-2">
-                      <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                      <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-900">Môi trường thử nghiệm (Sandbox)</h4>
-                    </div>
-                    <p class="text-xs text-emerald-800 leading-relaxed">
-                      Bạn không cần chuyển tiền thật! Bấm nút bên dưới để giả lập hệ thống nhận Webhook thanh toán thành công 100%.
+                  <!-- Nút "Lưu ảnh mã QR về máy" -->
+                  <div class="w-full mt-4 flex flex-col gap-2">
+                    <button type="button" id="btn-download-qr" 
+                            class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-2 active:scale-[0.99]">
+                      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg>
+                      <span>Lưu ảnh mã QR về máy</span>
+                    </button>
+                    <p class="text-[11px] text-slate-400 text-center">
+                      Hỗ trợ mọi app ngân hàng (Sacombank, VCB, BIDV, Techcombank, MoMo...)
                     </p>
+                  </div>
+                </div>
 
+                <!-- KHUNG "3 BƯỚC THANH TOÁN NHANH" -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-[#004b91]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    3 Bước thanh toán nhanh
+                  </h3>
+
+                  <div class="space-y-3 text-xs">
+                    <div class="flex items-start gap-3">
+                      <span class="w-5 h-5 rounded-full bg-blue-100 text-[#004b91] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">1</span>
+                      <div class="text-slate-600">
+                        <strong class="text-slate-900">Mở App Ngân hàng</strong> hoặc Ví điện tử bất kỳ có tính năng Quét mã QR.
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="w-5 h-5 rounded-full bg-blue-100 text-[#004b91] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">2</span>
+                      <div class="text-slate-600">
+                        <strong class="text-slate-900">Quét mã VietQR</strong> phía trên hoặc tải ảnh về để quét trực tiếp từ thư viện.
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="w-5 h-5 rounded-full bg-blue-100 text-[#004b91] flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">3</span>
+                      <div class="text-slate-600">
+                        <strong class="text-slate-900">Kiểm tra thông tin</strong> đúng người nhận <span class="font-bold text-[#004b91]">LE BUI MINH CUONG</span> và xác nhận chuyển.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BADGE AN TOÀN & BẢO MẬT 24/7 -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 text-white shadow-sm flex items-center gap-3.5">
+                  <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Hệ thống bảo mật Napas 24/7</h4>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Mã hóa SSL 256-bit • Tự động khớp lệnh tức thì không cần can thiệp thủ công</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ========================================== -->
+              <!-- CỘT PHẢI (7 COLS): THÔNG TIN CHUYỂN KHOẢN, XÁC THỰC, UPLOAD BILL, STEPPER & NÚT HOÀN TẤT -->
+              <!-- ========================================== -->
+              <div class="lg:col-span-7 space-y-5">
+                
+                <!-- BẢNG THÔNG TIN CHUYỂN KHOẢN SACOMBANK CHI TIẾT -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                  <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#004b91]"></span>
+                      Thông tin chuyển khoản Sacombank
+                    </h3>
+                    <span class="text-xs text-slate-500 font-medium">Sao chép nhanh 1 chạm</span>
+                  </div>
+
+                  <!-- Danh sách các trường thông tin -->
+                  <div class="bg-slate-50/80 rounded-2xl border border-slate-200/80 divide-y divide-slate-200/60 overflow-hidden text-sm">
+                    
+                    <!-- 1. Số tiền cần chuyển (In đậm, to rõ, nút copy) -->
+                    <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3 bg-rose-50/40">
+                      <div class="text-slate-600 text-xs sm:text-sm font-medium">Số tiền cần chuyển:</div>
+                      <div class="flex items-center gap-2.5">
+                        <span class="font-mono font-black text-rose-600 text-lg sm:text-xl select-all">${formatMoney(order.amount)}đ</span>
+                        <button type="button" class="btn-copy px-3 py-1 text-xs font-bold rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition shadow-2xs" data-copy="${order.amount}">
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 2. Ngân hàng nhận: Sacombank -->
+                    <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
+                      <div class="text-slate-600 text-xs sm:text-sm">Ngân hàng nhận:</div>
+                      <div class="flex items-center gap-2 text-right">
+                        <span class="font-bold text-slate-900 text-xs sm:text-sm">Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)</span>
+                        <button type="button" class="btn-copy px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition shadow-2xs" data-copy="Sacombank">
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 3. Số tài khoản: 100071864927 -->
+                    <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
+                      <div class="text-slate-600 text-xs sm:text-sm">Số tài khoản:</div>
+                      <div class="flex items-center gap-2.5">
+                        <span class="font-mono font-bold text-slate-900 text-base sm:text-lg select-all">100071864927</span>
+                        <button type="button" class="btn-copy px-3 py-1 text-xs font-bold rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 transition shadow-2xs" data-copy="100071864927">
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 4. Chủ tài khoản: LE BUI MINH CUONG -->
+                    <div class="p-3.5 sm:px-4 flex items-center justify-between gap-3">
+                      <div class="text-slate-600 text-xs sm:text-sm">Chủ tài khoản:</div>
+                      <div class="flex items-center gap-2.5">
+                        <span class="font-bold text-slate-900 uppercase text-xs sm:text-sm select-all">LE BUI MINH CUONG</span>
+                        <button type="button" class="btn-copy px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition shadow-2xs" data-copy="LE BUI MINH CUONG">
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 5. Nội dung chuyển khoản BẮT BUỘC (Mã memo + Nút copy nổi bật) -->
+                    <div class="p-4 sm:px-4 flex items-center justify-between gap-3 bg-amber-50/70 border-l-4 border-amber-500">
+                      <div>
+                        <div class="text-amber-900 font-bold text-xs sm:text-sm flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                          Nội dung chuyển khoản (Bắt buộc):
+                        </div>
+                        <div class="text-[11px] text-amber-700 mt-0.5">Vui lòng ghi đúng để tự động duyệt đơn</div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-mono font-black text-slate-900 text-base sm:text-lg bg-white px-2.5 py-1 rounded-lg border border-amber-300 select-all tracking-wider shadow-2xs">
+                          ${order.memo}
+                        </span>
+                        <button type="button" class="btn-copy px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition shadow-sm active:scale-95" data-copy="${order.memo}">
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- DÒNG XÁC THỰC: "Tên người nhận trong app ngân hàng: LE BUI MINH CUONG" -->
+                  <div class="bg-sky-50 border border-sky-200/80 rounded-xl p-3.5 text-xs text-sky-900 flex items-center gap-2.5 shadow-2xs">
+                    <div class="w-6 h-6 rounded-full bg-sky-200 text-[#004b91] flex items-center justify-center flex-shrink-0 font-bold">
+                      ✓
+                    </div>
+                    <div class="leading-relaxed">
+                      <strong>Xác thực người thụ hưởng:</strong> Tên hiển thị trong app ngân hàng của bạn phải là <strong class="font-bold text-[#004b91] uppercase">LE BUI MINH CUONG</strong>.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- KHUNG TẢI ẢNH CHỤP MÀN HÌNH CHUYỂN KHOẢN (UPLOAD BILL) -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-3">
+                  <div class="flex items-center justify-between pb-2">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                      Ảnh chụp biên lai chuyển khoản (Không bắt buộc)
+                    </h4>
+                    <span class="text-[11px] text-slate-400">Hỗ trợ đối soát nhanh</span>
+                  </div>
+
+                  <!-- Vùng Dropzone Upload -->
+                  <div id="bill-upload-area" class="border-2 border-dashed border-slate-300 hover:border-[#004b91] bg-slate-50/60 hover:bg-sky-50/30 rounded-2xl p-5 text-center cursor-pointer transition-all">
+                    <input type="file" id="input-bill-file" accept="image/*" class="hidden" />
+                    
+                    <div id="bill-empty-state" class="space-y-2">
+                      <div class="w-10 h-10 rounded-full bg-slate-200/70 text-slate-500 flex items-center justify-center mx-auto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                      </div>
+                      <p class="text-xs font-semibold text-slate-700">
+                        Nhấp để tải lên ảnh biên lai hoặc kéo thả ảnh vào đây
+                      </p>
+                      <p class="text-[11px] text-slate-400">PNG, JPG, JPEG (Tối đa 5MB)</p>
+                    </div>
+
+                    <!-- Trạng thái xem trước ảnh preview (mặc định ẩn) -->
+                    <div id="bill-preview-state" class="hidden flex items-center justify-between gap-4 p-2">
+                      <div class="flex items-center gap-3">
+                        <img id="bill-preview-img" src="" alt="Biên lai" class="w-14 h-14 object-cover rounded-xl border border-slate-200 shadow-xs" />
+                        <div class="text-left">
+                          <div id="bill-filename" class="text-xs font-bold text-slate-800 truncate max-w-[200px]">bienlai.png</div>
+                          <div class="text-[11px] text-emerald-600 font-medium">✓ Đã đính kèm ảnh xác thực</div>
+                        </div>
+                      </div>
+                      <button type="button" id="btn-remove-bill" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2.5 py-1 rounded-lg hover:bg-rose-50 transition">
+                        Xóa ảnh
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEPPER 3 BƯỚC TIẾN TRÌNH: 1. Quét mã & chuyển -> 2. Kiểm tra giao dịch -> 3. Kích hoạt -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                  <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Tiến trình thanh toán</div>
+                  
+                  <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <!-- Bước 1 -->
+                    <div id="step-col-1" class="p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-[#004b91] font-bold flex flex-col items-center gap-1">
+                      <span class="w-5 h-5 rounded-full bg-[#004b91] text-white flex items-center justify-center text-[10px]">1</span>
+                      <span class="text-[11px] sm:text-xs">1. Quét mã & chuyển</span>
+                    </div>
+
+                    <!-- Bước 2 -->
+                    <div id="step-col-2" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 font-medium flex flex-col items-center gap-1 transition-all">
+                      <span id="step-badge-2" class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">2</span>
+                      <span class="text-[11px] sm:text-xs">2. Kiểm tra giao dịch</span>
+                    </div>
+
+                    <!-- Bước 3 -->
+                    <div id="step-col-3" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 font-medium flex flex-col items-center gap-1 transition-all">
+                      <span id="step-badge-3" class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">3</span>
+                      <span class="text-[11px] sm:text-xs">3. Kích hoạt</span>
+                    </div>
+                  </div>
+
+                  <!-- Radar trạng thái giao dịch -->
+                  <div id="radar-status-box" class="pt-1 flex items-center justify-center gap-2 text-xs text-slate-500">
+                    <div class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#004b91]"></span>
+                    </div>
+                    <span id="radar-text" class="font-medium text-slate-600 animate-pulse">
+                      Đang lắng nghe giao dịch chuyển khoản Sacombank...
+                    </span>
+                  </div>
+
+                  <!-- NÚT CHÍNH "Tôi đã chuyển khoản" -->
+                  <div class="space-y-2 pt-1">
+                    <button type="button" id="btn-paid-confirm" 
+                            class="w-full bg-[#004b91] hover:bg-[#003d75] active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2 text-base">
+                      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      <span>Tôi đã chuyển khoản</span>
+                    </button>
+
+                    <!-- Nút phụ giả lập Webhook Sandbox để tester duyệt tức thì -->
                     <button type="button" id="btn-simulate-webhook" 
-                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-600/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-sm group">
-                      <svg class="w-4 h-4 text-emerald-200 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"/>
                       </svg>
-                      <span>⚡ Xác nhận đã thanh toán (Demo Webhook)</span>
+                      <span>⚡ Duyệt tự động tức thì (Chế độ Thử nghiệm Sandbox)</span>
                     </button>
                   </div>
-
                 </div>
 
               </div>
@@ -1073,8 +1165,8 @@
               <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
               </div>
-              <h3 class="text-2xl font-black text-slate-900">Thanh toán thành công!</h3>
-              <p class="text-xs text-slate-500 mt-1">Đơn hàng <strong class="text-slate-800 font-mono">${order.orderCode}</strong> đã được hệ thống duyệt tự động.</p>
+              <h3 class="text-2xl font-black text-slate-900">Thanh toán Sacombank thành công!</h3>
+              <p class="text-xs text-slate-500 mt-1">Đơn hàng <strong class="text-slate-800 font-mono">${order.orderCode}</strong> đã được hệ thống Sacombank duyệt tự động.</p>
             </div>
 
             <!-- Khung thông tin tài khoản bàn giao -->
@@ -1082,7 +1174,7 @@
               <div class="flex items-center justify-between pb-2 border-b border-slate-200">
                 <span class="font-bold text-slate-900 flex items-center gap-1.5">
                   <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                  Tài khoản số được bàn giao
+                  Tài khoản số được kích hoạt
                 </span>
                 <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">ĐÃ KÍCH HOẠT</span>
               </div>
@@ -1092,16 +1184,16 @@
                 <div>
                   <div class="text-[11px] text-slate-500">Tài khoản / Email:</div>
                   <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 font-mono text-slate-900 text-xs sm:text-sm">
-                    <span id="delivered-email">shopviet_plus_${Math.floor(1000 + Math.random() * 9000)}@gmail.com</span>
-                    <button type="button" class="btn-copy text-xs text-slate-500 hover:text-slate-900" data-copy="shopviet_plus_demo@gmail.com">Sao chép</button>
+                    <span id="delivered-email">shopviet_sacombank_${Math.floor(1000 + Math.random() * 9000)}@gmail.com</span>
+                    <button type="button" class="btn-copy text-xs text-[#004b91] hover:underline font-semibold" data-copy="shopviet_sacombank_demo@gmail.com">Sao chép</button>
                   </div>
                 </div>
 
                 <div>
                   <div class="text-[11px] text-slate-500">Mật khẩu:</div>
                   <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 font-mono text-slate-900 text-xs sm:text-sm">
-                    <span id="delivered-pass">VietAI#2026@Pass</span>
-                    <button type="button" class="btn-copy text-xs text-slate-500 hover:text-slate-900" data-copy="VietAI#2026@Pass">Sao chép</button>
+                    <span id="delivered-pass">Sacombank#2026@Pass</span>
+                    <button type="button" class="btn-copy text-xs text-[#004b91] hover:underline font-semibold" data-copy="Sacombank#2026@Pass">Sao chép</button>
                   </div>
                 </div>
 
@@ -1155,31 +1247,92 @@
         };
       });
 
+      // NÚT "LƯU ẢNH MÃ QR VỀ MÁY"
+      const downloadQrBtn = container.querySelector('#btn-download-qr');
+      if (downloadQrBtn) {
+        downloadQrBtn.onclick = async () => {
+          try {
+            showToast('Đang tải ảnh mã VietQR Sacombank...', 'info');
+            const res = await fetch(vietQrUrl);
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `VietQR-Sacombank-${order.memo}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+            showToast('Đã lưu ảnh mã QR về máy thành công!', 'success');
+          } catch (e) {
+            // Fallback mở tab mới nếu CORS bị chặn
+            window.open(vietQrUrl, '_blank');
+            showToast('Đang mở ảnh VietQR trong tab mới để lưu', 'info');
+          }
+        };
+      }
+
+      // XỬ LÝ UPLOAD BIÊN LAI (BILL)
+      const uploadArea = container.querySelector('#bill-upload-area');
+      const fileInput = container.querySelector('#input-bill-file');
+      const emptyState = container.querySelector('#bill-empty-state');
+      const previewState = container.querySelector('#bill-preview-state');
+      const previewImg = container.querySelector('#bill-preview-img');
+      const filenameLabel = container.querySelector('#bill-filename');
+      const removeBillBtn = container.querySelector('#btn-remove-bill');
+
+      if (uploadArea && fileInput) {
+        uploadArea.onclick = (e) => {
+          if (e.target !== removeBillBtn && !removeBillBtn.contains(e.target)) {
+            fileInput.click();
+          }
+        };
+
+        fileInput.onchange = (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+              if (previewImg) previewImg.src = loadEvent.target.result;
+              if (filenameLabel) filenameLabel.textContent = file.name;
+              if (emptyState) emptyState.classList.add('hidden');
+              if (previewState) previewState.classList.remove('hidden');
+              showToast('Đã đính kèm ảnh biên lai giao dịch thành công!', 'success');
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        if (removeBillBtn) {
+          removeBillBtn.onclick = (e) => {
+            e.stopPropagation();
+            fileInput.value = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            if (previewState) previewState.classList.add('hidden');
+            showToast('Đã gỡ ảnh biên lai', 'info');
+          };
+        }
+      }
+
       // ĐỒNG HỒ ĐẾM NGƯỢC 10 PHÚT (09:59)
       let remainingSeconds = order.expiresInSeconds || 600;
-      const timerDisplay = container.querySelector('#payment-countdown-timer');
-      const progressBar = container.querySelector('#countdown-progress-bar');
+      const headerTimer = container.querySelector('#header-countdown-timer');
 
       function updateCountdown() {
         if (remainingSeconds <= 0) {
           clearPaymentCountdown();
-          if (timerDisplay) {
-            timerDisplay.textContent = '00:00 (Hết hạn)';
-            timerDisplay.classList.add('text-slate-400');
+          if (headerTimer) {
+            headerTimer.textContent = '00:00 (Hết hạn)';
+            headerTimer.classList.add('text-slate-400');
           }
-          if (progressBar) progressBar.style.width = '0%';
           showToast('Đơn hàng đã hết hạn thanh toán!', 'warning');
           return;
         }
 
         const mins = Math.floor(remainingSeconds / 60);
         const secs = remainingSeconds % 60;
-        if (timerDisplay) {
-          timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        if (progressBar) {
-          const percent = (remainingSeconds / 600) * 100;
-          progressBar.style.width = `${percent}%`;
+        if (headerTimer) {
+          headerTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         remainingSeconds--;
       }
@@ -1187,94 +1340,128 @@
       updateCountdown();
       window.__shopvietPayTimer = setInterval(updateCountdown, 1000);
 
-      // Nút "Làm mới trạng thái"
-      const refreshBtn = container.querySelector('#btn-refresh-status');
-      const spinIcon = container.querySelector('#icon-refresh-spin');
-      if (refreshBtn) {
-        refreshBtn.onclick = () => {
-          if (spinIcon) spinIcon.classList.add('animate-spin');
-          showToast('Đang đồng bộ giao dịch ngân hàng MB...', 'info');
-          setTimeout(() => {
-            if (spinIcon) spinIcon.classList.remove('animate-spin');
-            showToast('Chưa ghi nhận biến động số dư. Vui lòng thử lại sau giây lát!', 'warning');
-          }, 1200);
-        };
-      }
-
-      // Nút "Đổi phương thức"
-      const changeMethodBtn = container.querySelector('#btn-change-method');
-      if (changeMethodBtn) {
-        changeMethodBtn.onclick = () => {
+      // NÚT ĐỔI GÓI / QUAY LẠI
+      const changePlanBtn = container.querySelector('#btn-change-plan');
+      if (changePlanBtn) {
+        changePlanBtn.onclick = () => {
           clearPaymentCountdown();
           navigate('checkout');
         };
       }
 
-      // Nút "Hủy đơn"
-      const cancelBtn = container.querySelector('#btn-cancel-order');
-      if (cancelBtn) {
-        cancelBtn.onclick = () => {
-          if (confirm(`Bạn có chắc chắn muốn hủy đơn hàng ${order.orderCode} không?`)) {
-            clearPaymentCountdown();
-            window.ShopVietState.currentOrder = null;
-            showToast('Đã hủy đơn hàng thành công', 'info');
-            navigate('home');
+      // HÀM CHUNG HOÀN TẤT THANH TOÁN
+      function completePaymentSuccess() {
+        clearPaymentCountdown();
+
+        // Cập nhật trạng thái đơn hàng
+        order.status = 'completed';
+        order.paidAt = new Date().toISOString();
+
+        // Lưu vào danh sách đơn hàng đã mua
+        window.ShopVietState.orders = window.ShopVietState.orders || [];
+        window.ShopVietState.orders.unshift(order);
+
+        // Đồng bộ đơn hàng lên Firebase Firestore Cloud
+        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+          window.ShopVietFirebase.syncOrderToCloud(order);
+        }
+
+        // Dọn dẹp giỏ hàng
+        window.ShopVietState.cart = [];
+        window.ShopVietState.currentVoucher = null;
+
+        // Cộng điểm thưởng
+        if (window.ShopVietState.user) {
+          window.ShopVietState.user.rewardPoints = (window.ShopVietState.user.rewardPoints || 0) + 45;
+        }
+
+        // Cập nhật Stepper sang Bước 3 Kích hoạt
+        const stepCol2 = container.querySelector('#step-col-2');
+        const stepCol3 = container.querySelector('#step-col-3');
+        const stepBadge3 = container.querySelector('#step-badge-3');
+
+        if (stepCol2) {
+          stepCol2.className = 'p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold flex flex-col items-center gap-1';
+        }
+        if (stepCol3) {
+          stepCol3.className = 'p-2.5 rounded-xl bg-emerald-600 border border-emerald-600 text-white font-bold flex flex-col items-center gap-1';
+        }
+        if (stepBadge3) {
+          stepBadge3.className = 'w-5 h-5 rounded-full bg-white text-emerald-700 flex items-center justify-center text-[10px] font-bold';
+          stepBadge3.textContent = '✓';
+        }
+
+        // Hiển thị modal thành công
+        const successModal = container.querySelector('#payment-success-modal');
+        if (successModal) {
+          successModal.classList.remove('hidden');
+          const modalBox = successModal.querySelector('.scale-95');
+          if (modalBox) {
+            setTimeout(() => {
+              modalBox.classList.remove('scale-95');
+              modalBox.classList.add('scale-100');
+            }, 50);
           }
+        }
+
+        showToast('Giao dịch Sacombank đã khớp! Tài khoản đã được kích hoạt.', 'success');
+      }
+
+      // NÚT "TÔI ĐÃ CHUYỂN KHOẢN" (CHUYỂN STEPPER SANG BƯỚC 2 VÀ BẬT MODAL)
+      const paidConfirmBtn = container.querySelector('#btn-paid-confirm');
+      const stepCol2 = container.querySelector('#step-col-2');
+      const stepBadge2 = container.querySelector('#step-badge-2');
+      const radarText = container.querySelector('#radar-text');
+
+      if (paidConfirmBtn) {
+        paidConfirmBtn.onclick = () => {
+          paidConfirmBtn.disabled = true;
+          paidConfirmBtn.classList.add('opacity-75', 'cursor-wait');
+          paidConfirmBtn.innerHTML = `
+            <svg class="w-5 h-5 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle>
+            </svg>
+            <span>Đang kiểm tra biến động Sacombank...</span>
+          `;
+
+          // Cập nhật Stepper sang Bước 2 đang kiểm tra
+          if (stepCol2) {
+            stepCol2.className = 'p-2.5 rounded-xl bg-blue-100 border border-blue-300 text-[#004b91] font-bold flex flex-col items-center gap-1';
+          }
+          if (stepBadge2) {
+            stepBadge2.className = 'w-5 h-5 rounded-full bg-[#004b91] text-white flex items-center justify-center text-[10px] animate-pulse';
+          }
+          if (radarText) {
+            radarText.textContent = 'Đang khớp lệnh giao dịch với Sacombank...';
+          }
+
+          showToast('Đang kết nối cổng Sacombank để kiểm tra số dư...', 'info');
+
+          setTimeout(() => {
+            completePaymentSuccess();
+          }, 1500);
         };
       }
 
-      // NÚT GIẢ LẬP DEMO "⚡ Xác nhận đã thanh toán (Demo Webhook)"
+      // NÚT GIẢ LẬP DEMO "⚡ Sandbox Webhook"
       const webhookBtn = container.querySelector('#btn-simulate-webhook');
-      const successModal = container.querySelector('#payment-success-modal');
-
       if (webhookBtn) {
         webhookBtn.onclick = () => {
           webhookBtn.disabled = true;
           webhookBtn.classList.add('opacity-75', 'cursor-wait');
-          showToast('Đang nhận tín hiệu Webhook từ MB Bank...', 'info');
-
+          showToast('Nhận tín hiệu Webhook tức thì từ Sacombank...', 'info');
           setTimeout(() => {
-            clearPaymentCountdown();
-
-            // Cập nhật trạng thái đơn hàng
-            order.status = 'completed';
-            order.paidAt = new Date().toISOString();
-
-            // Lưu vào danh sách đơn hàng đã mua
-            window.ShopVietState.orders = window.ShopVietState.orders || [];
-            window.ShopVietState.orders.unshift(order);
-
-            // Dọn dẹp giỏ hàng
-            window.ShopVietState.cart = [];
-            window.ShopVietState.currentVoucher = null;
-
-            // Cộng điểm thưởng
-            if (window.ShopVietState.user) {
-              window.ShopVietState.user.rewardPoints = (window.ShopVietState.user.rewardPoints || 0) + 45;
-            }
-
-            // Hiển thị modal thành công
-            if (successModal) {
-              successModal.classList.remove('hidden');
-              const modalBox = successModal.querySelector('.scale-95');
-              if (modalBox) {
-                setTimeout(() => {
-                  modalBox.classList.remove('scale-95');
-                  modalBox.classList.add('scale-100');
-                }, 50);
-              }
-            }
-
-            showToast('Giao dịch đã khớp! Thanh toán thành công.', 'success');
-          }, 900);
+            completePaymentSuccess();
+          }, 600);
         };
       }
 
       // Điều hướng từ Modal thành công
       const goDashboardBtn = container.querySelector('#btn-modal-go-dashboard');
+      const successModal = container.querySelector('#payment-success-modal');
       if (goDashboardBtn) {
         goDashboardBtn.onclick = () => {
-          successModal.classList.add('hidden');
+          if (successModal) successModal.classList.add('hidden');
           navigate('dashboard');
         };
       }
@@ -1282,7 +1469,7 @@
       const goHomeBtn = container.querySelector('#btn-modal-go-home');
       if (goHomeBtn) {
         goHomeBtn.onclick = () => {
-          successModal.classList.add('hidden');
+          if (successModal) successModal.classList.add('hidden');
           navigate('home');
         };
       }
@@ -1291,5 +1478,5 @@
     }
   };
 
-  console.log('[ShopViet247] Checkout & Pay views loaded successfully.');
+  console.log('[ShopViet247] Checkout & Pay views (Sacombank 100071864927) loaded successfully.');
 })();
