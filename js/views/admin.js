@@ -416,10 +416,11 @@
               class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'schedules' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M3 15h18" />
+                <path d="M9 3v18" />
+                <path d="M15 3v18" />
               </svg>
               <span>Hẹn lịch khách (Excel)</span>
               <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold" id="adminScheduleTabBadge">${schedules.length}</span>
@@ -1297,11 +1298,13 @@
               type="button" 
               onclick="window.ShopVietViews.admin.exportSchedulesToExcel()" 
               class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-colors shrink-0"
+              title="Xuất bảng tính hiện tại ra file CSV tương thích Microsoft Excel"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <polyline points="9 15 12 18 15 15"/>
               </svg>
               <span>Xuất Excel</span>
             </button>
@@ -1348,8 +1351,9 @@
                 ${schedules.length} bản ghi
               </span>
             </div>
-            <div class="text-[11px] text-slate-400">
-              * Tự động đồng bộ thời hạn & tính số ngày còn lại theo thời gian thực
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Click trực tiếp vào ô để sửa & ấn nút <b>Lưu</b> (hoặc Enter) để đồng bộ tức thì lên Đám Mây Cloud</span>
             </div>
           </div>
 
@@ -1382,7 +1386,7 @@
     `;
   }
 
-  // Render 1 dòng trong Bảng Excel Hẹn Lịch
+  // Render 1 dòng trong Bảng Excel Hẹn Lịch với Inline Editable & Nút Lưu Cloud
   function renderScheduleTableRow(s, index) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1402,73 +1406,113 @@
 
     const customerEmail = s.customerEmail || 'cuongcuca111@gmail.com';
     const customerName = s.customerName || 'Minh Cường';
-    const managerEmail = s.managerEmail || 'admin-slot@shopviet.vip';
+    const managerEmail = s.managerEmail || 'slot1-pro@shopviet.vip';
     const serviceName = s.serviceName || '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive';
     const notes = s.notes || '';
 
     return `
       <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors" data-id="${s.id}" data-customer="${customerEmail.toLowerCase()}" data-manager="${managerEmail.toLowerCase()}" data-service="${serviceName.toLowerCase()}" data-notes="${notes.toLowerCase()}">
         <!-- STT -->
-        <td class="py-3 px-3 text-center font-mono text-slate-400 font-semibold">
+        <td class="py-2.5 px-3 text-center font-mono text-slate-400 font-semibold text-xs">
           ${index + 1}
         </td>
 
-        <!-- EMAIL KHÁCH HÀNG -->
-        <td class="py-3 px-3.5">
-          <div class="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[200px]" title="${customerEmail}">
-            ${customerEmail}
-          </div>
-          <div class="text-[10px] text-slate-400 font-medium">
+        <!-- EMAIL KHÁCH HÀNG (INLINE EDITABLE) -->
+        <td class="py-2 px-3">
+          <input 
+            type="text" 
+            id="sched-customer-${s.id}" 
+            value="${customerEmail}" 
+            placeholder="cuongcuca111@gmail.com"
+            onkeydown="if(event.key==='Enter') window.ShopVietViews.admin.saveInlineSchedule('${s.id}')"
+            title="Click trực tiếp vào ô để sửa Email Khách Hàng (Enter để Lưu)"
+            class="w-full bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-lg px-2 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none transition-all"
+          />
+          <div class="px-2 text-[10px] text-slate-400 font-medium truncate max-w-[200px]" title="${customerName}">
             ${customerName}
           </div>
         </td>
 
-        <!-- EMAIL QUẢN LÝ / SLOT -->
-        <td class="py-3 px-3.5">
-          <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-mono text-xs font-semibold border border-indigo-200/60 dark:border-indigo-800/40">
-            <span>${managerEmail}</span>
-          </div>
+        <!-- EMAIL QUẢN LÝ / SLOT (INLINE EDITABLE) -->
+        <td class="py-2 px-3">
+          <input 
+            type="text" 
+            id="sched-manager-${s.id}" 
+            value="${managerEmail}" 
+            placeholder="slot1-pro@shopviet.vip"
+            onkeydown="if(event.key==='Enter') window.ShopVietViews.admin.saveInlineSchedule('${s.id}')"
+            title="Click trực tiếp vào ô để sửa Email Slot (Enter để Lưu)"
+            class="w-full bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/40 hover:border-indigo-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-lg px-2.5 py-1 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none transition-all"
+          />
         </td>
 
-        <!-- GÓI DỊCH VỤ -->
-        <td class="py-3 px-3.5 max-w-[220px]">
-          <div class="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1" title="${serviceName}">
-            ${serviceName}
-          </div>
-          ${notes ? `<div class="text-[10px] text-slate-400 line-clamp-1 italic">${notes}</div>` : ''}
+        <!-- GÓI DỊCH VỤ (INLINE EDITABLE) -->
+        <td class="py-2 px-3 max-w-[220px]">
+          <input 
+            type="text" 
+            id="sched-service-${s.id}" 
+            value="${serviceName}" 
+            placeholder="Tên gói dịch vụ..."
+            onkeydown="if(event.key==='Enter') window.ShopVietViews.admin.saveInlineSchedule('${s.id}')"
+            title="Click trực tiếp vào ô để sửa Gói Dịch Vụ (Enter để Lưu)"
+            class="w-full bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none transition-all"
+          />
+          ${notes ? `<div class="px-2 text-[10px] text-slate-400 line-clamp-1 italic">${notes}</div>` : ''}
         </td>
 
-        <!-- NGÀY BẮT ĐẦU -->
-        <td class="py-3 px-3 text-center font-mono text-slate-500 text-xs">
-          ${s.startDate || '-'}
+        <!-- NGÀY BẮT ĐẦU (INLINE EDITABLE) -->
+        <td class="py-2 px-2 text-center">
+          <input 
+            type="date" 
+            id="sched-start-${s.id}" 
+            value="${s.startDate || ''}" 
+            onchange="window.ShopVietViews.admin.updateScheduleDaysLeftBadge('${s.id}')"
+            onkeydown="if(event.key==='Enter') window.ShopVietViews.admin.saveInlineSchedule('${s.id}')"
+            title="Click để chọn Ngày bắt đầu"
+            class="bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-lg px-1.5 py-1 text-xs font-mono text-slate-600 dark:text-slate-400 focus:outline-none transition-all"
+          />
         </td>
 
-        <!-- NGÀY HẾT HẠN -->
-        <td class="py-3 px-3 text-center font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
-          ${s.expireDate || '-'}
+        <!-- NGÀY HẾT HẠN (INLINE EDITABLE) -->
+        <td class="py-2 px-2 text-center">
+          <input 
+            type="date" 
+            id="sched-expire-${s.id}" 
+            value="${s.expireDate || ''}" 
+            onchange="window.ShopVietViews.admin.updateScheduleDaysLeftBadge('${s.id}')"
+            onkeydown="if(event.key==='Enter') window.ShopVietViews.admin.saveInlineSchedule('${s.id}')"
+            title="Click để chọn Ngày hết hạn"
+            class="bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 rounded-lg px-1.5 py-1 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 focus:outline-none transition-all"
+          />
         </td>
 
-        <!-- TRẠNG THÁI HẠN DÙNG -->
-        <td class="py-3 px-3.5 text-center whitespace-nowrap">
+        <!-- TRẠNG THÁI HẠN DÙNG (TỰ ĐỘNG CẬP NHẬT TỨC THÌ) -->
+        <td class="py-2 px-3.5 text-center whitespace-nowrap" id="sched-badge-cell-${s.id}">
           ${statusBadge}
         </td>
 
-        <!-- THAO TÁC -->
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="flex items-center justify-end gap-1">
+        <!-- THAO TÁC: NÚT LƯU CLOUD (THAY NÚT BÚT CHÌ) & NÚT XÓA -->
+        <td class="py-2 px-3 text-right whitespace-nowrap">
+          <div class="flex items-center justify-end gap-1.5">
             <button 
               type="button" 
-              onclick="window.ShopVietViews.admin.openScheduleModal('${s.id}')" 
-              title="Chỉnh sửa thông tin lịch" 
-              class="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg transition"
+              id="btn-save-sched-${s.id}" 
+              onclick="window.ShopVietViews.admin.saveInlineSchedule('${s.id}')" 
+              title="Lưu thay đổi dòng này lên Đám mây Cloud (không mất khi reset hoặc đổi máy)" 
+              class="px-2.5 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 rounded-lg transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
             >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span>Lưu</span>
             </button>
             <button 
               type="button" 
               onclick="window.ShopVietViews.admin.deleteSchedule('${s.id}')" 
               title="Xóa lịch hẹn" 
-              class="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition"
+              class="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-all"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
@@ -3140,6 +3184,142 @@
       }
     },
 
+    // ==================== INLINE EDIT & SAVE SCHEDULE CLOUD ====================
+    saveInlineSchedule: async function (id) {
+      const customerInput = document.getElementById(`sched-customer-${id}`);
+      const managerInput = document.getElementById(`sched-manager-${id}`);
+      const serviceInput = document.getElementById(`sched-service-${id}`);
+      const startInput = document.getElementById(`sched-start-${id}`);
+      const expireInput = document.getElementById(`sched-expire-${id}`);
+      const saveBtn = document.getElementById(`btn-save-sched-${id}`);
+
+      if (!customerInput || !managerInput || !expireInput) return;
+
+      const customerEmail = customerInput.value.trim().toLowerCase();
+      const managerEmail = managerInput.value.trim();
+      const serviceName = serviceInput ? serviceInput.value.trim() : '';
+      const startDate = startInput ? startInput.value.trim() : '';
+      const expireDate = expireInput.value.trim();
+
+      if (!customerEmail || !customerEmail.includes('@')) {
+        notify('Vui lòng nhập Email Khách Hàng hợp lệ!', 'error');
+        customerInput.focus();
+        return;
+      }
+      if (!managerEmail) {
+        notify('Vui lòng nhập Email Quản Lý / Slot!', 'error');
+        managerInput.focus();
+        return;
+      }
+      if (!expireDate) {
+        notify('Vui lòng chọn Ngày Hết Hạn!', 'error');
+        expireInput.focus();
+        return;
+      }
+
+      const schedules = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
+      const item = schedules.find(s => s.id === id);
+      if (!item) {
+        notify('Không tìm thấy bản ghi cần lưu!', 'error');
+        return;
+      }
+
+      // Cập nhật giá trị
+      item.customerEmail = customerEmail;
+      item.managerEmail = managerEmail;
+      if (serviceName) item.serviceName = serviceName;
+      if (startDate) item.startDate = startDate;
+      item.expireDate = expireDate;
+
+      // Cập nhật thuộc tính dataset dòng để tìm kiếm chuẩn xác
+      const tr = document.querySelector(`tr[data-id="${id}"]`);
+      if (tr) {
+        tr.setAttribute('data-customer', customerEmail.toLowerCase());
+        tr.setAttribute('data-manager', managerEmail.toLowerCase());
+        tr.setAttribute('data-service', serviceName.toLowerCase());
+      }
+
+      // 1. Lưu LocalStorage ngay lập tức
+      if (window.ShopVietState && window.ShopVietState.saveSchedules) {
+        window.ShopVietState.saveSchedules(schedules);
+      }
+
+      // 2. Cập nhật badge hạn dùng tức thì trên giao diện
+      this.updateScheduleDaysLeftBadge(id);
+
+      // 3. Hiệu ứng nút Lưu Đám Mây: Đang lưu... -> Đã lưu ✓
+      let originalBtnHTML = '';
+      if (saveBtn) {
+        originalBtnHTML = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.classList.remove('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/60', 'dark:text-emerald-400', 'border-emerald-300', 'dark:border-emerald-800');
+        saveBtn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+        saveBtn.innerHTML = `
+          <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span>Đang lưu...</span>
+        `;
+      }
+
+      // 4. Đẩy ngay lên Cloud REST để không bị mất khi reset trang web hoặc đăng nhập trên máy khác
+      try {
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          await window.ShopVietState.pushAllToCloud();
+        }
+        if (saveBtn) {
+          saveBtn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+          saveBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+          saveBtn.innerHTML = `
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Đã lưu ✓</span>
+          `;
+          setTimeout(() => {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
+            saveBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/60', 'dark:text-emerald-400', 'border-emerald-300', 'dark:border-emerald-800');
+            saveBtn.innerHTML = originalBtnHTML;
+          }, 2000);
+        }
+        notify(`Đã lưu "${managerEmail}" lên Đám mây Cloud thành công! Không bị mất dữ liệu khi đổi máy.`, 'success');
+      } catch (err) {
+        console.warn('[Save Inline Schedule Cloud Sync Error]:', err);
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+          saveBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/60', 'dark:text-emerald-400', 'border-emerald-300', 'dark:border-emerald-800');
+          saveBtn.innerHTML = originalBtnHTML;
+        }
+        notify(`Đã lưu cục bộ! Đám mây sẽ tự đồng bộ khi có kết nối mạng.`, 'info');
+      }
+    },
+
+    updateScheduleDaysLeftBadge: function (id) {
+      const expireInput = document.getElementById(`sched-expire-${id}`);
+      const badgeCell = document.getElementById(`sched-badge-cell-${id}`);
+      if (!expireInput || !badgeCell || !expireInput.value) return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exp = new Date(expireInput.value);
+      exp.setHours(0, 0, 0, 0);
+      const diffMs = exp.getTime() - today.getTime();
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      let statusBadge = '';
+      if (daysLeft > 7) {
+        statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Còn ${daysLeft} ngày</span>`;
+      } else if (daysLeft > 0) {
+        statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Sắp hết (${daysLeft} ngày)</span>`;
+      } else {
+        statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300 dark:border-rose-800 shadow-sm"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Đã hết hạn</span>`;
+      }
+      badgeCell.innerHTML = statusBadge;
+    },
+
     quickEditSchedule: function (id, field) {
       const list = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
       const item = list.find(s => s.id === id);
@@ -3226,10 +3406,13 @@
       const rows = document.querySelectorAll('#adminScheduleTableTbody tr');
       let matchCount = 0;
       rows.forEach(row => {
-        const customer = row.getAttribute('data-customer') || '';
-        const manager = row.getAttribute('data-manager') || '';
-        const service = row.getAttribute('data-service') || '';
-        const notes = row.getAttribute('data-notes') || '';
+        const custInp = row.querySelector('[id^="sched-customer-"]');
+        const mgrInp = row.querySelector('[id^="sched-manager-"]');
+        const srvInp = row.querySelector('[id^="sched-service-"]');
+        const customer = (custInp ? custInp.value : row.getAttribute('data-customer') || '').toLowerCase();
+        const manager = (mgrInp ? mgrInp.value : row.getAttribute('data-manager') || '').toLowerCase();
+        const service = (srvInp ? srvInp.value : row.getAttribute('data-service') || '').toLowerCase();
+        const notes = (row.getAttribute('data-notes') || '').toLowerCase();
         const text = row.innerText.toLowerCase();
         if (!q || customer.includes(q) || manager.includes(q) || service.includes(q) || notes.includes(q) || text.includes(q)) {
           row.style.display = '';

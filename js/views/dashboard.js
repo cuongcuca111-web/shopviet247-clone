@@ -1,14 +1,13 @@
 /**
  * Shopviet247 - User Dashboard View Module
  * Hiện thực hóa Màn hình Quản lý Người dùng chuẩn Clean SaaS UI Enterprise
- * Hỗ trợ trọn vẹn 7 Phân hệ Tương tác:
+ * Hỗ trợ các Phân hệ Tương tác:
  * 1. Tổng quan (overview)
  * 2. Đơn hàng (orders)
- * 3. Ví của tôi (wallet)
+ * 3. Thẻ quà tặng (giftcards)
  * 4. Giới thiệu bạn bè (referral)
- * 5. Thẻ quà tặng (giftcards)
- * 6. Bảo mật & Mật khẩu (security)
- * 7. Hồ sơ cá nhân (profile)
+ * 5. Bảo mật & Mật khẩu (security)
+ * 6. Hồ sơ cá nhân (profile)
  */
 
 (function () {
@@ -322,7 +321,9 @@
      */
     render: function (params) {
       if (params && params.tab) {
-        activeTab = params.tab;
+        activeTab = params.tab === 'wallet' ? 'orders' : params.tab;
+      } else if (activeTab === 'wallet') {
+        activeTab = 'orders';
       }
 
       const user = getCurrentUser();
@@ -634,6 +635,7 @@
       orders = orders || getUserOrders(user);
 
       switch (tabKey) {
+        case 'wallet':
         case 'orders':
           return this.renderOrdersTab(user, orders);
         case 'referral':
@@ -998,10 +1000,11 @@
     },
 
     // ==========================================
-    // TAB 3: VÍ CỦA TÔI (ĐÃ VÔ HIỆU HÓA HOÀN TOÀN)
+    // TAB 3: VÍ CỦA TÔI (ĐÃ CHUYỂN HƯỚNG HOÀN TOÀN SANG ĐƠN HÀNG)
     // ==========================================
-    renderWalletTab: function (user) {
-      return this.renderOverviewTab(user, getUserOrders(user));
+    renderWalletTab: function (user, orders) {
+      orders = orders || getUserOrders(user);
+      return this.renderOrdersTab(user, orders);
     },
 
     // ==========================================
@@ -1017,7 +1020,7 @@
             Giới thiệu bạn bè
           </h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Chia sẻ liên kết của bạn để cùng nhận thưởng 50.000đ vào ví và hoa hồng vĩnh viễn trên mọi đơn hàng.
+            Chia sẻ liên kết của bạn để cùng nhận voucher ưu đãi và hoa hồng vĩnh viễn trên mọi đơn hàng.
           </p>
         </div>
 
@@ -1067,7 +1070,7 @@
           <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Hoa hồng tích lũy</span>
             <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">150.000đ</div>
-            <p class="text-xs text-slate-400 mt-1">Đã cộng trực tiếp vào số dư ví</p>
+            <p class="text-xs text-slate-400 mt-1">Đã tích lũy vào tài khoản</p>
           </div>
 
         </div>
@@ -1094,7 +1097,7 @@
             <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-1.5">
               <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold flex items-center justify-center text-sm">3</div>
               <div class="font-bold text-emerald-800 dark:text-emerald-200 text-sm">Nhận ngay 50.000đ</div>
-              <p class="text-emerald-700 dark:text-emerald-300">Nhận ngay 50.000đ vào ví khi bạn bè hoàn tất đơn hàng đầu tiên.</p>
+              <p class="text-emerald-700 dark:text-emerald-300">Nhận ngay voucher 50.000đ khi bạn bè hoàn tất đơn hàng đầu tiên.</p>
             </div>
           </div>
         </div>
@@ -1114,7 +1117,7 @@
             Thẻ quà tặng & Mã ưu đãi
           </h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Nhập mã Giftcode để nạp tiền trực tiếp vào số dư ví hoặc nhận ưu đãi giảm giá độc quyền.
+            Nhập mã Giftcode để nhận ưu đãi giảm giá hoặc kích hoạt gói quà tặng độc quyền.
           </p>
         </div>
 
@@ -1144,7 +1147,7 @@
           </form>
 
           <p class="text-xs text-slate-500 dark:text-slate-400">
-            Số tiền tương ứng sẽ được cộng ngay lập tức vào số dư ví của bạn và có thể dùng để thanh toán mọi tài khoản AI.
+            Ưu đãi tương ứng sẽ được kích hoạt ngay lập tức cho tài khoản của bạn để thanh toán mọi tài khoản AI.
           </p>
         </div>
 
@@ -1358,6 +1361,9 @@
      * Chuyển tab mượt mà không load lại trang
      */
     switchTab: function (tabKey) {
+      if (tabKey === 'wallet') {
+        tabKey = 'orders';
+      }
       activeTab = tabKey;
       const user = getCurrentUser();
       const userOrders = getUserOrders(user);
@@ -1396,7 +1402,10 @@
      * Gắn sự kiện chi tiết theo từng tab
      */
     bindTabEvents: function (tabKey, user, userOrders) {
-      if (tabKey === 'overview' || tabKey === 'wallet') {
+      if (tabKey === 'wallet') {
+        tabKey = 'orders';
+      }
+      if (tabKey === 'overview') {
         this.bindOverviewEvents();
       } else if (tabKey === 'orders') {
         this.bindOrdersEvents(user, userOrders);
@@ -1482,7 +1491,7 @@
       if (copyBtn && linkInput) {
         copyBtn.addEventListener('click', () => {
           navigator.clipboard.writeText(linkInput.value.trim());
-          window.ShopVietState.showToast('Đã sao chép link giới thiệu của bạn! Hãy gửi cho bạn bè để nhận 50.000đ vào ví.', 'success');
+          window.ShopVietState.showToast('Đã sao chép link giới thiệu của bạn! Hãy gửi cho bạn bè để cùng nhận ưu đãi.', 'success');
         });
       }
     },
@@ -1569,14 +1578,14 @@
         note: `Kích hoạt thành công mã ưu đãi độc quyền ${code}`
       });
 
-      // 4. Cập nhật số dư trên sidebar
+      // 4. Cập nhật số dư nếu có phần tử hiển thị
       const sidebarWalletBadge = document.getElementById('sidebarWalletBadge');
-      if (sidebarWalletBadge) {
+      if (sidebarWalletBadge && window.ShopVietState.state.user && window.ShopVietState.state.user.balance !== undefined) {
         sidebarWalletBadge.textContent = window.ShopVietState.state.user.balance.toLocaleString('vi-VN') + 'đ';
       }
 
       // 5. Hiển thị thông báo thành công
-      window.ShopVietState.showToast(`🎉 Chúc mừng bạn! Đã kích hoạt mã ${code} thành công, nhận +${rewardAmount.toLocaleString('vi-VN')}đ vào ví!`, 'success');
+      window.ShopVietState.showToast(`🎉 Chúc mừng bạn! Đã kích hoạt mã ${code} thành công, nhận +${rewardAmount.toLocaleString('vi-VN')}đ ưu đãi!`, 'success');
 
       // Tái render tab giftcards
       this.switchTab('giftcards');
@@ -1903,13 +1912,13 @@
       const vietQrModal = document.getElementById('vietQrModal');
       if (vietQrModal) vietQrModal.classList.add('hidden');
 
-      // Cập nhật số dư trên sidebar
+      // Cập nhật số dư nếu có phần tử hiển thị
       const sidebarWalletBadge = document.getElementById('sidebarWalletBadge');
-      if (sidebarWalletBadge) {
+      if (sidebarWalletBadge && window.ShopVietState.state.user && window.ShopVietState.state.user.balance !== undefined) {
         sidebarWalletBadge.textContent = window.ShopVietState.state.user.balance.toLocaleString('vi-VN') + 'đ';
       }
 
-      window.ShopVietState.showToast(`Nạp thành công +${amount.toLocaleString('vi-VN')}đ vào ví qua Sacombank! Số dư mới: ${window.ShopVietState.state.user.balance.toLocaleString('vi-VN')}đ`, 'success');
+      window.ShopVietState.showToast(`Nạp thành công +${amount.toLocaleString('vi-VN')}đ qua Sacombank! Số dư: ${window.ShopVietState.state.user.balance.toLocaleString('vi-VN')}đ`, 'success');
 
       // Cập nhật tab nếu đang ở overview
       if (activeTab === 'overview') {

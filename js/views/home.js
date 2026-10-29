@@ -94,10 +94,13 @@ window.ShopVietViews.home = (function () {
             : (window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : '')}
         </div>
 
-        <!-- Bottom brand label overlay -->
-        <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[10px] text-slate-400 font-medium z-10">
-          <span class="uppercase tracking-wider font-bold text-slate-300">${prod.tag || 'AI Software'}</span>
-          <span>${prod.warranty ? prod.warranty.split(' ')[0] + ' ' + (prod.warranty.split(' ')[1] || '') : ''}</span>
+        <!-- Bottom brand label overlay (Đã bỏ chữ 1 tháng, nhãn thương hiệu mở rộng lấp trọn vẹn khoảng trống) -->
+        <div class="absolute bottom-2 left-2.5 right-2.5 z-10 pointer-events-none">
+          <div class="w-full text-center bg-slate-900/60 dark:bg-slate-950/70 backdrop-blur-md py-0.5 px-2 rounded-md border border-white/10 shadow-xs">
+            <span class="uppercase tracking-wider font-extrabold text-[9.5px] sm:text-[10px] text-slate-200 truncate block">
+              ${prod.tag || 'AI Software'}
+            </span>
+          </div>
         </div>
       </div>
     `;
@@ -346,12 +349,14 @@ window.ShopVietViews.home = (function () {
                 </div>
 
                 <!-- Card 4: Lịch sử mua hàng -->
-                <div onclick="ShopVietState.navigate('dashboard', { tab: 'orders' })" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all cursor-pointer group">
+                <div onclick="window.ShopVietState ? window.ShopVietState.navigate('dashboard', { tab: 'orders' }) : (window.location.hash = '#dashboard?tab=orders')" class="bg-white dark:bg-slate-900 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-start gap-3 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:shadow-sm transition-all cursor-pointer group">
                   <div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                      <path d="M3 6h18" />
-                      <path d="M16 10a4 4 0 0 1-8 0" />
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10 9 9 9 8 9"/>
                     </svg>
                   </div>
                   <div class="min-w-0 flex-1">
@@ -359,7 +364,7 @@ window.ShopVietViews.home = (function () {
                       <span>Lịch sử mua hàng</span>
                     </div>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                      Tra cứu đơn & nhận link bản quyền
+                      Quản lý gói & xem link bàn giao
                     </p>
                   </div>
                 </div>
