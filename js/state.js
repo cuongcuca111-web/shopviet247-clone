@@ -179,15 +179,15 @@
     // Lấy danh sách sản phẩm tùy chỉnh từ localStorage (shopviet_custom_products / shopviet_admin_products)
     getCustomProducts: function () {
       try {
+        if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
+          return window.ShopVietData.products;
+        }
         const raw = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
             return parsed;
           }
-        }
-        if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
-          return window.ShopVietData.products;
         }
         return [];
       } catch (e) {
@@ -249,12 +249,37 @@
 
     // ==================== TÍCH HỢP CLOUD REST SYNC ĐA THIẾT BỊ TOÀN DIỆN ====================
     // Đồng bộ toàn bộ dữ liệu (Tài khoản, Sản phẩm, Voucher, Lịch hẹn Excel, Đơn hàng) từ Cloud REST API
-    syncAllFromCloud: async function () {
+    syncAllFromCloud: async function (isManual) {
+      const syncIcon = document.getElementById('cloudSyncHeaderIcon');
+      if (isManual && syncIcon) {
+        syncIcon.classList.add('animate-spin');
+      }
       try {
-        const res = await fetch(CLOUD_DB_URL, { method: 'GET' });
-        if (!res.ok) return false;
+        // Cache-busting URL để trình duyệt luôn lấy dữ liệu mới nhất từ Cloud REST API (tránh cache trên máy khác / ẩn danh)
+        const fetchUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        const res = await fetch(fetchUrl, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
+        if (!res.ok) {
+          if (isManual) {
+            if (syncIcon) syncIcon.classList.remove('animate-spin');
+            if (this.showToast) this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
+          }
+          return false;
+        }
         const json = await res.json();
-        if (!json || !json.data) return false;
+        if (!json || !json.data) {
+          if (isManual) {
+            if (syncIcon) syncIcon.classList.remove('animate-spin');
+            if (this.showToast) this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
+          }
+          return false;
+        }
         const data = json.data;
 
         let hasChange = false;
@@ -287,8 +312,12 @@
 
         // 2. Đồng bộ Products (Sản phẩm tùy chỉnh bởi Admin - Chuẩn Nguồn Chân Lý Dữ Liệu Thật)
         if (Array.isArray(data.products) && data.products.length > 0) {
+          const oldProdJson = localStorage.getItem('shopviet_custom_products') || '';
+          const prodJson = JSON.stringify(data.products);
+          if (prodJson !== oldProdJson) {
+            hasChange = true;
+          }
           try {
-            const prodJson = JSON.stringify(data.products);
             localStorage.setItem('shopviet_custom_products', prodJson);
             localStorage.setItem('shopviet_admin_products', prodJson);
           } catch (e) {}
@@ -297,7 +326,7 @@
           }
           this.saveCustomProducts(data.products);
           hasChange = true;
-          console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm từ Cloud REST API!');
+          console.log('[ShopVietState] Đã đồng bộ ' + data.products.length + ' sản phẩm (kèm ảnh upload & mô tả) từ Cloud REST API!');
         }
 
         // 3. Đồng bộ Vouchers (Mã giảm giá & quà tặng ví)
@@ -377,29 +406,48 @@
           }
         }
 
-        if (hasChange) {
+        if (hasChange || isManual) {
           this.notify('cloud_sync_completed', { timestamp: new Date().toISOString() });
           console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
-          if (this.state && (this.state.currentView === 'home' || this.state.currentRoute === 'home')) {
-            const appMount = document.getElementById('appMount');
-            const homeView = window.ShopVietViews && window.ShopVietViews.home;
-            if (appMount && homeView && typeof homeView.render === 'function') {
-              const currentScrollY = window.scrollY;
-              appMount.innerHTML = homeView.render();
-              if (typeof homeView.afterRender === 'function') {
-                homeView.afterRender();
-              }
-              if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                window.lucide.createIcons();
-              }
-              window.scrollTo(0, currentScrollY);
-            }
-          }
+          this.renderCurrentRoute(true);
+        }
+
+        if (isManual) {
+          if (syncIcon) syncIcon.classList.remove('animate-spin');
+          if (this.showToast) this.showToast('Đã đồng bộ dữ liệu mới nhất từ Đám Mây thành công!', 'success');
         }
         return true;
       } catch (err) {
         console.warn('[ShopVietState] syncAllFromCloud offline/failed:', err);
+        if (isManual) {
+          if (syncIcon) syncIcon.classList.remove('animate-spin');
+          if (this.showToast) this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
+        }
         return false;
+      }
+    },
+
+    // Cập nhật lại giao diện view hiện tại mà vẫn bảo toàn tọa độ cuộn
+    renderCurrentRoute: function (preserveScroll = true) {
+      try {
+        const currentView = (this.state && (this.state.currentView || this.state.currentRoute)) || 'home';
+        const appMount = document.getElementById('appMount');
+        const viewModule = window.ShopVietViews && window.ShopVietViews[currentView];
+        if (appMount && viewModule && typeof viewModule.render === 'function') {
+          const currentScrollY = preserveScroll ? window.scrollY : 0;
+          appMount.innerHTML = viewModule.render();
+          if (typeof viewModule.afterRender === 'function') {
+            viewModule.afterRender();
+          }
+          if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+          }
+          if (preserveScroll) {
+            window.scrollTo(0, currentScrollY);
+          }
+        }
+      } catch (err) {
+        console.warn('[ShopVietState] renderCurrentRoute error:', err);
       }
     },
 
@@ -769,6 +817,32 @@
     init: function () {
       this.load();
       this.syncAllFromCloud().catch(function () {});
+
+      // Auto-Sync on Focus & Tab Visibility Change (Đồng bộ tức thì khi chuyển tab / mở lại màn hình)
+      if (typeof window !== 'undefined') {
+        const self = this;
+        window.addEventListener('focus', function () {
+          self.syncAllFromCloud(false).catch(function () {});
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') {
+            self.syncAllFromCloud(false).catch(function () {});
+          }
+        });
+        // Lắng nghe thay đổi sản phẩm giữa các tab cùng trình duyệt tức thì trong 1 mili-giây
+        window.addEventListener('storage', function (e) {
+          if (e.key === 'shopviet_custom_products' || e.key === 'shopviet_admin_products') {
+            try {
+              if (e.newValue) {
+                const updatedProds = JSON.parse(e.newValue);
+                if (window.ShopVietData) window.ShopVietData.products = updatedProds;
+                self.renderCurrentRoute(true);
+              }
+            } catch (err) {}
+          }
+        });
+      }
+
       return this;
     },
 
@@ -1026,10 +1100,13 @@
         return { success: false, message: 'Mã voucher "' + code + '" đã tồn tại trong hệ thống!' };
       }
 
+      const isPercent = voucherData.type === 'percent_discount';
+      const percentVal = isPercent ? Math.min(99, Math.max(1, parseInt(voucherData.percent || voucherData.value, 10) || 0)) : null;
       const newVoucher = {
         code: code,
-        type: voucherData.type === 'wallet_gift' ? 'wallet_gift' : 'order_discount',
-        value: Math.max(0, parseInt(voucherData.value, 10) || 0),
+        type: voucherData.type === 'wallet_gift' ? 'wallet_gift' : (isPercent ? 'percent_discount' : 'order_discount'),
+        percent: percentVal,
+        value: isPercent ? percentVal : Math.max(0, parseInt(voucherData.value, 10) || 0),
         singleUse: voucherData.singleUse !== undefined ? !!voucherData.singleUse : true,
         isUsed: false,
         usedBy: null,

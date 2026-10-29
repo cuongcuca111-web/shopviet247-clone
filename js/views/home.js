@@ -90,7 +90,7 @@ window.ShopVietViews.home = (function () {
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
         <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
           ${prod.imageUrl 
-            ? `<img src="${prod.imageUrl}" alt="${prod.name}" class="w-full h-full object-cover rounded-2xl" />`
+            ? `<img src="${prod.imageUrl}" alt="${prod.name}" class="w-full h-full object-cover rounded-2xl" onerror="this.onerror=null; this.classList.add('hidden'); if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');" /><div class="hidden w-full h-full p-3.5 flex items-center justify-center">${window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : ''}</div>`
             : (window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : '')}
         </div>
 

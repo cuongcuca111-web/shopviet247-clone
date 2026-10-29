@@ -1100,10 +1100,17 @@
   // Render 1 dòng trong bảng voucher
   function renderVoucherTableRow(v) {
     const isUsed = !!v.isUsed;
-    const typeLabel = v.type === 'wallet_gift' ? 'Nạp tiền vào ví' : 'Giảm giá đơn hàng';
+    const isPercent = v.type === 'percent_discount' || (v.percent !== undefined && v.percent !== null);
+    const typeLabel = v.type === 'wallet_gift' 
+      ? 'Nạp tiền vào ví' 
+      : (isPercent ? 'Giảm theo % đơn hàng' : 'Giảm số tiền cố định (VNĐ)');
     const typeBadge = v.type === 'wallet_gift' 
       ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-      : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      : (isPercent 
+        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
+        : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800');
+
+    const discountText = isPercent ? `-${v.percent || v.value}%` : `-${formatVND(v.value)}`;
 
     return `
       <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors" data-code="${(v.code || '').toLowerCase()}" data-user="${(v.usedBy || '').toLowerCase()}">
@@ -1131,7 +1138,7 @@
 
         <!-- GIÁ TRỊ GIẢM -->
         <td class="py-3 px-3.5 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-          -${formatVND(v.value)}
+          ${discountText}
         </td>
 
         <!-- TRẠNG THÁI -->
@@ -1158,7 +1165,7 @@
               </div>
               <span class="font-medium text-slate-800 dark:text-slate-200 text-xs">${v.usedBy}</span>
             </div>
-            <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Đã được giảm -${formatVND(v.value)}</div>
+            <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Đã được giảm ${discountText}</div>
           ` : `
             <span class="text-slate-400 text-xs">-</span>
           `}
@@ -1773,34 +1780,38 @@
               <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Loại mã (*)</label>
               <select 
                 id="voucherTypeInput" 
+                onchange="window.ShopVietViews.admin.onVoucherTypeChange(this.value)"
                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
               >
-                <option value="order_discount">Giảm giá trực tiếp đơn hàng (Khuyên dùng)</option>
+                <option value="percent_discount" selected>Giảm theo phần trăm (%) - Mặc định</option>
+                <option value="order_discount">Giảm số tiền cố định (VNĐ)</option>
                 <option value="wallet_gift">Mã quà tặng nạp tiền vào Ví</option>
               </select>
             </div>
 
-            <!-- Số Tiền Giảm -->
+            <!-- Giá trị giảm -->
             <div>
-              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số tiền giảm (VNĐ) (*)</label>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1" id="voucherValueLabel">Giá trị giảm (% hoặc VNĐ) (*)</label>
               <input 
                 type="number" 
                 id="voucherValueInput" 
                 required 
-                min="1000" 
-                step="1000" 
-                value="20000" 
-                placeholder="Ví dụ: 20000, 50000, 100000..." 
+                min="1" 
+                max="99" 
+                step="1" 
+                value="20" 
+                placeholder="Nhập số % (VD: 20 tức giảm 20%) hoặc số tiền VNĐ (VD: 20000)" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-bold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base"
               >
               <!-- Các nút chọn nhanh -->
-              <div class="flex items-center gap-1.5 mt-2">
+              <div class="flex items-center gap-1.5 mt-2 flex-wrap" id="voucherQuickSelectBtns">
                 <span class="text-[11px] text-slate-400">Chọn nhanh:</span>
-                <button type="button" onclick="document.getElementById('voucherValueInput').value = 10000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">10k</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 10; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">10%</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 20; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">20%</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 30; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">30%</button>
+                <button type="button" onclick="document.getElementById('voucherValueInput').value = 50; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">50%</button>
                 <button type="button" onclick="document.getElementById('voucherValueInput').value = 20000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">20k</button>
                 <button type="button" onclick="document.getElementById('voucherValueInput').value = 50000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">50k</button>
-                <button type="button" onclick="document.getElementById('voucherValueInput').value = 100000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">100k</button>
-                <button type="button" onclick="document.getElementById('voucherValueInput').value = 200000; window.ShopVietViews.admin.generateRandomVoucherCode();" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600">200k</button>
               </div>
             </div>
 
@@ -2923,6 +2934,31 @@
       if (modal) modal.remove();
     },
 
+    onVoucherTypeChange: function (type) {
+      const valInput = document.getElementById('voucherValueInput');
+      const label = document.getElementById('voucherValueLabel');
+      if (type === 'percent_discount') {
+        if (label) label.textContent = 'Giá trị giảm (% phần trăm) (*)';
+        if (valInput) {
+          valInput.min = '1';
+          valInput.max = '99';
+          valInput.step = '1';
+          valInput.value = '20';
+          valInput.placeholder = 'Ví dụ: 20 tức giảm 20%';
+        }
+      } else {
+        if (label) label.textContent = 'Số tiền giảm (VNĐ) (*)';
+        if (valInput) {
+          valInput.min = '1000';
+          valInput.removeAttribute('max');
+          valInput.step = '1000';
+          valInput.value = '20000';
+          valInput.placeholder = 'Ví dụ: 20000, 50000, 100000...';
+        }
+      }
+      this.generateRandomVoucherCode();
+    },
+
     generateRandomVoucherCode: function () {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       let randomPart = '';
@@ -2930,15 +2966,22 @@
         randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       const valInput = document.getElementById('voucherValueInput');
-      const val = valInput ? parseInt(valInput.value, 10) || 20000 : 20000;
-      let prefix = 'SV' + Math.round(val / 1000) + 'K';
+      const typeInput = document.getElementById('voucherTypeInput');
+      const isPercent = typeInput ? typeInput.value === 'percent_discount' : true;
+      const rawVal = valInput ? parseInt(valInput.value, 10) || 20 : 20;
+      let prefix = 'SV20';
+      if (isPercent) {
+        prefix = 'SV' + Math.min(99, Math.max(1, rawVal)) + 'P';
+      } else {
+        prefix = 'SV' + Math.round(rawVal / 1000) + 'K';
+      }
       const codeInput = document.getElementById('voucherCodeInput');
       if (codeInput) {
         codeInput.value = prefix + '-' + randomPart;
       }
     },
 
-    createVoucherSubmit: function (e) {
+    createVoucherSubmit: async function (e) {
       if (e && e.preventDefault) e.preventDefault();
       const codeInput = document.getElementById('voucherCodeInput');
       const typeInput = document.getElementById('voucherTypeInput');
@@ -2948,42 +2991,84 @@
       if (!codeInput || !valInput) return;
 
       const code = codeInput.value.trim().toUpperCase();
-      const type = typeInput ? typeInput.value : 'order_discount';
-      const value = parseInt(valInput.value, 10) || 0;
+      const type = typeInput ? typeInput.value : 'percent_discount';
+      const rawVal = parseInt(valInput.value, 10) || 0;
       const singleUse = singleUseInput ? singleUseInput.checked : true;
 
       if (!code) {
         notify('Vui lòng nhập mã voucher!', 'error');
         return;
       }
-      if (value <= 0) {
-        notify('Giá trị giảm phải lớn hơn 0đ!', 'error');
+      if (rawVal <= 0) {
+        notify('Giá trị giảm phải lớn hơn 0!', 'error');
         return;
       }
 
-      if (window.ShopVietState && window.ShopVietState.addVoucher) {
-        const res = window.ShopVietState.addVoucher({
+      if (type === 'percent_discount' && (rawVal < 1 || rawVal > 99)) {
+        notify('Mã giảm theo phần trăm phải từ 1% đến 99%!', 'error');
+        return;
+      }
+
+      const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
+      const exists = vouchers.some(function (v) {
+        return v.code && v.code.trim().toUpperCase() === code;
+      });
+      if (exists) {
+        notify(`Mã voucher "${code}" đã tồn tại trong hệ thống!`, 'error');
+        return;
+      }
+
+      let newVoucher;
+      if (type === 'percent_discount') {
+        const percent = Math.min(99, Math.max(1, rawVal));
+        newVoucher = {
+          code: code,
+          type: 'percent_discount',
+          percent: percent,
+          value: percent,
+          singleUse: singleUse,
+          isUsed: false,
+          usedBy: null,
+          usedAt: null,
+          orderCode: null,
+          createdAt: new Date().toISOString()
+        };
+      } else {
+        newVoucher = {
           code: code,
           type: type,
-          value: value,
-          singleUse: singleUse
-        });
+          value: rawVal,
+          singleUse: singleUse,
+          isUsed: false,
+          usedBy: null,
+          usedAt: null,
+          orderCode: null,
+          createdAt: new Date().toISOString()
+        };
+      }
 
-        if (res.success) {
-          if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-            window.ShopVietState.pushAllToCloud().catch(function () {});
-          }
-          this.closeVoucherModal();
-          this.switchTab('vouchers');
-          const tabBadge = document.getElementById('adminVoucherTabBadge');
-          if (tabBadge && window.ShopVietState.getVouchers) {
-            tabBadge.textContent = window.ShopVietState.getVouchers().length;
-          }
-          notify(`Đã tạo thành công mã voucher "${code}" giảm ${formatVND(value)}!`, 'success');
-        } else {
-          notify(res.message || 'Lỗi khi tạo mã voucher!', 'error');
+      vouchers.unshift(newVoucher);
+      if (window.ShopVietState && window.ShopVietState.saveVouchers) {
+        window.ShopVietState.saveVouchers(vouchers);
+      }
+
+      // BẮT BUỘC ĐẨY NGAY LÊN CLOUD REST API
+      if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+        try {
+          await window.ShopVietState.pushAllToCloud();
+        } catch (err) {
+          console.warn('[Admin] pushAllToCloud error:', err);
         }
       }
+
+      this.closeVoucherModal();
+      this.switchTab('vouchers');
+      const tabBadge = document.getElementById('adminVoucherTabBadge');
+      if (tabBadge && window.ShopVietState.getVouchers) {
+        tabBadge.textContent = window.ShopVietState.getVouchers().length;
+      }
+      const labelText = type === 'percent_discount' ? `${newVoucher.percent}%` : formatVND(rawVal);
+      notify(`Đã tạo thành công mã voucher "${code}" giảm ${labelText}! Tự động đồng bộ toàn hệ thống.`, 'success');
     },
 
     deleteVoucher: function (code) {
@@ -3011,6 +3096,18 @@
     resetDefaultVouchers: function () {
       if (window.ShopVietState && window.ShopVietState.saveVouchers) {
         const list = [
+          {
+            code: 'VIP20P',
+            type: 'percent_discount',
+            percent: 20,
+            value: 20,
+            singleUse: true,
+            isUsed: false,
+            usedBy: null,
+            usedAt: null,
+            orderCode: null,
+            createdAt: '2026-03-20T00:00:00.000Z'
+          },
           {
             code: 'DISCOUNT20K',
             type: 'order_discount',

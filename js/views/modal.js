@@ -178,10 +178,12 @@ window.ShopVietViews.modal = (function () {
               <!-- THÔNG TIN SẢN PHẨM (ĐỒNG BỘ CHUẨN XÁC THEO CARD SẢN PHẨM ẢNH 4) -->
               <div class="flex items-start gap-3.5 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
                 <!-- Square Thumbnail Chuẩn Sang Trọng Như Card Ảnh 4 (Nền trắng/dark, bo góc 2xl, đổ bóng tinh tế) -->
-                <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center p-2.5 shrink-0 overflow-hidden relative group">
-                  <div class="relative z-10 w-10 h-10 flex items-center justify-center">
-                    ${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}
-                  </div>
+                <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center ${currentProduct.imageUrl ? 'p-0' : 'p-2.5'} shrink-0 overflow-hidden relative group">
+                  ${currentProduct.imageUrl 
+                    ? `<img src="${currentProduct.imageUrl}" alt="${currentProduct.name}" class="w-full h-full object-cover rounded-2xl" onerror="this.onerror=null; this.classList.add('hidden'); if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');" /><div class="hidden relative z-10 w-10 h-10 flex items-center justify-center">${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}</div>`
+                    : `<div class="relative z-10 w-10 h-10 flex items-center justify-center">
+                        ${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}
+                      </div>`}
                 </div>
 
                 <!-- Title, Badges & Price -->
@@ -437,10 +439,13 @@ window.ShopVietViews.modal = (function () {
           let discount = 0;
           if (appliedVoucher.percent) {
             discount = Math.round(subtotal * appliedVoucher.percent / 100);
+          } else if (appliedVoucher.calculatedDiscount !== undefined) {
+            discount = appliedVoucher.calculatedDiscount;
           } else {
             discount = appliedVoucher.value || appliedVoucher.amount || 0;
           }
           discount = Math.min(discount, subtotal);
+          appliedVoucher.calculatedDiscount = discount;
           const finalPrice = Math.max(0, subtotal - discount);
 
           totalEl.innerHTML = `
@@ -466,7 +471,7 @@ window.ShopVietViews.modal = (function () {
     },
 
     // Áp dụng mã giảm giá trong Modal Mua Nhanh (Ảnh 4)
-    applyVoucherInQuickBuy: function () {
+    applyVoucherInQuickBuy: async function () {
       const input = document.getElementById('quickBuyVoucherInput');
       const msgEl = document.getElementById('quickBuyVoucherMsg');
       const btn = document.getElementById('quickBuyVoucherBtn');
@@ -480,23 +485,24 @@ window.ShopVietViews.modal = (function () {
         return;
       }
 
-      // Đảm bảo getVouchers và applyVoucher sẵn sàng
-      if (window.ShopVietState) {
-        if (typeof window.ShopVietState.getVouchers !== 'function') {
-          window.ShopVietState.getVouchers = function () {
-            try {
-              const raw = localStorage.getItem('shopviet_vouchers');
-              if (raw) return JSON.parse(raw);
-            } catch (e) {}
-            return [
-              { code: 'DISCOUNT20K', type: 'order_discount', value: 20000, singleUse: true, isUsed: false },
-              { code: 'VIP50K', type: 'order_discount', value: 50000, singleUse: true, isUsed: false },
-              { code: 'AI2026', type: 'order_discount', value: 15000, singleUse: true, isUsed: false },
-              { code: 'HSSV', type: 'order_discount', value: 10000, singleUse: true, isUsed: false },
-              { code: 'SHOPVIET', type: 'order_discount', value: 20000, singleUse: true, isUsed: false }
-            ];
-          };
+      const originalBtnHtml = btn ? btn.innerHTML : 'Áp dụng';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5 animate-spin inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> <span>Đang kiểm tra...</span>`;
+      }
+
+      // JIT Cloud Sync: Kéo dữ liệu voucher mới nhất từ Cloud REST API trước khi duyệt mã
+      if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+        try {
+          await window.ShopVietState.syncAllFromCloud(false);
+        } catch (syncErr) {
+          console.warn('[Modal] JIT syncAllFromCloud error:', syncErr);
         }
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
       }
 
       const vouchers = (window.ShopVietState && typeof window.ShopVietState.getVouchers === 'function')
@@ -504,16 +510,16 @@ window.ShopVietViews.modal = (function () {
         : [];
 
       let v = vouchers.find(function (item) {
-        return (item.code || '').toUpperCase() === rawCode;
+        return item && item.code && item.code.trim().toUpperCase() === rawCode;
       });
 
       // Kiểm tra danh sách mã tĩnh bổ sung nếu không tìm thấy trong vouchers
       if (!v) {
         const staticVouchers = {
-          'AI2026': { code: 'AI2026', percent: 15, isUsed: false, desc: 'Giảm 15% tổng đơn' },
-          'HSSV': { code: 'HSSV', percent: 10, isUsed: false, desc: 'Ưu đãi sinh viên giảm 10%' },
-          'SHOPVIET': { code: 'SHOPVIET', value: 20000, isUsed: false, desc: 'Giảm 20.000đ cho đơn đầu' },
-          'ANTIGRAVITY': { code: 'ANTIGRAVITY', percent: 20, isUsed: false, desc: 'Giảm 20% công cụ coding AI' }
+          'AI2026': { code: 'AI2026', type: 'percent_discount', percent: 15, isUsed: false, desc: 'Giảm 15% tổng đơn' },
+          'HSSV': { code: 'HSSV', type: 'percent_discount', percent: 10, isUsed: false, desc: 'Ưu đãi sinh viên giảm 10%' },
+          'SHOPVIET': { code: 'SHOPVIET', type: 'order_discount', value: 20000, isUsed: false, desc: 'Giảm 20.000đ cho đơn đầu' },
+          'ANTIGRAVITY': { code: 'ANTIGRAVITY', type: 'percent_discount', percent: 20, isUsed: false, desc: 'Giảm 20% công cụ coding AI' }
         };
         if (staticVouchers[rawCode]) {
           v = staticVouchers[rawCode];
@@ -542,25 +548,31 @@ window.ShopVietViews.modal = (function () {
         return;
       }
 
-      // Áp dụng thành công
-      appliedVoucher = v;
-      this.refreshQtyUI();
-
       const subtotal = currentProduct ? currentProduct.price * currentQty : 0;
       let discount = 0;
-      if (v.percent) {
-        discount = Math.round(subtotal * v.percent / 100);
+      let discountLabel = '';
+
+      const isPercent = v.type === 'percent_discount' || (v.percent !== undefined && v.percent !== null);
+      if (isPercent) {
+        const percentVal = parseInt(v.percent || v.value, 10) || 0;
+        discount = Math.round((subtotal * percentVal) / 100);
+        discountLabel = `(-${percentVal}% ~ -${discount.toLocaleString('vi-VN')}đ)`;
+        v.percent = percentVal;
       } else {
-        discount = v.value || v.amount || 0;
+        const fixedVal = parseInt(v.value || v.amount, 10) || 0;
+        discount = Math.min(subtotal, fixedVal);
+        discountLabel = `(-${discount.toLocaleString('vi-VN')}đ)`;
       }
-      discount = Math.min(discount, subtotal);
+
+      appliedVoucher = Object.assign({}, v, { calculatedDiscount: discount });
+      this.refreshQtyUI();
 
       if (msgEl) {
         msgEl.className = 'text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-1';
         msgEl.innerHTML = `
           <span class="flex items-center gap-1">
             <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Đã áp dụng mã <strong class="font-mono">${v.code}</strong> (-${formatMoney(discount)}đ)</span>
+            <span>✓ Đã áp dụng mã <strong class="font-mono text-xs">${v.code}</strong> ${discountLabel}</span>
           </span>
           <button type="button" onclick="ShopVietViews.modal.removeVoucherInQuickBuy()" class="text-rose-500 hover:text-rose-700 underline text-[10px] cursor-pointer ml-2">Gỡ mã</button>
         `;
@@ -576,7 +588,7 @@ window.ShopVietViews.modal = (function () {
       }
 
       if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast(`Áp dụng mã ${v.code} thành công! (-${formatMoney(discount)}đ)`, 'success');
+        window.ShopVietState.showToast(`✓ Áp dụng mã ${v.code} thành công! ${discountLabel}`, 'success');
       }
     },
 
@@ -656,6 +668,8 @@ window.ShopVietViews.modal = (function () {
         voucherCode = appliedVoucher.code;
         if (appliedVoucher.percent) {
           discount = Math.round(subtotal * appliedVoucher.percent / 100);
+        } else if (appliedVoucher.calculatedDiscount !== undefined) {
+          discount = appliedVoucher.calculatedDiscount;
         } else {
           discount = appliedVoucher.value || appliedVoucher.amount || 0;
         }
@@ -696,10 +710,13 @@ window.ShopVietViews.modal = (function () {
         expiresInSeconds: 600
       };
 
-      // Đánh dấu mã voucher đã sử dụng trong hệ thống
+      // Đánh dấu mã voucher đã sử dụng trong hệ thống và đồng bộ ngay lên Cloud
       if (appliedVoucher && window.ShopVietState && typeof window.ShopVietState.applyVoucher === 'function') {
         const userEmail = (currentUser && currentUser.email) || 'guest';
         window.ShopVietState.applyVoucher(appliedVoucher.code, userEmail, orderCode);
+        if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(console.warn);
+        }
       }
 
       // Đặt lại appliedVoucher
@@ -1084,7 +1101,7 @@ window.ShopVietViews.modal = (function () {
     },
 
     // Áp dụng mã giảm giá / Voucher ngay trên Popup thanh toán Sacombank
-    applyCoupon: function (orderCode) {
+    applyCoupon: async function (orderCode) {
       const input = document.getElementById('quickpay-coupon-input');
       const msgEl = document.getElementById('quickpay-coupon-message');
       const rawCode = input ? input.value.trim().toUpperCase() : '';
@@ -1097,48 +1114,30 @@ window.ShopVietViews.modal = (function () {
         return;
       }
 
-      // Đảm bảo ShopVietState có getVouchers và applyVoucher
-      if (window.ShopVietState) {
-        if (typeof window.ShopVietState.getVouchers !== 'function') {
-          window.ShopVietState.getVouchers = function () {
-            try {
-              const raw = localStorage.getItem('shopviet_vouchers');
-              if (raw) return JSON.parse(raw);
-            } catch (e) {}
-            return [
-              { code: 'DISCOUNT20K', type: 'order_discount', value: 20000, singleUse: true, isUsed: false },
-              { code: 'VIP50K', type: 'order_discount', value: 50000, singleUse: true, isUsed: false },
-              { code: 'AI2026', type: 'order_discount', value: 15000, singleUse: true, isUsed: false },
-              { code: 'HSSV', type: 'order_discount', value: 10000, singleUse: true, isUsed: false },
-              { code: 'SHOPVIET', type: 'order_discount', value: 20000, singleUse: true, isUsed: false }
-            ];
-          };
-        }
-        if (typeof window.ShopVietState.applyVoucher !== 'function') {
-          window.ShopVietState.applyVoucher = function (code, userEmail, oCode) {
-            const list = window.ShopVietState.getVouchers();
-            const target = list.find(function (item) { return item.code === code; });
-            if (target) {
-              target.isUsed = true;
-              target.usedBy = userEmail;
-              target.usedAt = new Date().toISOString();
-              target.orderCode = oCode;
-              try {
-                localStorage.setItem('shopviet_vouchers', JSON.stringify(list));
-              } catch (e) {}
-            }
-            return true;
-          };
-        }
+      // JIT Cloud Sync: Đồng bộ danh sách voucher mới nhất từ Cloud REST API
+      if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+        try {
+          await window.ShopVietState.syncAllFromCloud(false);
+        } catch (e) {}
       }
 
       const vouchers = (window.ShopVietState && typeof window.ShopVietState.getVouchers === 'function')
         ? window.ShopVietState.getVouchers()
         : [];
 
-      const v = vouchers.find(function (item) {
-        return (item.code || '').toUpperCase() === rawCode;
+      let v = vouchers.find(function (item) {
+        return item && item.code && item.code.trim().toUpperCase() === rawCode;
       });
+
+      if (!v) {
+        const staticVouchers = {
+          'AI2026': { code: 'AI2026', type: 'percent_discount', percent: 15, isUsed: false },
+          'HSSV': { code: 'HSSV', type: 'percent_discount', percent: 10, isUsed: false },
+          'SHOPVIET': { code: 'SHOPVIET', type: 'order_discount', value: 20000, isUsed: false },
+          'ANTIGRAVITY': { code: 'ANTIGRAVITY', type: 'percent_discount', percent: 20, isUsed: false }
+        };
+        if (staticVouchers[rawCode]) v = staticVouchers[rawCode];
+      }
 
       const currentOrder = window.ShopVietState ? window.ShopVietState.currentOrder : null;
       if (!currentOrder) {
@@ -1152,18 +1151,30 @@ window.ShopVietViews.modal = (function () {
       // Kiểm tra voucher tồn tại, hợp lệ và chưa dùng
       if (v && !v.isUsed) {
         const subtotal = Number(currentOrder.subtotal || currentOrder.amount || 0);
-        const voucherVal = Number(v.value || v.amount || 0);
-        const discount = Math.min(voucherVal, subtotal);
+        let discount = 0;
+        let discountLabel = '';
+        if (v.type === 'percent_discount' || (v.percent !== undefined && v.percent !== null)) {
+          const p = parseInt(v.percent || v.value, 10) || 0;
+          discount = Math.round((subtotal * p) / 100);
+          discountLabel = `-${p}% (-${discount.toLocaleString('vi-VN')}đ)`;
+        } else {
+          const voucherVal = Number(v.value || v.amount || 0);
+          discount = Math.min(voucherVal, subtotal);
+          discountLabel = `-${discount.toLocaleString('vi-VN')}đ`;
+        }
         const newAmount = Math.max(0, subtotal - discount);
 
         currentOrder.discount = discount;
         currentOrder.amount = newAmount;
         currentOrder.appliedVoucher = v.code;
 
-        // Đánh dấu mã đã dùng
+        // Đánh dấu mã đã dùng và đồng bộ Cloud
         const userEmail = (window.ShopVietState.state && window.ShopVietState.state.user && window.ShopVietState.state.user.email) || 'guest';
         if (typeof window.ShopVietState.applyVoucher === 'function') {
           window.ShopVietState.applyVoucher(v.code, userEmail, orderCode);
+        }
+        if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(console.warn);
         }
 
         // Cập nhật số tiền hiển thị trên màn hình
