@@ -115,8 +115,19 @@
 
   // Toast thông báo thanh lịch
   function showToast(message, type = 'info') {
+    if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+      window.ShopVietState.showToast(message, type);
+      return;
+    }
+
     const existing = document.getElementById('shopviet-toast');
-    if (existing) existing.remove();
+    if (existing) {
+      if (typeof existing.remove === 'function') {
+        existing.remove();
+      } else if (existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+    }
 
     const toast = document.createElement('div');
     toast.id = 'shopviet-toast';
