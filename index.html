@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopviet247 - Công Cụ AI & Tài Khoản Bản Quyền Tự Động</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS v3 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            'pulse-subtle': 'pulseSubtle 2.5s infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(12px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+              '50%': { opacity: '0.85', transform: 'scale(1.03)' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.05);
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ==================== STICKY HEADER ==================== -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Logo + Brand -->
+      <a href="#home" id="brandLogoLink" class="flex items-center gap-2.5 group cursor-pointer select-none">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 group-hover:shadow-indigo-500/40 transition-all duration-300">
+          <!-- Robot AI Modern SVG Icon -->
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="14" x="3" y="7" rx="3" />
+            <path d="M12 2v5" />
+            <path d="M7 13h.01" />
+            <path d="M17 13h.01" />
+            <path d="M10 17h4" />
+            <circle cx="12" cy="2" r="1" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Shopviet<span class="text-indigo-600 dark:text-indigo-400">247</span></span>
+            <span class="px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/50">AI Store</span>
+          </div>
+          <span class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold tracking-wide">Bản Quyền Tự Động 24/7</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 text-sm">
+        <button id="navHome" data-view="home" class="nav-btn px-4 py-1.5 rounded-full font-semibold transition-all duration-200 bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white">
+          Trang chủ
+        </button>
+        <button id="navProducts" data-view="home" data-scroll="products" class="nav-btn px-4 py-1.5 rounded-full font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-200">
+          Sản phẩm
+        </button>
+        <button id="navBlog" class="nav-btn px-4 py-1.5 rounded-full font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-200">
+          Blog
+        </button>
+        <button id="navSupport" class="nav-btn px-4 py-1.5 rounded-full font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all duration-200">
+          Liên hệ & Hỗ trợ
+        </button>
+      </nav>
+
+      <!-- Right Action Cluster -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Quick Search Button -->
+        <button id="searchTriggerBtn" title="Tìm kiếm sản phẩm (Ctrl+K)" class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </button>
+
+        <!-- Cart Button with Count Badge -->
+        <button id="cartBtn" title="Giỏ hàng của bạn" class="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-black rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center shadow-sm animate-pulse-subtle">0</span>
+        </button>
+
+        <!-- Language Button -->
+        <button id="langToggleBtn" title="Đổi ngôn ngữ" class="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <!-- Flag Vietnam SVG -->
+          <svg class="w-4 h-3 rounded-sm shadow-sm" viewBox="0 0 30 20" fill="none">
+            <rect width="30" height="20" fill="#DA251D" />
+            <polygon points="15,4 16.5,8.8 21.5,8.8 17.5,11.8 19,16.5 15,13.5 11,16.5 12.5,11.8 8.5,8.8 13.5,8.8" fill="#FFFF00" />
+          </svg>
+          <span id="langText">VI</span>
+        </button>
+
+        <!-- Dark/Light Theme Button -->
+        <button id="themeToggleBtn" title="Chuyển chế độ sáng/tối" class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-colors">
+          <!-- Moon Icon (shown in light mode) -->
+          <svg id="themeIconDark" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" /><path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" /><path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <!-- Sun Icon (shown in dark mode) -->
+          <svg id="themeIconLight" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
+
+        <!-- Dashboard / Account Button -->
+        <button id="dashboardBtn" class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-3.5 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <rect width="7" height="9" x="3" y="3" rx="1" />
+            <rect width="7" height="5" x="14" y="3" rx="1" />
+            <rect width="7" height="9" x="14" y="12" rx="1" />
+            <rect width="7" height="5" x="3" y="16" rx="1" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN SPA MOUNT AREA ==================== -->
+  <main id="appMount" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-all duration-300">
+    <!-- View content will be mounted here by ShopVietState.navigate() -->
+  </main>
+
+  <!-- ==================== QUICK BUY MODAL MOUNT ==================== -->
+  <div id="modalMount"></div>
+
+  <!-- ==================== TOAST NOTIFICATION MOUNT ==================== -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- ==================== CLEAN SAAS FOOTER ==================== -->
+  <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 transition-colors mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        
+        <!-- Column 1: Brand Info -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="14" x="3" y="7" rx="3" />
+                <path d="M12 2v5" />
+                <circle cx="12" cy="2" r="1" fill="currentColor" />
+              </svg>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white">Shopviet<span class="text-indigo-400">247</span></span>
+          </div>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Hệ sinh thái cung cấp công cụ AI, bản quyền phần mềm học tập & phát triển phần mềm tự động số 1 Việt Nam. Kích hoạt tự động 24/7, bảo hành uy tín 1 đổi 1 nhanh chóng.
+          </p>
+          <div class="pt-2 flex items-center gap-3 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              Hệ thống tự động On-line 24/7
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 pt-2">
+            © 2026 Shopviet247. All rights reserved. Nền tảng phục vụ lập trình viên và sinh viên Việt Nam.
+          </p>
+        </div>
+
+        <!-- Column 2: Cửa Hàng -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-white">Cửa hàng Bản Quyền</h4>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> Cursor Pro & Cursor Team (New)</a></li>
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> Gemini Advanced & Antigravity 2.0</a></li>
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> ChatGPT Plus & O1 Private</a></li>
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> Capcut Pro PC/Mobile Vĩnh Viễn</a></li>
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> Canva Pro Giáo Viên Mail Chính Chủ</a></li>
+            <li><a href="#home" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><span>•</span> API AI Coding (Claude 3.5, GPT-4o)</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Hỗ Trợ & Liên Hệ -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-white">Hỗ trợ & Bảo hành</h4>
+          <ul class="space-y-2.5 text-sm text-slate-400">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>Zalo CSKH: <strong class="text-white">0987.654.321</strong> (8h00 - 24h00)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              <span>Telegram Bot Báo Đơn: <a href="https://t.me/shopviet247_bot" target="_blank" class="text-indigo-400 hover:underline">@shopviet247_bot</a></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Chính sách: <strong class="text-slate-200">Bảo hành 1 đổi 1</strong> suốt thời gian sử dụng</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+              <span>Giao đơn siêu tốc: <strong class="text-slate-200">Tự động sau 5 giây thanh toán</strong></span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== APPLICATION SCRIPTS ==================== -->
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/views/home.js"></script>
+  <script src="js/views/modal.js"></script>
+  <script src="js/views/checkout.js"></script>
+  <script src="js/views/auth.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
