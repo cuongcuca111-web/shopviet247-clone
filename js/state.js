@@ -8,6 +8,7 @@
 
   const STORAGE_KEY = 'shopviet247_app_state_v1';
   const USERS_DB_KEY = 'shopviet_users_database';
+  const CLOUD_DB_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a1878bee264ca3';
 
   // Tài khoản Quản trị viên mặc định
   const DEFAULT_ADMIN = {
@@ -20,6 +21,18 @@
     phone: '0987654321',
     avatar: 'C',
     createdAt: '2026-01-01T00:00:00.000Z'
+  };
+
+  // Tài khoản Khách hàng mặc định sẵn sàng đăng nhập trên mọi thiết bị
+  const DEFAULT_USER_CUONG = {
+    id: 'usr_cuongcuca111',
+    name: 'Minh Cường',
+    email: 'cuongcuca111@gmail.com',
+    phone: '0868668809',
+    role: 'user',
+    password: '123456',
+    balance: 250000,
+    createdAt: '2026-03-20T10:00:00.000Z'
   };
 
   // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
@@ -57,7 +70,7 @@
         const raw = localStorage.getItem(USERS_DB_KEY);
         let list = raw ? JSON.parse(raw) : [];
         if (!Array.isArray(list) || list.length === 0) {
-          list = [Object.assign({}, DEFAULT_ADMIN)];
+          list = [Object.assign({}, DEFAULT_ADMIN), Object.assign({}, DEFAULT_USER_CUONG)];
           localStorage.setItem(USERS_DB_KEY, JSON.stringify(list));
         } else {
           // Luôn đảm bảo tài khoản Admin chuẩn tồn tại và có quyền admin
@@ -75,12 +88,30 @@
               list[adminIdx].balance = DEFAULT_ADMIN.balance;
             }
           }
+
+          // Luôn đảm bảo tài khoản người dùng mặc định cuongcuca111@gmail.com tồn tại
+          const cuongIdx = list.findIndex(function (u) {
+            return u.email && u.email.trim().toLowerCase() === DEFAULT_USER_CUONG.email.toLowerCase();
+          });
+          if (cuongIdx === -1) {
+            list.push(Object.assign({}, DEFAULT_USER_CUONG));
+            localStorage.setItem(USERS_DB_KEY, JSON.stringify(list));
+          } else {
+            if (typeof list[cuongIdx].balance !== 'number') {
+              list[cuongIdx].balance = DEFAULT_USER_CUONG.balance;
+            }
+          }
         }
         return list;
       } catch (e) {
         console.warn('[ShopVietState] Lỗi đọc users_db:', e);
-        return [Object.assign({}, DEFAULT_ADMIN)];
+        return [Object.assign({}, DEFAULT_ADMIN), Object.assign({}, DEFAULT_USER_CUONG)];
       }
+    },
+
+    // Alias hỗ trợ cả 2 chuẩn gọi getUsersDB và getUsersDatabase
+    getUsersDatabase: function () {
+      return this.getUsersDB();
     },
 
     // Lưu danh sách tài khoản vào localStorage
@@ -90,6 +121,95 @@
       } catch (e) {
         console.warn('[ShopVietState] Lỗi lưu users_db:', e);
       }
+    },
+
+    // ==================== TÍCH HỢP CLOUD REST SYNC ĐA THIẾT BỊ ====================
+    // Đồng bộ danh sách tài khoản từ Cloud REST API (cho PC & Điện thoại cùng dùng chung)
+    syncFromCloud: async function () {
+      try {
+        const res = await fetch(CLOUD_DB_URL, { method: 'GET' });
+        if (!res.ok) return false;
+        const json = await res.json();
+        const cloudUsers = (json && json.data && Array.isArray(json.data.users)) ? json.data.users : [];
+        if (!cloudUsers.length) return false;
+
+        const localUsers = this.getUsersDB();
+        let hasNew = false;
+
+        cloudUsers.forEach(function (cu) {
+          if (!cu || !cu.email) return;
+          const cleanEmail = cu.email.trim().toLowerCase();
+          const existing = localUsers.find(function (u) {
+            return u.email && u.email.trim().toLowerCase() === cleanEmail;
+          });
+          if (!existing) {
+            localUsers.push(cu);
+            hasNew = true;
+          }
+        });
+
+        if (hasNew) {
+          this.saveUsersDB(localUsers);
+          console.log('[ShopVietState] Đã đồng bộ tài khoản mới từ Cloud thành công!');
+        }
+        return true;
+      } catch (err) {
+        console.warn('[ShopVietState] syncFromCloud offline/failed:', err);
+        return false;
+      }
+    },
+
+    // Đẩy danh sách tài khoản hiện tại lên Cloud REST API
+    pushToCloud: async function (users) {
+      try {
+        users = users || this.getUsersDB();
+        const payload = {
+          name: 'ShopViet247_Users_DB',
+          data: {
+            users: users,
+            updatedAt: new Date().toISOString()
+          }
+        };
+        const res = await fetch(CLOUD_DB_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        return res.ok;
+      } catch (err) {
+        console.warn('[ShopVietState] pushToCloud error:', err);
+        return false;
+      }
+    },
+
+    // Đăng ký tài khoản bất đồng bộ kèm tự động đẩy lên Cloud
+    registerUserAsync: async function (userData) {
+      const result = this.registerUser(userData);
+      if (result && result.success) {
+        this.pushToCloud(this.getUsersDB()).catch(function (e) {
+          console.warn('[ShopVietState] pushToCloud async background error:', e);
+        });
+      }
+      return result;
+    },
+
+    // Xác thực tài khoản bất đồng bộ kèm tự động fetch Cloud nếu máy chưa có
+    authenticateUserAsync: async function (email, password) {
+      let authResult = this.authenticateUser(email, password);
+      if (authResult && authResult.success) {
+        return authResult;
+      }
+      if (authResult && authResult.error === 'USER_NOT_FOUND') {
+        try {
+          await this.syncFromCloud();
+          authResult = this.authenticateUser(email, password);
+        } catch (e) {
+          console.warn('[ShopVietState] authenticateUserAsync sync retry error:', e);
+        }
+      }
+      return authResult;
     },
 
     // Tìm kiếm tài khoản theo email (không phân biệt hoa/thường)
@@ -145,6 +265,9 @@
       users.push(newUser);
       this.saveUsersDB(users);
 
+      // Tự động đồng bộ lên Cloud REST API
+      this.pushToCloud(users).catch(function () {});
+
       // Đồng bộ lên Cloud Firestore nếu có
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncUserToCloud === 'function') {
         window.ShopVietFirebase.syncUserToCloud(newUser);
@@ -179,9 +302,12 @@
         };
       }
 
-      // Kiểm tra mật khẩu (hỗ trợ cả minhcuong111 và 123456 cho tài khoản admin Minh Cường)
+      // Kiểm tra mật khẩu (hỗ trợ cả minhcuong111 và 123456 cho tài khoản admin Minh Cường & cuongcuca111@gmail.com)
       let isPasswordCorrect = (matchedUser.password === password);
-      if (matchedUser.email === DEFAULT_ADMIN.email && (password === 'minhcuong111' || password === '123456')) {
+      if (matchedUser.email && matchedUser.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase() && (password === 'minhcuong111' || password === '123456')) {
+        isPasswordCorrect = true;
+      }
+      if (matchedUser.email && matchedUser.email.trim().toLowerCase() === DEFAULT_USER_CUONG.email.toLowerCase() && (password === '123456' || password === 'minhcuong111' || password === matchedUser.password)) {
         isPasswordCorrect = true;
       }
 
@@ -369,11 +495,21 @@
       }
     },
 
+    // Khởi tạo hệ thống toàn cục và tự động đồng bộ tài khoản đa thiết bị
+    init: function () {
+      this.load();
+      this.syncFromCloud().catch(function () {});
+      return this;
+    },
+
     // Đọc từ localStorage
     load: function () {
       try {
         // Đảm bảo users_db được khởi tạo
         this.getUsersDB();
+
+        // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền
+        this.syncFromCloud().catch(function () {});
 
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {

@@ -156,16 +156,7 @@
                 </div>
               </div>
 
-              <!-- Banner gợi ý tài khoản Admin nhanh cho kiểm thử -->
-              <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-[11px] text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 select-none">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <span class="text-amber-600 dark:text-amber-400 font-bold shrink-0">👑 Admin:</span>
-                  <span class="truncate font-mono">minhcuong111aaa@gmail.com</span>
-                </div>
-                <button type="button" id="fillAdminDemoBtn" class="shrink-0 px-2 py-1 rounded-lg bg-amber-200/80 hover:bg-amber-300 dark:bg-amber-900/80 dark:hover:bg-amber-800 text-amber-950 dark:text-amber-100 font-bold transition text-[10px] cursor-pointer shadow-xs active:scale-95">
-                  Điền nhanh
-                </button>
-              </div>
+
 
               <!-- Khung giả lập Cloudflare Turnstile tương tác:
                    Hộp viền mảnh border border-slate-200 bg-slate-50/70 rounded-xl p-3 flex items-center justify-between text-xs my-4 -->
@@ -409,17 +400,7 @@
         });
       }
 
-      // 7. Nút điền nhanh tài khoản Admin cho thử nghiệm
-      const fillAdminBtn = document.getElementById('fillAdminDemoBtn');
-      if (fillAdminBtn) {
-        fillAdminBtn.addEventListener('click', function () {
-          const emailInput = document.getElementById('authEmailInput');
-          const passInput = document.getElementById('authPasswordInput');
-          if (emailInput) emailInput.value = 'minhcuong111aaa@gmail.com';
-          if (passInput) passInput.value = 'minhcuong111';
-          window.ShopVietState.showToast('Đã điền thông tin tài khoản Admin Minh Cường!', 'info');
-        });
-      }
+
 
       // 8. Chuyển đổi giữa Đăng nhập & Đăng ký
       const authToggleModeBtn = document.getElementById('authToggleModeBtn');
@@ -482,11 +463,22 @@
             try {
               if (isRegisterMode) {
                 // XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI
-                const regRes = window.ShopVietState.registerUser({
-                  email: email,
-                  password: password,
-                  name: name
-                });
+                let regRes;
+                if (window.ShopVietState && typeof window.ShopVietState.registerUserAsync === 'function') {
+                  regRes = await window.ShopVietState.registerUserAsync({
+                    email: email,
+                    password: password,
+                    name: name
+                  });
+                } else if (window.ShopVietState && typeof window.ShopVietState.registerUser === 'function') {
+                  regRes = window.ShopVietState.registerUser({
+                    email: email,
+                    password: password,
+                    name: name
+                  });
+                } else {
+                  regRes = { success: false, message: 'Hệ thống xác thực chưa sẵn sàng!' };
+                }
 
                 if (!regRes.success) {
                   // Báo lỗi nếu email đã tồn tại hoặc không hợp lệ
@@ -500,11 +492,21 @@
                 window.ShopVietState.navigate('dashboard');
               } else {
                 // XỬ LÝ ĐĂNG NHẬP TÀI KHOẢN THỰC TẾ
-                const authRes = window.ShopVietState.authenticateUser(email, password);
+                let authRes = window.ShopVietState && typeof window.ShopVietState.authenticateUser === 'function'
+                  ? window.ShopVietState.authenticateUser(email, password)
+                  : { success: false };
+
+                // Nếu xác thực đồng bộ chưa khớp, thử xác thực qua Cloud Firestore / Async
+                if (!authRes.success && window.ShopVietState && typeof window.ShopVietState.authenticateUserAsync === 'function') {
+                  if (submitBtnText) {
+                    submitBtnText.textContent = 'Đang đồng bộ đám mây...';
+                  }
+                  authRes = await window.ShopVietState.authenticateUserAsync(email, password);
+                }
 
                 if (!authRes.success) {
                   // Nếu không tồn tại hoặc sai mật khẩu: BÁO LỖI RÕ RÀNG VÀ TUYỆT ĐỐI KHÔNG CHO ĐĂNG NHẬP!
-                  window.ShopVietState.showToast(authRes.message, 'error');
+                  window.ShopVietState.showToast(authRes.message || 'Email hoặc mật khẩu không chính xác!', 'error');
                   return;
                 }
 
