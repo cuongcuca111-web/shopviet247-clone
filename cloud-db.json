@@ -22,15 +22,15 @@
       "createdAt": "2026-03-20T10:00:00.000Z"
     },
     {
-      "id": "usr_mvtr2ifpaymj",
-      "email": "minhcuong111aa@gmail.com",
+      "id": "usr_mvtibr4c22o7",
+      "email": "cuongcuca222@gmail.com",
       "password": "minhcuong111",
       "name": "Minh Cường",
       "phone": "",
       "balance": 0,
       "role": "user",
       "avatar": "M",
-      "createdAt": "2026-10-29T16:20:48.469Z"
+      "createdAt": "2026-10-29T12:16:03.084Z"
     }
   ],
   "products": [
@@ -69,14 +69,13 @@
       "code": "SV30P-XA8S",
       "type": "percent_discount",
       "percent": 30,
-      "singleUse": true,
+      "singleUse": false,
       "isUsed": false,
       "usedBy": null,
       "usedAt": null,
       "orderCode": null,
       "desc": "Giảm 30% tổng đơn hàng",
-      "createdAt": "2026-10-29T15:17:36.460Z",
-      "value": 30
+      "createdAt": "2026-10-29T22:17:29+07:00"
     },
     {
       "code": "DISCOUNT20K",
@@ -99,18 +98,6 @@
       "usedAt": null,
       "orderCode": null,
       "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
-      "code": "SV20P-PEY6",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-10-29T16:17:13.606Z"
     }
   ],
   "schedules": [
@@ -152,5 +139,5 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-29T16:21:11.503Z"
+  "updatedAt": "2026-10-30T16:36:49.767Z"
 }
