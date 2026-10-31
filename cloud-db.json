@@ -182,6 +182,16 @@
   ],
   "schedules": [
     {
+      "id": "SCH-001",
+      "customerEmail": "cuongcuca111@gmail.com",
+      "customerName": "Minh Cường",
+      "managerEmail": "slot1-pro@shopviet.vip",
+      "serviceName": "[1 Tháng] Gemini Argon 4 Pro + 5TB Drive",
+      "startDate": "2026-10-29",
+      "expireDate": "2026-11-29",
+      "notes": "Khách VIP nâng cấp chính chủ"
+    },
+    {
       "id": "SCH-002",
       "customerEmail": "huy.dev99@gmail.com",
       "customerName": "Nguyễn Huy",
@@ -456,6 +466,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:54:44.267Z",
-  "version": 1793422484267
+  "updatedAt": "2026-10-31T04:54:46.467Z",
+  "version": 1793422486467
 }
