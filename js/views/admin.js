@@ -2242,12 +2242,32 @@
       imageUrl: '',
       badge: 'Bán chạy nhất',
       warranty: '18 tháng (1 đổi 1)',
-      desc: 'Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...'
+      desc: 'Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...',
+      benefits: [
+        'Kích hoạt qua link mời chính chủ Google',
+        'Tích hợp Antigravity 2.0 & Veo Video AI',
+        'Bảo hành chính chủ 1 đổi 1',
+        'Tự động cấp link ngay sau khi thanh toán'
+      ],
+      usageGuide: 'Sau khi thanh toán thành công, hệ thống tự động gửi link kích hoạt bản quyền trực tiếp vào email đăng ký của bạn. Chỉ cần click vào link để tham gia nhóm gia đình chính chủ của Google. Thời gian kích hoạt từ 1-5 phút 24/7.'
     };
 
     if (isEdit && window.ShopVietData && window.ShopVietData.products) {
       const found = window.ShopVietData.products.find(p => p.id === productId);
-      if (found) prod = Object.assign({}, found);
+      if (found) {
+        prod = Object.assign({}, found);
+        if (!prod.benefits || !Array.isArray(prod.benefits) || prod.benefits.length === 0) {
+          prod.benefits = [
+            'Kích hoạt qua link mời chính chủ Google',
+            'Tích hợp Antigravity 2.0 & Veo Video AI',
+            'Bảo hành chính chủ 1 đổi 1',
+            'Tự động cấp link ngay sau khi thanh toán'
+          ];
+        }
+        if (!prod.usageGuide) {
+          prod.usageGuide = prod.instructions || prod.desc || '';
+        }
+      }
     }
 
     // Nhận diện Badge chuẩn & chế độ tùy chỉnh
@@ -2515,6 +2535,34 @@
                 rows="3" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >${prod.desc || ''}</textarea>
+            </div>
+
+            <!-- Đặc quyền khi mua tại ShopSkill247 (Mỗi dòng một đặc quyền) -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Đặc quyền khi mua tại ShopSkill247 (Mỗi dòng một đặc quyền)</span>
+              </label>
+              <textarea 
+                id="editProdBenefits" 
+                rows="3" 
+                placeholder="Ví dụ:&#10;Kích hoạt qua link mời chính chủ Google&#10;Tích hợp Antigravity 2.0 & Veo Video AI&#10;Bảo hành chính chủ 1 đổi 1&#10;Tự động cấp link ngay sau khi thanh toán"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans text-xs sm:text-sm"
+              >${(Array.isArray(prod.benefits) ? prod.benefits.join('\n') : (prod.benefits || ''))}</textarea>
+            </div>
+
+            <!-- Mô tả & Hướng dẫn sử dụng -->
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <span>Mô tả & Hướng dẫn sử dụng</span>
+              </label>
+              <textarea 
+                id="editProdUsageGuide" 
+                rows="3" 
+                placeholder="Nhập thông tin hướng dẫn sử dụng, điều kiện bảo hành hoặc cách nhận tài khoản..."
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans text-xs sm:text-sm"
+              >${prod.usageGuide || prod.desc || ''}</textarea>
             </div>
 
             <!-- Nút Hành Động -->
@@ -3057,6 +3105,10 @@
       const imageUrlInput = document.getElementById('editProdImageUrl');
       const imageUrl = imageUrlInput ? imageUrlInput.value.trim() : '';
 
+      const benefitsRaw = document.getElementById('editProdBenefits') ? document.getElementById('editProdBenefits').value : '';
+      const benefits = benefitsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+      const usageGuide = document.getElementById('editProdUsageGuide') ? document.getElementById('editProdUsageGuide').value.trim() : '';
+
       if (!name) {
         notify('Vui lòng nhập tên sản phẩm!', 'warning');
         return;
@@ -3091,7 +3143,14 @@
             isBestSeller,
             warranty,
             desc,
-            imageUrl
+            imageUrl,
+            benefits: benefits.length > 0 ? benefits : (window.ShopVietData.products[idx].benefits || [
+              'Kích hoạt qua link mời chính chủ Google',
+              'Tích hợp Antigravity 2.0 & Veo Video AI',
+              'Bảo hành chính chủ 1 đổi 1',
+              'Tự động cấp link ngay sau khi thanh toán'
+            ]),
+            usageGuide: usageGuide || desc || ''
           });
         }
       } else {
@@ -3115,9 +3174,16 @@
           autoDelivery: false,
           warranty: warranty || '12 tháng (1 đổi 1)',
           desc,
+          benefits: benefits.length > 0 ? benefits : [
+            'Kích hoạt qua link mời chính chủ Google',
+            'Tích hợp Antigravity 2.0 & Veo Video AI',
+            'Bảo hành chính chủ 1 đổi 1',
+            'Tự động cấp link ngay sau khi thanh toán'
+          ],
+          usageGuide: usageGuide || desc || '',
           iconType: iconType || 'gemini',
           imageUrl: imageUrl || '',
-          features: [
+          features: benefits.length > 0 ? benefits : [
             'Bản quyền kích hoạt nhanh chóng 24/7',
             'Bảo hành 1 đổi 1 nhanh chóng',
             'Hỗ trợ kỹ thuật qua Zalo 0868668809'

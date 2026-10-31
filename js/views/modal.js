@@ -865,6 +865,73 @@ window.ShopVietViews.modal = (function () {
       this.openPaymentModal(order);
     },
 
+    // Helper tạo đối tượng đơn hàng hợp lệ chuẩn DJ... phục vụ 1-Click Checkout trực tiếp
+    createOrder: function (product, qty, voucher) {
+      if (!product) return null;
+      qty = Math.max(1, parseInt(qty, 10) || 1);
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let suffix = '';
+      for (let i = 0; i < 4; i++) {
+        suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const rawCode = `DJ2026${suffix}`;
+      const orderCode = `#${rawCode}`;
+      const memo = rawCode;
+      const vietqrConfig = getActiveVietQRConfig();
+      const subtotal = (product.price || 0) * qty;
+      let discount = 0;
+      let voucherCode = null;
+
+      const activeVoucher = voucher || appliedVoucher || (window.ShopVietState && window.ShopVietState.appliedQuickBuyVoucher);
+      if (activeVoucher) {
+        voucherCode = activeVoucher.code;
+        if (activeVoucher.percent) {
+          discount = Math.round(subtotal * (activeVoucher.percent / 100));
+        } else if (activeVoucher.discountAmount !== undefined) {
+          discount = activeVoucher.discountAmount;
+        } else if (activeVoucher.calculatedDiscount !== undefined) {
+          discount = activeVoucher.calculatedDiscount;
+        } else {
+          discount = activeVoucher.value || activeVoucher.amount || 0;
+        }
+        discount = Math.min(discount, subtotal);
+      }
+
+      const totalAmount = Math.max(0, subtotal - discount);
+      const orderDate = new Date();
+
+      return {
+        id: orderCode,
+        orderCode: orderCode,
+        rawCode: rawCode,
+        memo: memo,
+        items: [{
+          id: product.id,
+          name: product.name,
+          category: product.tag || product.category || 'AI Software',
+          price: product.price,
+          originalPrice: product.oldPrice || product.price,
+          quantity: qty,
+          iconType: product.iconType
+        }],
+        totalItems: qty,
+        subtotal: subtotal,
+        discount: discount,
+        amount: totalAmount,
+        voucherCode: voucherCode,
+        appliedVoucher: voucherCode,
+        paymentMethod: `${vietqrConfig.shortName || 'Sacombank'} (VietQR 24/7)`,
+        bankName: vietqrConfig.bankName,
+        accountNumber: vietqrConfig.accountNumber,
+        accountName: vietqrConfig.accountName,
+        bin: vietqrConfig.bin || vietqrConfig.bankId || '970403',
+        createdAt: orderDate.toISOString(),
+        createdAtFormatted: `${orderDate.getHours().toString().padStart(2, '0')}:${orderDate.getMinutes().toString().padStart(2, '0')} ${orderDate.getDate().toString().padStart(2, '0')}/${(orderDate.getMonth() + 1).toString().padStart(2, '0')}/${orderDate.getFullYear()}`,
+        status: 'pending',
+        expiresInSeconds: 600
+      };
+    },
+
     // Mở trực tiếp Modal Thanh toán VietQR Động theo cấu hình Portal Admin
     openPaymentModal: function (order) {
       clearPaymentTimer();
@@ -1702,6 +1769,9 @@ window.ShopVietViews.modal = (function () {
     set appliedVoucher(v) {
       appliedVoucher = v;
     },
+
+    // Cấu hình VietQR
+    getActiveVietQRConfig: getActiveVietQRConfig,
 
     // Alias hỗ trợ tương thích ngược
     openQuickBuy: function (productId) {
