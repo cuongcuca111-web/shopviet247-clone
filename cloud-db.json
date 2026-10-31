@@ -134,17 +134,6 @@
       "createdAt": "2026-10-31T04:46:40.452Z"
     },
     {
-      "code": "VIP50K",
-      "type": "order_discount",
-      "value": 50000,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
       "code": "SV20P-PEY6",
       "type": "percent_discount",
       "percent": 20,
@@ -155,6 +144,40 @@
       "usedAt": null,
       "orderCode": null,
       "createdAt": "2026-10-29T16:17:13.606Z"
+    },
+    {
+      "code": "SV30P-XA8S",
+      "type": "percent_discount",
+      "percent": 30,
+      "value": 30,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-10-29T15:17:36.460Z"
+    },
+    {
+      "code": "DISCOUNT20K",
+      "type": "order_discount",
+      "value": 20000,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "code": "VIP50K",
+      "type": "order_discount",
+      "value": 50000,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-03-20T00:00:00.000Z"
     }
   ],
   "schedules": [
@@ -167,16 +190,6 @@
       "startDate": "2026-10-29",
       "expireDate": "2026-11-29",
       "notes": "Khách VIP nâng cấp chính chủ"
-    },
-    {
-      "id": "SCH-002",
-      "customerEmail": "huy.dev99@gmail.com",
-      "customerName": "Nguyễn Huy",
-      "managerEmail": "slot2-cursor@shopviet.vip",
-      "serviceName": "Cursor Pro 1 Tháng Chính Chủ",
-      "startDate": "2026-10-25",
-      "expireDate": "2026-11-01",
-      "notes": "Sắp hết hạn cần nhắc gia hạn"
     }
   ],
   "orders": [
@@ -443,6 +456,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:55:43.403Z",
-  "version": 1793422543403
+  "updatedAt": "2026-10-31T04:56:15.390Z",
+  "version": 1793422575390
 }
