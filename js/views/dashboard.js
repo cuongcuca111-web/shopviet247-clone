@@ -1765,9 +1765,50 @@
             const adminMsg = found.adminMessage || (origOrder && origOrder.adminMessage) || (delInfo && delInfo.adminMessage);
             if (modalOrderGuide) {
               if (adminMsg) {
-                modalOrderGuide.innerHTML = `<div class="font-bold text-indigo-700 dark:text-indigo-300 mb-1">💬 Lời nhắn từ Admin Minh Cường:</div><p class="italic mb-2 font-medium">${adminMsg}</p><div class="text-slate-500 text-[11px] pt-1 border-t border-amber-200/50">Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</div>`;
+                modalOrderGuide.innerHTML = `
+                  <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-indigo-100 dark:border-indigo-900/40">
+                    <div class="flex items-center gap-2 font-bold text-indigo-800 dark:text-indigo-300">
+                      <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner relative border border-indigo-200/50 dark:border-indigo-800/50">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                          <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                          <circle cx="12" cy="10" r="1" fill="currentColor"/>
+                          <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                        </svg>
+                        <span class="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                      </div>
+                      <span class="text-xs tracking-tight">Lời nhắn từ Admin Minh Cường:</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Chính chủ
+                    </span>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-indigo-100 dark:border-indigo-900/40 shadow-xs mb-2">
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium italic select-text">${adminMsg}</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-amber-200/50 dark:border-amber-900/40">
+                    <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</span>
+                  </div>`;
               } else {
-                modalOrderGuide.textContent = delInfo.guide || 'Sản phẩm được kích hoạt tự động. Bảo hành 1 đổi 1 trong suốt thời gian sử dụng.';
+                modalOrderGuide.innerHTML = `
+                  <div class="space-y-2">
+                    <p class="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">${delInfo.guide || 'Sản phẩm được kích hoạt tự động. Bảo hành 1 đổi 1 trong suốt thời gian sử dụng.'}</p>
+                    <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-amber-200/50 dark:border-amber-900/40">
+                      <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                      </svg>
+                      <span>Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</span>
+                    </div>
+                  </div>`;
               }
             }
 

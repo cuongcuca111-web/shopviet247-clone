@@ -2468,18 +2468,18 @@
             <!-- Badge & Bảo hành -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="space-y-1.5">
-                <label class="block font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">Huy hiệu nổi bật (Badge & Mark)</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">Huy hiệu nổi bật (Top-Right Bookmark Ribbon)</label>
                 <select 
                   id="editProdBadgeSelect" 
                   onchange="const c = document.getElementById('editProdBadgeCustomWrap'); if(c) { c.classList.toggle('hidden', this.value !== 'custom'); const hid = document.getElementById('editProdBadge'); if(hid && this.value !== 'custom') hid.value = this.value; }"
                   class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-xs sm:text-sm cursor-pointer"
                 >
-                  <option value="Bán chạy nhất" ${badgeSelectValue === 'Bán chạy nhất' ? 'selected' : ''}>⭐ Bán chạy nhất (Best Seller - Vàng Gold)</option>
-                  <option value="HOT" ${badgeSelectValue === 'HOT' ? 'selected' : ''}>🔥 HOT (Đang sốt - Đỏ Cam Neon)</option>
-                  <option value="Rẻ vô địch" ${badgeSelectValue === 'Rẻ vô địch' ? 'selected' : ''}>🏷️ Rẻ vô địch (Siêu tiết kiệm - Xanh Emerald)</option>
-                  <option value="Mới ra mắt" ${badgeSelectValue === 'Mới ra mắt' ? 'selected' : ''}>✨ Mới ra mắt (New Arrival - Tím Cyber)</option>
-                  <option value="Khuyên dùng" ${badgeSelectValue === 'Khuyên dùng' ? 'selected' : ''}>💎 Khuyên dùng (Pro Choice - Xanh Dương)</option>
-                  <option value="Flash Sale" ${badgeSelectValue === 'Flash Sale' ? 'selected' : ''}>⚡ Flash Sale (Giảm sốc - Hồng Đỏ)</option>
+                  <option value="Bán chạy nhất" ${badgeSelectValue === 'Bán chạy nhất' ? 'selected' : ''}>⭐ Bán chạy nhất (Best Seller - Vàng Gold hoàng gia)</option>
+                  <option value="HOT" ${badgeSelectValue === 'HOT' ? 'selected' : ''}>🔥 HOT (Cực hot - Đỏ Cam rực lửa AI)</option>
+                  <option value="Rẻ vô địch" ${badgeSelectValue === 'Rẻ vô địch' ? 'selected' : ''}>🏷️ Rẻ vô địch (Siêu tiết kiệm - Xanh Emerald & Tag kim cương)</option>
+                  <option value="Mới ra mắt" ${badgeSelectValue === 'Mới ra mắt' ? 'selected' : ''}>✨ Mới ra mắt (New Arrival - Xanh Sky Cyber & Sparkle)</option>
+                  <option value="Khuyên dùng" ${badgeSelectValue === 'Khuyên dùng' ? 'selected' : ''}>👑 Khuyên dùng (Đặc quyền VIP - Tím hoàng gia & Vương miện)</option>
+                  <option value="Flash Sale" ${badgeSelectValue === 'Flash Sale' ? 'selected' : ''}>⚡ Flash Sale (Giảm sốc - Hồng Đỏ & Tia chớp)</option>
                   <option value="custom" ${badgeSelectValue === 'custom' ? 'selected' : ''}>✍️ Tùy chỉnh chữ riêng...</option>
                 </select>
                 <div id="editProdBadgeCustomWrap" class="${isCustom ? '' : 'hidden'} mt-1.5">
@@ -2599,8 +2599,8 @@
     const customerName = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Minh Cường';
     const productName = order.productName || (order.items && order.items[0] && order.items[0].name) || 'Gói Bản Quyền Pro';
     const amount = order.amount || order.total || order.price || 69000;
-    const currentLink = order.customDeliveryLink || (order.licenseKey && order.licenseKey.startsWith('http') ? order.licenseKey : '') || 'https://one.google.com/inv/gemini-pro-shopviet247-vip';
-    const currentMsg = order.adminMessage || (order.deliveryInfo && order.deliveryInfo.guide) || 'Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.';
+    const currentLink = order.customDeliveryLink || (order.licenseKey && order.licenseKey.startsWith('http') ? order.licenseKey : '') || 'https://one.google.com/inv/gemini-pro-skillshop247-vip';
+    const currentMsg = order.adminMessage || (order.deliveryInfo && order.deliveryInfo.guide) || 'Cảm ơn bạn đã mua hàng tại SkillShop247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.';
 
     return `
       <div id="adminDeliveryBackdrop" class="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onclick="if(event.target === this) this.remove()">
@@ -2667,6 +2667,9 @@
               <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 <svg class="w-3.5 h-3.5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                  <circle cx="12" cy="10" r="1" fill="currentColor"/>
+                  <circle cx="15" cy="10" r="1" fill="currentColor"/>
                 </svg>
                 <span>Lời nhắn / Hướng dẫn dặn dò riêng cho khách:</span>
               </label>
@@ -3025,25 +3028,25 @@
       // Tự động gán badgeColor theo loại Mark chuẩn ShopViet247
       function getMarkBadgeColor(bName) {
         const b = (bName || '').toLowerCase();
-        if (b.includes('hot')) {
-          return 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-rose-500/30';
+        if (b.includes('hot') || b.includes('thịnh hành')) {
+          return 'bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 text-white shadow-rose-500/30';
         }
         if (b.includes('rẻ') || b.includes('tiết kiệm')) {
-          return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30';
+          return 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-emerald-500/30';
         }
         if (b.includes('mới') || b.includes('new')) {
-          return 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-purple-500/30';
+          return 'bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white shadow-cyan-500/30';
         }
-        if (b.includes('khuyên dùng') || b.includes('pro')) {
-          return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-500/30';
+        if (b.includes('khuyên dùng') || b.includes('pro') || b.includes('vip')) {
+          return 'bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 text-white shadow-violet-500/30';
         }
         if (b.includes('flash') || b.includes('sale')) {
-          return 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-pink-500/30';
+          return 'bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 text-white shadow-pink-500/30';
         }
         if (b.includes('bán chạy') || b.includes('best seller')) {
           return 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30';
         }
-        return 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-indigo-500/30';
+        return 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-slate-800 text-white shadow-indigo-500/30';
       }
 
       const badgeColor = getMarkBadgeColor(badge);

@@ -40,7 +40,7 @@ window.ShopVietViews.home = (function () {
     return `<img src="${safeSrc}" alt="" class="${imgClass}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" /><div style="display:none;" class="${fallbackClass}">${iconSvg}</div>`;
   }
 
-  // Helper render huy hiệu Mark động với icon SVG & viền sáng sắc nét
+  // Helper render huy hiệu Mark động với icon SVG & viền sáng sắc nét (Dành cho hiển thị phụ)
   function renderProductMarkBadge(badge, customBadgeColor) {
     if (!badge) return '';
     const bLower = badge.toLowerCase();
@@ -119,6 +119,141 @@ window.ShopVietViews.home = (function () {
     `;
   }
 
+  // Helper render Bookmark Hanging Ribbon độc bản ở góc trên bên phải (Top-Right) chuẩn Ảnh 2
+  function renderTopRightRibbon(prod) {
+    if (!prod) return '';
+    const badgeText = (prod.badge || (prod.isBestSeller ? 'Bán chạy nhất' : '')).trim();
+    if (!badgeText) return '';
+
+    const bLower = badgeText.toLowerCase();
+
+    let gradientClass = '';
+    let shadowStyle = '';
+    let highlightClass = '';
+    let iconSvg = '';
+    let labelHtml = '';
+
+    // 1. Bán chạy nhất / Best Seller (Vàng Gold Hoàng Gia)
+    if (prod.isBestSeller || bLower.includes('bán chạy') || bLower.includes('best seller')) {
+      gradientClass = 'bg-gradient-to-b from-amber-300 via-amber-500 to-orange-600';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(234, 88, 12, 0.5));';
+      highlightClass = 'bg-yellow-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-yellow-100 fill-current drop-shadow-sm mb-0.5 animate-pulse" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      `;
+      labelHtml = 'BÁN<br/>CHẠY';
+    }
+    // 2. HOT / Cực Hot / Thịnh hành (Đỏ Cam Rực Lửa AI)
+    else if (bLower.includes('hot') || bLower.includes('thịnh hành')) {
+      gradientClass = 'bg-gradient-to-b from-rose-400 via-red-500 to-orange-600';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(225, 29, 72, 0.5));';
+      highlightClass = 'bg-rose-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-amber-200 fill-current drop-shadow-sm mb-0.5 animate-pulse" viewBox="0 0 24 24">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+        </svg>
+      `;
+      labelHtml = 'CỰC<br/>HOT';
+    }
+    // 3. Rẻ vô địch / Siêu tiết kiệm / Giá rẻ (Xanh Ngọc Emerald & Diamond Tag)
+    else if (bLower.includes('rẻ') || bLower.includes('tiết kiệm')) {
+      gradientClass = 'bg-gradient-to-b from-emerald-300 via-teal-500 to-emerald-700';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(16, 185, 129, 0.5));';
+      highlightClass = 'bg-emerald-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-emerald-100 shrink-0 drop-shadow-sm mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+      `;
+      labelHtml = bLower.includes('tiết kiệm') ? 'TIẾT<br/>KIỆM' : 'RẺ<br/>NHẤT';
+    }
+    // 4. Mới ra mắt / New Arrival (Xanh Cyan / Sky Cyber & Sparkle)
+    else if (bLower.includes('mới') || bLower.includes('new')) {
+      gradientClass = 'bg-gradient-to-b from-cyan-300 via-sky-500 to-blue-600';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.5));';
+      highlightClass = 'bg-cyan-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-cyan-100 shrink-0 drop-shadow-sm mb-0.5 fill-current animate-pulse" viewBox="0 0 24 24">
+          <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+        </svg>
+      `;
+      labelHtml = 'HÀNG<br/>MỚI';
+    }
+    // 5. Khuyên dùng / Đặc quyền VIP / Pro Choice (Tím Hoàng Gia & Vương Miện)
+    else if (bLower.includes('khuyên dùng') || bLower.includes('pro') || bLower.includes('vip')) {
+      gradientClass = 'bg-gradient-to-b from-violet-300 via-purple-500 to-indigo-700';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(139, 92, 246, 0.5));';
+      highlightClass = 'bg-purple-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-purple-100 shrink-0 drop-shadow-sm mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+        </svg>
+      `;
+      labelHtml = bLower.includes('vip') ? 'BẢN<br/>VIP' : 'KHUYÊN<br/>DÙNG';
+    }
+    // 6. Flash Sale (Hồng Đỏ Rực Rỡ & Tia Chớp)
+    else if (bLower.includes('flash') || bLower.includes('sale')) {
+      gradientClass = 'bg-gradient-to-b from-pink-400 via-rose-600 to-red-700';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(244, 63, 94, 0.5));';
+      highlightClass = 'bg-pink-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-yellow-200 fill-current shrink-0 drop-shadow-sm mb-0.5 animate-pulse" viewBox="0 0 24 24">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      `;
+      labelHtml = 'FLASH<br/>SALE';
+    }
+    // 7. Badge Tùy chỉnh (Custom) / Kim Cương Đa Giác
+    else {
+      gradientClass = 'bg-gradient-to-b from-indigo-300 via-indigo-600 to-slate-800';
+      shadowStyle = 'filter: drop-shadow(0 4px 6px rgba(99, 102, 241, 0.5));';
+      highlightClass = 'bg-indigo-200/90';
+      iconSvg = `
+        <svg class="w-3.5 h-3.5 text-indigo-100 shrink-0 drop-shadow-sm mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="6 3 18 3 22 9 12 22 2 9 6 3"/>
+          <polyline points="11 3 11 22"/>
+        </svg>
+      `;
+      // Tách chữ thành 2 dòng gọn gàng
+      const words = badgeText.split(/\s+/);
+      if (words.length >= 2) {
+        labelHtml = `${words[0].toUpperCase()}<br/>${words.slice(1).join(' ').toUpperCase()}`;
+      } else if (badgeText.length > 5) {
+        labelHtml = `${badgeText.slice(0, 4).toUpperCase()}<br/>${badgeText.slice(4).toUpperCase()}`;
+      } else {
+        labelHtml = badgeText.toUpperCase();
+      }
+    }
+
+    return `
+      <div 
+        class="absolute top-0 right-3 sm:right-3.5 z-20 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5"
+        style="${shadowStyle}"
+      >
+        <div 
+          class="w-8 sm:w-9 pt-1.5 pb-3 px-0.5 ${gradientClass} text-white font-black flex flex-col items-center justify-center text-center relative"
+          style="clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%); -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%);"
+        >
+          <!-- Highlight viền trên ruy băng -->
+          <div class="absolute top-0 inset-x-0 h-0.5 ${highlightClass}"></div>
+          <!-- Vệt sáng phản chiếu (Shimmer Overlay) -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></div>
+
+          <!-- Icon SVG Độc Bản -->
+          ${iconSvg}
+
+          <!-- Chữ Ruy Băng -->
+          <span class="text-[7.5px] sm:text-[8px] font-black uppercase tracking-tight text-white leading-[1.05] drop-shadow">
+            ${labelHtml}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
   // Helper render thumbnail với gradient & SVG sắc nét
   function renderThumbnail(prod) {
     const brandGradients = {
@@ -138,21 +273,12 @@ window.ShopVietViews.home = (function () {
 
     const gradientClass = brandGradients[prod.iconType] || 'from-slate-950 via-indigo-950 to-slate-900 border-slate-800';
 
-    // Nhận diện sản phẩm Bán Chạy Nhất (Hot Best Seller)
-    const isBestSeller = Boolean(
-      prod.isBestSeller || 
-      (prod.badge && (
-        prod.badge.toLowerCase().includes('bán chạy') || 
-        prod.badge.toLowerCase().includes('best seller')
-      ))
-    );
-
     return `
       <div class="relative w-full aspect-square bg-gradient-to-br ${gradientClass} rounded-xl overflow-hidden flex items-center justify-center p-6 border transition-transform duration-300 group-hover:scale-[1.02]">
         <!-- Ambient radial glow -->
         <div class="absolute inset-0 bg-radial from-indigo-500/10 via-transparent to-transparent opacity-60 pointer-events-none"></div>
 
-        <!-- Top Left: Huy hiệu Giảm Giá (Sale Tag) & Huy hiệu phụ -->
+        <!-- Top Left: Huy hiệu Giảm Giá (Sale Tag) duy nhất -->
         <div class="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
           ${prod.discount ? `
             <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/35 border border-white/20 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
@@ -164,37 +290,10 @@ window.ShopVietViews.home = (function () {
               <span>${prod.discount}</span>
             </span>
           ` : ''}
-
-          ${(prod.badge && !isBestSeller) ? renderProductMarkBadge(prod.badge, prod.badgeColor) : ''}
         </div>
 
-        <!-- Top Right: Bookmark Ribbon "BÁN CHẠY NHẤT" đè dọc mép ảnh -->
-        ${isBestSeller ? `
-          <div 
-            class="absolute top-0 right-3 sm:right-3.5 z-20 pointer-events-none transition-transform duration-300 group-hover:translate-y-0.5"
-            style="filter: drop-shadow(0 4px 6px rgba(234, 88, 12, 0.5));"
-          >
-            <div 
-              class="w-8 sm:w-9 pt-1.5 pb-3 px-0.5 bg-gradient-to-b from-amber-300 via-amber-500 to-orange-600 text-white font-black flex flex-col items-center justify-center text-center relative"
-              style="clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%); -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 82%, 0% 100%);"
-            >
-              <!-- Highlight viền trên ruy băng -->
-              <div class="absolute top-0 inset-x-0 h-0.5 bg-yellow-200/90"></div>
-              <!-- Vệt sáng phản chiếu (Shimmer Overlay) -->
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></div>
-
-              <!-- Icon Ngôi Sao Vàng Đẳng Cấp -->
-              <svg class="w-3.5 h-3.5 text-yellow-100 fill-current drop-shadow-sm mb-0.5 animate-pulse" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-
-              <!-- Chữ BÁN CHẠY -->
-              <span class="text-[7.5px] sm:text-[8px] font-black uppercase tracking-tight text-white leading-[1.05] drop-shadow">
-                BÁN<br/>CHẠY
-              </span>
-            </div>
-          </div>
-        ` : ''}
+        <!-- Top Right: Hanging Bookmark Ribbon độc bản đồng bộ vị trí ảnh 2 -->
+        ${renderTopRightRibbon(prod)}
 
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
         <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
