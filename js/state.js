@@ -1773,21 +1773,42 @@
       return this.state;
     },
 
-    // Áp dụng Giao diện Sáng/Tối
+    // Áp dụng Giao diện Sáng/Tối (Lucian UX/UI Prompt #219)
     applyTheme: function (themeName) {
       this.state.theme = themeName;
       const root = document.documentElement;
-      const darkIcon = document.getElementById('themeIconDark');
-      const lightIcon = document.getElementById('themeIconLight');
+      const sunIcon = document.getElementById('themeIconSun') || document.getElementById('themeIconLight');
+      const moonIcon = document.getElementById('themeIconMoon') || document.getElementById('themeIconDark');
+      const toggleBtn = document.getElementById('headerThemeToggle') || document.getElementById('themeToggleBtn');
 
       if (themeName === 'dark') {
         root.classList.add('dark');
-        if (darkIcon) darkIcon.classList.remove('hidden');
-        if (lightIcon) lightIcon.classList.add('hidden');
+        if (toggleBtn) {
+          toggleBtn.setAttribute('aria-pressed', 'true');
+          toggleBtn.setAttribute('aria-label', 'Chuyển sang chế độ sáng');
+        }
+        if (sunIcon) {
+          sunIcon.classList.add('hidden');
+          sunIcon.classList.remove('block');
+        }
+        if (moonIcon) {
+          moonIcon.classList.remove('hidden');
+          moonIcon.classList.add('block');
+        }
       } else {
         root.classList.remove('dark');
-        if (darkIcon) darkIcon.classList.add('hidden');
-        if (lightIcon) lightIcon.classList.remove('hidden');
+        if (toggleBtn) {
+          toggleBtn.setAttribute('aria-pressed', 'false');
+          toggleBtn.setAttribute('aria-label', 'Chuyển sang chế độ tối');
+        }
+        if (sunIcon) {
+          sunIcon.classList.remove('hidden');
+          sunIcon.classList.add('block');
+        }
+        if (moonIcon) {
+          moonIcon.classList.add('hidden');
+          moonIcon.classList.remove('block');
+        }
       }
     },
 

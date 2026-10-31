@@ -166,11 +166,109 @@ function setupHeaderEvents() {
     });
   }
 
-  // Click Đổi Theme Sáng / Tối
+  // Click Đổi Theme Sáng / Tối (Circular-Reveal Dark Mode - Lucian UX/UI Prompt #219)
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', function (e) {
       e.preventDefault();
-      window.ShopVietState.toggleTheme();
+
+      // Bắt tọa độ click chính xác từ sự kiện chuột hoặc tâm nút bấm
+      const rect = themeToggleBtn.getBoundingClientRect();
+      const cx = (typeof e.clientX === 'number' && e.clientX > 0)
+        ? e.clientX
+        : (rect.left + rect.width / 2);
+      const cy = (typeof e.clientY === 'number' && e.clientY > 0)
+        ? e.clientY
+        : (rect.top + rect.height / 2);
+
+      // Tính bán kính tối đa bao phủ toàn bộ màn hình từ tâm (cx, cy)
+      const maxRadius = Math.hypot(
+        Math.max(cx, window.innerWidth - cx),
+        Math.max(cy, window.innerHeight - cy)
+      );
+
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // 1. Trường hợp hỗ trợ View Transitions API và không bật prefers-reduced-motion
+      if (document.startViewTransition && !prefersReducedMotion) {
+        const transition = document.startViewTransition(() => {
+          window.ShopVietState.toggleTheme();
+        });
+
+        transition.ready.then(() => {
+          const isDark = document.documentElement.classList.contains('dark');
+          const clipPathForward = [
+            `circle(0px at ${cx}px ${cy}px)`,
+            `circle(${maxRadius}px at ${cx}px ${cy}px)`
+          ];
+          const clipPathReverse = [
+            `circle(${maxRadius}px at ${cx}px ${cy}px)`,
+            `circle(0px at ${cx}px ${cy}px)`
+          ];
+
+          if (isDark) {
+            // Khi chuyển sang Dark: old(root) ở z-index 9999 thu về button
+            document.documentElement.animate(
+              {
+                clipPath: clipPathReverse
+              },
+              {
+                duration: 700,
+                easing: 'cubic-bezier(.65, 0, .35, 1)',
+                pseudoElement: '::view-transition-old(root)'
+              }
+            );
+          }
+
+          // Kích hoạt chuẩn animate trên ::view-transition-new(root)
+          document.documentElement.animate(
+            {
+              clipPath: clipPathForward
+            },
+            {
+              duration: 700,
+              easing: 'cubic-bezier(.65, 0, .35, 1)',
+              pseudoElement: '::view-transition-new(root)'
+            }
+          );
+        }).catch((err) => {
+          console.warn('[Lucian #219] View transition error:', err);
+        });
+        return;
+      }
+
+      // 2. Trường hợp prefers-reduced-motion: reduce -> Đổi tức thì không animation
+      if (prefersReducedMotion) {
+        window.ShopVietState.toggleTheme();
+        return;
+      }
+
+      // 3. Fallback cho trình duyệt chưa có View Transitions: Overlay bung tròn clipPath
+      const currentTheme = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.theme) || 'light';
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const targetBgColor = targetTheme === 'dark' ? '#020617' : '#f8fafc';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'circular-theme-overlay';
+      overlay.style.backgroundColor = targetBgColor;
+      overlay.style.clipPath = `circle(0px at ${cx}px ${cy}px)`;
+      document.body.appendChild(overlay);
+
+      // Kích hoạt chuyển động bung tròn mở rộng ra toàn màn hình
+      requestAnimationFrame(() => {
+        overlay.style.clipPath = `circle(${maxRadius}px at ${cx}px ${cy}px)`;
+      });
+
+      // Cập nhật state theme bên dưới khi vòng tròn phủ ~50%
+      setTimeout(() => {
+        window.ShopVietState.toggleTheme();
+      }, 250);
+
+      // Dọn dẹp overlay sau khi kết thúc 700ms transition
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 750);
     });
   }
 

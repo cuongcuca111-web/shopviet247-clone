@@ -90,6 +90,53 @@
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(100, 116, 139, 0.5);
     }
+
+    <!-- Lucian UX/UI Prompt #219 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#219 -->
+    /* Lucian UX/UI Prompt #219 · Circular-reveal dark mode variables & transitions */
+    :root {
+      --ux-ease: cubic-bezier(.2,.8,.2,1);
+      --ux-spring: cubic-bezier(.34,1.45,.64,1);
+      --ux-clip-ease: cubic-bezier(.65,0,.35,1);
+    }
+    #headerThemeToggle svg {
+      transition: transform .6s cubic-bezier(.3,1.4,.5,1);
+    }
+    html.dark #headerThemeToggle svg {
+      transform: rotate(-90deg);
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+    ::view-transition-old(root) {
+      z-index: 1;
+    }
+    ::view-transition-new(root) {
+      z-index: 9999;
+    }
+    .dark::view-transition-old(root) {
+      z-index: 9999;
+    }
+    .dark::view-transition-new(root) {
+      z-index: 1;
+    }
+    .circular-theme-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      pointer-events: none;
+      transition: clip-path .7s cubic-bezier(.65,0,.35,1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-group(*),
+      ::view-transition-old(*),
+      ::view-transition-new(*),
+      .circular-theme-overlay {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
@@ -175,24 +222,25 @@
             <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-200 whitespace-nowrap hidden sm:inline">Đồng bộ</span>
           </button>
 
-          <!-- Nút Đổi Giao Diện Sáng/Tối (#headerThemeToggle) -->
+          <!-- Nút Đổi Giao Diện Sáng/Tối (#headerThemeToggle) - Chuẩn Lucian UX/UI Prompt #219 -->
           <button 
             id="headerThemeToggle" 
             type="button" 
-            title="Chuyển chế độ sáng/tối" 
-            class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/80 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer"
+            aria-label="Chuyển chế độ sáng/tối" 
+            aria-pressed="false"
+            title="Chuyển chế độ sáng/tối (Lucian #219 Circular Reveal)" 
+            class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/80 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
           >
-            <!-- Moon Icon (hiển thị khi Dark mode) -->
-            <svg id="themeIconDark" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2" /><path d="M12 20v2" />
-              <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
-              <path d="M2 12h2" /><path d="M20 12h2" />
-              <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+            <!-- Sun SVG (Lucian #219) - Hiển thị ở chế độ sáng, ẩn ở chế độ tối -->
+            <svg id="themeIconSun" class="w-4 h-4 block dark:hidden" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="8" cy="8" r="3" fill="currentColor"/>
+              <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M8 1.5v1.4M8 13.1v1.4M1.5 8h1.4M13.1 8h1.4M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/>
+              </g>
             </svg>
-            <!-- Sun Icon (hiển thị khi Light mode) -->
-            <svg id="themeIconLight" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            <!-- Moon SVG (Lucian #219) - Ẩn ở chế độ sáng, hiển thị ở chế độ tối -->
+            <svg id="themeIconMoon" class="w-4 h-4 hidden dark:block" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M13.5 9.8A5.6 5.6 0 0 1 6.2 2.5a5.6 5.6 0 1 0 7.3 7.3z" fill="currentColor"/>
             </svg>
           </button>
 
@@ -369,17 +417,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_shopskill247_v9"></script>
+  <script src="js/firebase-config.js?v=20261031_circular_darkmode_v10"></script>
 
-  <script src="js/data.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/state.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/home.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/modal.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/checkout.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/auth.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/dashboard.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/admin.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/views/blog.js?v=20261031_shopskill247_v9"></script>
-  <script src="js/app.js?v=20261031_shopskill247_v9"></script>
+  <script src="js/data.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/state.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/home.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/modal.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/checkout.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/auth.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/dashboard.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/admin.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/views/blog.js?v=20261031_circular_darkmode_v10"></script>
+  <script src="js/app.js?v=20261031_circular_darkmode_v10"></script>
 </body>
 </html>
