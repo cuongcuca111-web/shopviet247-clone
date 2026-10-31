@@ -164,6 +164,7 @@
       transform: rotate(180deg);
     }
     .u267-dd {
+      z-index: 100 !important;
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
@@ -987,8 +988,8 @@
   </script>
 
   <!-- ==================== STICKY HEADER ==================== -->
-  <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-1.5 sm:gap-4 overflow-hidden">
+  <header class="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-1.5 sm:gap-4">
       
       <!-- Cụm Trái (Thương hiệu & Identity): Logo AI Sparkle & Quantum Core + ShopSkill247 + Badge AI STORE + Tagline -->
       <a href="#home" id="brandLogoLink" class="flex items-center gap-2 sm:gap-2.5 group cursor-pointer select-none shrink-0">
@@ -1091,7 +1092,7 @@
 
           <!-- ==================== [ELEMENT] LANGUAGE SWITCH WITH TEXT SWAP (LUCIAN #267) ==================== -->
           <!-- Lucian UX/UI Prompt #267 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#267 -->
-          <div class="u267 relative inline-block text-left" id="u267Container">
+          <div class="u267 relative inline-block text-left z-50" id="u267Container">
             <button 
               id="header-lang-btn" 
               type="button" 
@@ -1125,7 +1126,7 @@
             <!-- Dropdown Menu Deep Glassmorphism (Lucian #267) -->
             <div 
               id="u267Dropdown" 
-              class="u267-dd hidden absolute right-0 top-full mt-2 w-44 p-1.5 rounded-2xl shadow-xl z-50 transition-all duration-200 select-none"
+              class="u267-dd hidden absolute right-0 top-full mt-2 w-44 p-1.5 rounded-2xl shadow-2xl z-[100] transition-all duration-200 select-none"
               role="listbox" 
               aria-label="Danh sách ngôn ngữ"
             >
@@ -1703,18 +1704,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_checkout_admin_v24"></script>
+  <script src="js/firebase-config.js?v=20261031_lang_dropdown_v25"></script>
 
-  <script src="js/data.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/state.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/home.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/modal.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/checkout.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/auth.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/dashboard.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/admin.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/views/blog.js?v=20261031_checkout_admin_v24"></script>
-  <script src="js/app.js?v=20261031_checkout_admin_v24"></script>
+  <script src="js/data.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/state.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/home.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/modal.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/checkout.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/auth.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/dashboard.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/admin.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/views/blog.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/app.js?v=20261031_lang_dropdown_v25"></script>
 
   <!-- ==================== PWA SERVICE WORKER REGISTRATION ==================== -->
   <script>
