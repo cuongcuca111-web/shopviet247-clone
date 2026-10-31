@@ -128,3 +128,61 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// =========================================================================
+// 4. PWA Push Notification iPhone Admin (iOS 16.4+) & Desktop
+// =========================================================================
+
+// Xử lý khi Admin chạm vào thông báo trên màn hình khóa iPhone / Desktop
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url)
+    ? event.notification.data.url
+    : './#admin';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // 1. Nếu có tab hoặc cửa sổ PWA đang mở, focus vào và chuyển hướng tới #admin
+      for (const client of clientList) {
+        if ('focus' in client) {
+          if ('navigate' in client) {
+            client.navigate(targetUrl);
+          }
+          return client.focus();
+        }
+      }
+      // 2. Nếu chưa có cửa sổ nào đang mở, mở cửa sổ PWA mới
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Xử lý sự kiện Web Push từ Cloud Server (nếu có cấu hình Web Push)
+self.addEventListener('push', (event) => {
+  let payload = {};
+  if (event.data) {
+    try {
+      payload = event.data.json();
+    } catch (e) {
+      payload = { title: '🔔 Đơn hàng mới!', body: event.data.text() };
+    }
+  }
+
+  const title = payload.title || '🔔 Đơn hàng mới ShopSkill247!';
+  const options = {
+    body: payload.body || 'Khách vừa báo chuyển khoản. Bấm để duyệt đơn ngay!',
+    icon: payload.icon || './icon-192.png',
+    badge: payload.badge || './favicon.svg',
+    vibrate: [200, 100, 200, 100, 200],
+    tag: payload.tag || 'admin-order-notification',
+    renotify: true,
+    data: {
+      url: payload.url || './#admin'
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});

@@ -731,9 +731,23 @@
 
         <!-- Bảng Danh Sách Đơn Hàng -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Danh Sách Đơn Hàng VietQR Mới Nhất</h4>
-            <span class="text-xs text-slate-500">Đồng bộ tự động từ hệ thống thanh toán</span>
+          <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Danh Sách Đơn Hàng VietQR Mới Nhất</h4>
+              <span class="text-xs text-slate-500">Đồng bộ tự động từ hệ thống thanh toán</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button 
+                type="button" 
+                onclick="window.requestAdminNotificationPermission && window.requestAdminNotificationPermission(true)" 
+                id="adminPushNotifToggleBtn"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'}"
+                title="Bật/Kiểm tra thông báo PWA trên màn hình khóa iPhone (iOS 16.4+) và Desktop"
+              >
+                <span>🔔</span>
+                <span id="adminPushNotifStatusText">${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Thông báo iPhone: Đang bật' : 'Bật Thông Báo iPhone'}</span>
+              </button>
+            </div>
           </div>
 
           <div class="overflow-x-auto">
@@ -815,6 +829,11 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               ✓ Hoàn tất
             </span>
+          ` : order.status === 'rejected' ? `
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              ✕ Đã từ chối
+            </span>
           ` : order.status === 'pending_review' ? `
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">
               <span>⏳</span> Chờ duyệt
@@ -830,9 +849,9 @@
         <!-- BILL CHUYỂN KHOẢN -->
         <td class="py-3 px-3 text-center">
           <button 
-            type="button" 
-            onclick="window.ShopVietViews.admin.viewBillModal('${code}', '${amount}')" 
-            class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                type="button" 
+                onclick="window.ShopVietViews.admin.viewBillModal('${code}', '${amount}')" 
+                class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
             <span>Xem bill</span>
@@ -851,6 +870,17 @@
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>Duyệt đơn</span>
               </button>
+              ${order.status !== 'rejected' ? `
+                <button 
+                  type="button" 
+                  onclick="window.ShopVietViews.admin.rejectOrder('${code}')" 
+                  class="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
+                  title="Từ chối đơn hàng & hoàn trả lại số lượng vào kho"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  <span>✕ Từ chối</span>
+                </button>
+              ` : ''}
             ` : `
               <button 
                 type="button" 
@@ -873,6 +903,8 @@
           </div>
           ${order.customDeliveryLink ? `
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-mono mt-1">Đã gửi link riêng</span>
+          ` : order.status === 'rejected' ? `
+            <span class="text-[10px] text-rose-500 dark:text-rose-400 block font-medium mt-1">Đã từ chối đơn</span>
           ` : isCompleted ? `
             <span class="text-[10px] text-slate-400 block font-medium mt-1">Đã kích hoạt</span>
           ` : ''}
@@ -1030,7 +1062,7 @@
             </div>
             <div>
               <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng mã voucher</div>
-              <div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">${totalCount} mã</div>
+              <div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5" id="adminVoucherTotalCount">${totalCount} mã</div>
             </div>
           </div>
 
@@ -1041,7 +1073,7 @@
             </div>
             <div>
               <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Chưa sử dụng</div>
-              <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">${availableCount} mã</div>
+              <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5" id="adminVoucherAvailableCount">${availableCount} mã</div>
             </div>
           </div>
 
@@ -1052,7 +1084,7 @@
             </div>
             <div>
               <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Đã sử dụng</div>
-              <div class="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">${usedCount} mã</div>
+              <div class="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5" id="adminVoucherUsedCount">${usedCount} mã</div>
             </div>
           </div>
 
@@ -1063,7 +1095,7 @@
             </div>
             <div>
               <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng tiền đã giảm</div>
-              <div class="text-lg sm:text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5">${formatVND(totalDiscountGiven)}</div>
+              <div class="text-lg sm:text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5" id="adminVoucherTotalDiscount">${formatVND(totalDiscountGiven)}</div>
             </div>
           </div>
         </div>
@@ -2824,6 +2856,9 @@
     afterRender: function () {
       if (isAuthenticated()) {
         this.startSessionTimer();
+        if (typeof window.requestAdminNotificationPermission === 'function') {
+          window.requestAdminNotificationPermission();
+        }
       }
     },
 
@@ -2839,6 +2874,9 @@
       if (VALID_PINS.includes(entered)) {
         setAuthenticated(true);
         notify('Xác thực quyền Quản trị viên (minhcuong111) thành công!', 'success');
+        if (typeof window.requestAdminNotificationPermission === 'function') {
+          window.requestAdminNotificationPermission();
+        }
         this.open();
       } else {
         if (errEl) errEl.classList.remove('hidden');
@@ -3353,6 +3391,115 @@
       notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
+    // 15a. Từ chối đơn hàng & Tự động hoàn trả số lượng vào kho
+    rejectOrder: function (orderCode) {
+      if (!confirm(`Bạn có chắc chắn muốn từ chối đơn hàng #${orderCode}?\n\nNếu đơn đã được ghi nhận trừ kho, số lượng sản phẩm sẽ được tự động hoàn trả lại vào kho ngay lập tức.`)) {
+        return;
+      }
+
+      let ord = null;
+      if (window.ShopVietState && window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) {
+        ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
+      }
+      if (!ord && window.ShopVietState && Array.isArray(window.ShopVietState.orders)) {
+        ord = window.ShopVietState.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
+      }
+
+      let restoredStockInfo = '';
+
+      if (ord) {
+        ord.status = 'rejected';
+        ord.statusText = 'Đã từ chối';
+        ord.rejectedAt = new Date().toISOString();
+
+        // Tự động hoàn trả số lượng lại cho sản phẩm tương ứng trong kho nếu trước đó đã bị trừ kho
+        if (ord.stockDeducted) {
+          const boughtItem = (ord.items && ord.items[0]) || null;
+          const prodId = boughtItem ? boughtItem.id : (ord.productId || (ord.product && ord.product.id));
+          const buyQty = (boughtItem && boughtItem.quantity) || ord.quantity || 1;
+
+          if (prodId && window.ShopVietData && Array.isArray(window.ShopVietData.products)) {
+            const targetProd = window.ShopVietData.products.find(p => p.id === prodId);
+            if (targetProd) {
+              const prevStock = typeof targetProd.stock === 'number' ? targetProd.stock : parseInt(targetProd.stock, 10) || 10;
+              targetProd.stock = prevStock + buyQty;
+              if (targetProd.stock > 0 && targetProd.status === 'out_of_stock') {
+                targetProd.status = 'in_stock';
+              }
+
+              // 1. Lưu đồng bộ vào LocalStorage
+              const jsonStr = JSON.stringify(window.ShopVietData.products);
+              try {
+                localStorage.setItem('shopviet_custom_products', jsonStr);
+                localStorage.setItem('shopviet_admin_products', jsonStr);
+                localStorage.setItem('shopviet247_custom_products_v1', jsonStr);
+              } catch (e) {}
+
+              // 2. Cập nhật State
+              if (window.ShopVietState && typeof window.ShopVietState.saveCustomProducts === 'function') {
+                window.ShopVietState.saveCustomProducts(window.ShopVietData.products);
+              }
+
+              // 3. Đẩy lên GitHub Cloud Storage
+              if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+                window.ShopVietState.pushAllToCloud(true).catch(() => {});
+              }
+
+              // 4. Phát sóng Realtime cập nhật tồn kho
+              if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+                window.ShopVietState.broadcastAdminChange('products_updated', {
+                  productId: targetProd.id,
+                  productName: targetProd.name,
+                  newStock: targetProd.stock,
+                  timestamp: Date.now()
+                });
+              }
+
+              // 5. Cập nhật lại view home nếu đang mở
+              if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
+                window.ShopVietViews.home.renderProducts();
+              }
+
+              restoredStockInfo = ` (Đã hoàn lại +${buyQty} vào kho: hiện còn ${targetProd.stock} gói)`;
+            }
+          }
+          ord.stockDeducted = false;
+        }
+
+        // Lưu đơn hàng vào State
+        if (window.ShopVietState && typeof window.ShopVietState.save === 'function') {
+          window.ShopVietState.save();
+        }
+
+        // Đồng bộ Firebase Firestore & Cloud
+        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+          window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud().catch(() => {});
+        }
+      }
+
+      // Re-render lại tab orders trong Admin
+      const tabContent = document.getElementById('adminTabContent');
+      if (tabContent && currentActiveTab === 'orders') {
+        tabContent.innerHTML = renderTabOrders();
+      }
+
+      // Phát sóng orders_updated
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('orders_updated', {
+          orderCode: orderCode,
+          status: 'rejected',
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('orders_updated', `Từ chối đơn hàng #${orderCode}`);
+
+      notify(`Đã từ chối đơn hàng #${orderCode}!${restoredStockInfo}`, 'info');
+      notify('⚡ Đã cập nhật trạng thái đơn hàng và phát sóng Realtime Cloud thành công!', 'success');
+    },
+
     // 15b. Mở Modal Admin Duyệt Đơn & Gửi Link Riêng Cho Khách
     openDeliveryModal: function (orderCode) {
       let ord = null;
@@ -3631,7 +3778,7 @@
       }
     },
 
-    createVoucherSubmit: async function (e) {
+    createVoucherSubmit: function (e) {
       if (e && e.preventDefault) e.preventDefault();
       const codeInput = document.getElementById('voucherCodeInput');
       const typeInput = document.getElementById('voucherTypeInput');
@@ -3697,27 +3844,22 @@
         };
       }
 
+      // Lưu state cục bộ ngay lập tức (0ms)
       vouchers.unshift(newVoucher);
       if (window.ShopVietState && window.ShopVietState.saveVouchers) {
         window.ShopVietState.saveVouchers(vouchers);
       }
 
-      // BẮT BUỘC ĐẨY NGAY LÊN CLOUD REST API
-      if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-        try {
-          await window.ShopVietState.pushAllToCloud();
-        } catch (err) {
-          console.warn('[Admin] pushAllToCloud error:', err);
-        }
-      }
-
+      // =======================================================================
+      // PHƯƠNG PHÁP 1: Optimistic UI 0ms - Đóng modal ngay lập tức & bắn thông báo
+      // =======================================================================
       this.closeVoucherModal();
-      this.switchTab('vouchers');
-      const tabBadge = document.getElementById('adminVoucherTabBadge');
-      if (tabBadge && window.ShopVietState.getVouchers) {
-        tabBadge.textContent = window.ShopVietState.getVouchers().length;
-      }
+
       const labelText = type === 'percent_discount' ? `${newVoucher.percent}%` : formatVND(rawVal);
+      notify(`Đã tạo thành công mã voucher "${code}" giảm ${labelText}! Tự động đồng bộ toàn hệ thống.`, 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+
+      // Phát sóng realtime broadcast nội bộ
       if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
         window.ShopVietState.broadcastAdminChange('vouchers_updated', {
           action: 'create',
@@ -3726,8 +3868,65 @@
         });
       }
       recordBroadcast('vouchers_updated', `Tạo voucher ${code}`);
-      notify(`Đã tạo thành công mã voucher "${code}" giảm ${labelText}! Tự động đồng bộ toàn hệ thống.`, 'success');
-      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+
+      // =======================================================================
+      // PHƯƠNG PHÁP 3: Targeted Micro-DOM Update - 0ms mượt mà không giật lag
+      // =======================================================================
+      const tabBadge = document.getElementById('adminVoucherTabBadge');
+      if (tabBadge) {
+        tabBadge.textContent = vouchers.length;
+      }
+      const tableBadge = document.getElementById('adminVoucherTableBadge');
+      if (tableBadge) {
+        tableBadge.textContent = `${vouchers.length} mã`;
+      }
+      const totalCountEl = document.getElementById('adminVoucherTotalCount');
+      if (totalCountEl) {
+        totalCountEl.textContent = `${vouchers.length} mã`;
+      }
+      const availableCountEl = document.getElementById('adminVoucherAvailableCount');
+      if (availableCountEl) {
+        const avail = vouchers.filter(v => !v.isUsed).length;
+        availableCountEl.textContent = `${avail} mã`;
+      }
+
+      // Cập nhật bảng trực tiếp nếu đang hiển thị
+      const tbody = document.getElementById('adminVoucherTableTbody') || document.getElementById('adminVouchersTableBody');
+      if (tbody) {
+        // Xóa dòng thông báo rỗng nếu có
+        const emptyRow = tbody.querySelector('td[colspan]');
+        if (emptyRow && emptyRow.closest('tr')) {
+          emptyRow.closest('tr').remove();
+        }
+
+        // Tạo dòng DOM mới
+        const tempTable = document.createElement('tbody');
+        tempTable.innerHTML = renderVoucherTableRow(newVoucher);
+        const newRow = tempTable.firstElementChild;
+        if (newRow) {
+          // Hiệu ứng highlight tím nhẹ êm ái
+          newRow.classList.add('bg-indigo-100/70', 'dark:bg-indigo-950/70', 'transition-all', 'duration-700');
+          tbody.prepend(newRow);
+          setTimeout(() => {
+            newRow.classList.remove('bg-indigo-100/70', 'dark:bg-indigo-950/70');
+          }, 1200);
+        }
+      } else {
+        // Nếu không có bảng trên DOM nhưng đang ở tab vouchers thì render lại tab body
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent && currentActiveTab === 'vouchers') {
+          tabContent.innerHTML = renderTabVouchers();
+        }
+      }
+
+      // =======================================================================
+      // PHƯƠNG PHÁP 2: Non-blocking Async I/O - Chạy ngầm 100%, không await chặn luồng UI
+      // =======================================================================
+      if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+        window.ShopVietState.pushAllToCloud().catch(function (err) {
+          console.warn('[Admin] Background pushAllToCloud error:', err);
+        });
+      }
     },
 
     deleteVoucher: function (code) {
@@ -3737,8 +3936,11 @@
       if (window.ShopVietState && window.ShopVietState.deleteVoucher) {
         const res = window.ShopVietState.deleteVoucher(code);
         if (res.success) {
+          // PHƯƠNG PHÁP 2: Non-blocking Cloud push chạy ngầm
           if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-            window.ShopVietState.pushAllToCloud().catch(function () {});
+            window.ShopVietState.pushAllToCloud().catch(function (err) {
+              console.warn('[Admin] Background pushAllToCloud error:', err);
+            });
           }
           if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
             window.ShopVietState.broadcastAdminChange('vouchers_updated', {
@@ -3748,11 +3950,55 @@
             });
           }
           recordBroadcast('vouchers_updated', `Xóa voucher ${code}`);
-          this.switchTab('vouchers');
+
+          const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
+
+          // PHƯƠNG PHÁP 3: Targeted Micro-DOM Update
           const tabBadge = document.getElementById('adminVoucherTabBadge');
-          if (tabBadge && window.ShopVietState.getVouchers) {
-            tabBadge.textContent = window.ShopVietState.getVouchers().length;
+          if (tabBadge) {
+            tabBadge.textContent = vouchers.length;
           }
+          const tableBadge = document.getElementById('adminVoucherTableBadge');
+          if (tableBadge) {
+            tableBadge.textContent = `${vouchers.length} mã`;
+          }
+          const totalCountEl = document.getElementById('adminVoucherTotalCount');
+          if (totalCountEl) {
+            totalCountEl.textContent = `${vouchers.length} mã`;
+          }
+          const availableCountEl = document.getElementById('adminVoucherAvailableCount');
+          if (availableCountEl) {
+            const avail = vouchers.filter(v => !v.isUsed).length;
+            availableCountEl.textContent = `${avail} mã`;
+          }
+
+          const tbody = document.getElementById('adminVoucherTableTbody') || document.getElementById('adminVouchersTableBody');
+          if (tbody) {
+            const row = tbody.querySelector(`tr[data-code="${code.toLowerCase()}"]`);
+            if (row) {
+              row.style.transition = 'all 0.3s ease';
+              row.style.opacity = '0';
+              row.style.transform = 'scale(0.95)';
+              setTimeout(() => {
+                row.remove();
+                if (vouchers.length === 0) {
+                  tbody.innerHTML = `
+                    <tr>
+                      <td colspan="8" class="py-12 text-center text-slate-400">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                          <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /></svg>
+                          <span>Chưa có mã voucher nào. Hãy bấm "+ Tạo mã mới" để thêm mã đầu tiên!</span>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }
+              }, 300);
+            }
+          } else if (currentActiveTab === 'vouchers') {
+            this.switchTab('vouchers');
+          }
+
           notify(`Đã xóa mã voucher "${code}" thành công!`, 'info');
           notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
         } else {
@@ -4418,8 +4664,217 @@
 
     // Helper export ra ngoài
     getVietQRConfig: getVietQRConfig,
-    isAllowedAdminUser: isAllowedAdminUser
+    isAllowedAdminUser: isAllowedAdminUser,
+    requestAdminNotificationPermission: function(userInit) { return window.requestAdminNotificationPermission(userInit); },
+    triggerAdminOrderNotification: function(order) { return window.triggerAdminOrderNotification(order); }
   };
+
+  // =========================================================================
+  // MODULE PWA PUSH NOTIFICATION IPHONE CHO ADMIN (iOS 16.4+ & DESKTOP)
+  // =========================================================================
+
+  /**
+   * Cập nhật UI nút trạng thái thông báo iPhone trong tab Đơn hàng
+   */
+  function updateAdminNotifButtonUI(status) {
+    const textEl = document.getElementById('adminPushNotifStatusText');
+    const btnEl = document.getElementById('adminPushNotifToggleBtn');
+    if (!textEl || !btnEl) return;
+    if (status === 'granted') {
+      textEl.textContent = 'Thông báo iPhone: Đang bật';
+      btnEl.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+    } else if (status === 'denied') {
+      textEl.textContent = 'Thông báo iPhone: Đã bị chặn';
+      btnEl.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800';
+    } else {
+      textEl.textContent = 'Bật Thông Báo iPhone';
+      btnEl.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800';
+    }
+  }
+
+  /**
+   * Tự động xin quyền Push Notification cho Admin khi đăng nhập hoặc truy cập Admin
+   * Chỉ kích hoạt cho tài khoản minhcuong111aaa@gmail.com hoặc có role admin
+   */
+  window.requestAdminNotificationPermission = async function (userInitiated = false) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      if (userInitiated && window.ShopVietState && window.ShopVietState.showToast) {
+        window.ShopVietState.showToast('Trình duyệt không hỗ trợ Web Notification API.', 'info');
+      }
+      return false;
+    }
+
+    const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
+                        (window.ShopVietState && window.ShopVietState.currentUser);
+    const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+
+    if (!isAdmin) {
+      console.log('[PWA-Admin-Notify] Bỏ qua xin quyền vì tài khoản hiện tại không phải là Admin (minhcuong111aaa@gmail.com).');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      updateAdminNotifButtonUI('granted');
+      if (userInitiated && window.ShopVietState && window.ShopVietState.showToast) {
+        window.ShopVietState.showToast('🔔 Thông báo PWA iPhone Admin đã được bật sẵn sàng!', 'success');
+      }
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      updateAdminNotifButtonUI('denied');
+      if (userInitiated && window.ShopVietState && window.ShopVietState.showToast) {
+        window.ShopVietState.showToast('Bạn đã tắt quyền thông báo trên trình duyệt. Hãy vào Cài đặt để cho phép!', 'warning');
+      }
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      updateAdminNotifButtonUI(permission);
+      if (permission === 'granted') {
+        if (window.ShopVietState && window.ShopVietState.showToast) {
+          window.ShopVietState.showToast('🔔 Đã kích hoạt thông báo đơn hàng PWA cho iPhone của Admin!', 'success');
+        }
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.warn('[PWA-Admin-Notify] Lỗi khi xin quyền Notification:', err);
+      return false;
+    }
+  };
+
+  /**
+   * Kích hoạt Native PWA Push Notification cho iPhone của Admin (iOS 16.4+) & Desktop
+   * Chỉ phát khi tài khoản hiện tại là minhcuong111aaa@gmail.com hoặc có role admin
+   */
+  window.triggerAdminOrderNotification = async function (order) {
+    if (!order) return;
+
+    // 1. Kiểm tra quyền: Chỉ tài khoản admin (minhcuong111aaa@gmail.com) mới nhận thông báo
+    const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
+                        (window.ShopVietState && window.ShopVietState.currentUser);
+    const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+
+    if (!isAdmin) {
+      console.log('[PWA-Admin-Notify] Bỏ qua vì tài khoản hiện tại không phải là Admin (minhcuong111aaa@gmail.com).');
+      return;
+    }
+
+    const orderCode = order.orderCode || order.id || 'N/A';
+    const rawAmount = order.amount || order.total || 0;
+    const amountStr = typeof rawAmount === 'number' 
+      ? new Intl.NumberFormat('vi-VN').format(rawAmount) 
+      : rawAmount;
+
+    // Tiêu đề & nội dung chuẩn chỉ theo yêu cầu
+    const title = `🔔 Đơn hàng mới #${orderCode} - Chờ duyệt!`;
+    const body = `Khách vừa báo chuyển khoản ${amountStr}đ. Bấm để vào duyệt đơn ngay!`;
+
+    console.log('[PWA-Admin-Notify] Phát thông báo PWA Admin:', title, body);
+
+    // Phát âm thanh chuông báo tinh tế (Web Audio API)
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const audioCtx = new AudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      }
+    } catch (e) {}
+
+    // Rung phản hồi haptic nếu hỗ trợ
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      try {
+        navigator.vibrate([200, 100, 200, 100, 200]);
+      } catch (e) {}
+    }
+
+    if (!('Notification' in window)) {
+      console.warn('[PWA-Admin-Notify] Không hỗ trợ Notification API.');
+      return;
+    }
+
+    // Nếu chưa xin quyền, thử xin quyền
+    if (Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch (e) {}
+    }
+
+    if (Notification.permission !== 'granted') {
+      console.warn('[PWA-Admin-Notify] Quyền thông báo chưa được cấp.');
+      return;
+    }
+
+    const options = {
+      body: body,
+      icon: './icon-192.png',
+      badge: './favicon.svg',
+      vibrate: [200, 100, 200, 100, 200],
+      tag: `order-${orderCode}`,
+      renotify: true,
+      requireInteraction: true,
+      data: {
+        url: './#admin',
+        orderCode: orderCode
+      }
+    };
+
+    // Ưu tiên ServiceWorker showNotification (iOS 16.4+ standalone Home Screen & Desktop)
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg && typeof reg.showNotification === 'function') {
+          await reg.showNotification(title, options);
+          console.log('[PWA-Admin-Notify] Đã gửi thông báo qua ServiceWorker showNotification.');
+          return;
+        }
+      }
+    } catch (swErr) {
+      console.warn('[PWA-Admin-Notify] ServiceWorker showNotification error, fallback:', swErr);
+    }
+
+    // Fallback: new Notification()
+    try {
+      const notif = new Notification(title, options);
+      notif.onclick = function (e) {
+        e.preventDefault();
+        window.focus();
+        if (window.location.hash !== '#admin') {
+          window.location.hash = '#admin';
+        }
+        if (window.ShopVietViews && window.ShopVietViews.admin && typeof window.ShopVietViews.admin.switchTab === 'function') {
+          window.ShopVietViews.admin.switchTab('orders');
+        }
+        notif.close();
+      };
+    } catch (err) {
+      console.error('[PWA-Admin-Notify] Notification error:', err);
+    }
+  };
+
+  // Lắng nghe tín hiệu Realtime Cloud để phát thông báo nếu tab Admin đang mở
+  window.addEventListener('shopviet_realtime_update', function (e) {
+    if (e && e.detail && e.detail.payload) {
+      const p = e.detail.payload;
+      if (p.order && p.order.status === 'pending_review') {
+        if (typeof window.triggerAdminOrderNotification === 'function') {
+          window.triggerAdminOrderNotification(p.order);
+        }
+      }
+    }
+  });
 
   // Tự động lắng nghe phím tắt toàn cục và Hash khi file script được nạp
   window.addEventListener('keydown', function (e) {

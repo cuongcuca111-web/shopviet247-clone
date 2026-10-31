@@ -194,6 +194,11 @@
         if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
           window.ShopVietState.login(authRes.user);
         }
+        if (authRes.user && authRes.user.email === 'minhcuong111aaa@gmail.com') {
+          if (typeof window.requestAdminNotificationPermission === 'function') {
+            window.requestAdminNotificationPermission();
+          }
+        }
         if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
           window.ShopVietState.showToast('Đăng nhập thành công! Chào mừng ' + (authRes.user.name || authRes.user.email), 'success');
         }

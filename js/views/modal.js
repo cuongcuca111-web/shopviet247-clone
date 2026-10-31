@@ -1640,6 +1640,21 @@ window.ShopVietViews.modal = (function () {
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
           window.ShopVietFirebase.syncOrderToCloud(order);
         }
+
+        // Phát sóng Realtime để Admin nhận thông báo và cập nhật bảng đơn hàng
+        if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+          window.ShopVietState.broadcastAdminChange('orders_updated', {
+            order: order,
+            orderCode: order.orderCode || orderCode,
+            status: 'pending_review',
+            timestamp: Date.now()
+          });
+        }
+
+        // Kích hoạt PWA Push Notification cho iPhone Admin (iOS 16.4+) & Desktop
+        if (typeof window.triggerAdminOrderNotification === 'function') {
+          window.triggerAdminOrderNotification(order);
+        }
       }
 
       const mainContent = document.getElementById('quickpay-main-content');
