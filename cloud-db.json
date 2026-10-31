@@ -3,7 +3,7 @@
     {
       "id": "usr_admin_minhcuong",
       "email": "minhcuong111aaa@gmail.com",
-      "password": "minhcuong111",
+      "password": "Minhcuong111aa@",
       "name": "Minh Cường",
       "role": "admin",
       "balance": 250000,
@@ -12,15 +12,14 @@
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "usr_mvthhfw77ikb",
-      "email": "cuongcuca111@gmail.com",
-      "password": "minhcuong111",
+      "id": "usr_cuongcuca111",
       "name": "Minh Cường",
-      "phone": "",
-      "balance": 250000,
+      "email": "cuongcuca111@gmail.com",
+      "phone": "0868668809",
       "role": "user",
-      "avatar": "M",
-      "createdAt": "2026-10-29T11:52:28.855Z"
+      "password": "123456",
+      "balance": 250000,
+      "createdAt": "2026-03-20T10:00:00.000Z"
     },
     {
       "id": "usr_mvtibr4c22o7",
@@ -402,10 +401,10 @@
       "id": "DJ2026889",
       "date": "2026-03-28 14:20:35",
       "productId": "prod-001",
-      "productName": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
-      "price": 69000,
+      "productName": "[1 Tháng] Gemini Argon 4 Pro + 5TB Drive",
+      "price": 19000,
       "quantity": 1,
-      "total": 69000,
+      "total": 19000,
       "status": "completed",
       "statusText": "Đã hoàn tất",
       "paymentMethod": "VietQR (MB Bank - Tự động)",
@@ -423,8 +422,9 @@
     "VIP50K",
     "DISCOUNT20K",
     "SV30P-XA8S",
-    "SV20P-PYGL"
+    "SV20P-PYGL",
+    "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T11:46:10.028Z",
-  "version": 1793447170028
+  "updatedAt": "2026-10-31T12:34:03.293Z",
+  "version": 1793450043293
 }
