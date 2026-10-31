@@ -100,20 +100,7 @@
       ]
     }
   ],
-  "vouchers": [
-    {
-      "code": "SV20P-PYGL",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": true,
-      "usedBy": "cuongcuca111@gmail.com",
-      "usedAt": "2026-10-31T04:46:50.152Z",
-      "orderCode": "#DJ202674DK",
-      "createdAt": "2026-10-31T04:46:40.452Z"
-    }
-  ],
+  "vouchers": [],
   "schedules": [],
   "orders": [
     {
@@ -341,8 +328,9 @@
     "#DJ20263LDY",
     "VIP50K",
     "DISCOUNT20K",
-    "SV30P-XA8S"
+    "SV30P-XA8S",
+    "SV20P-PYGL"
   ],
-  "updatedAt": "2026-10-31T10:27:34.348Z",
-  "version": 1793442454348
+  "updatedAt": "2026-10-31T10:59:17.074Z",
+  "version": 1793444357074
 }
