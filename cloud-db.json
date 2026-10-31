@@ -36,32 +36,6 @@
   ],
   "products": [
     {
-      "id": "prod-4444",
-      "name": "[6 Tháng]Gemini Argon 4 Pro + 5TB Drive",
-      "category": "cat_gemini",
-      "tag": "Gemini - Antigravity - Veo",
-      "price": 69000,
-      "oldPrice": 250000,
-      "discount": "-72%",
-      "stock": 100,
-      "status": "in_stock",
-      "rating": 5,
-      "reviewsCount": 1,
-      "soldCount": 0,
-      "badge": "",
-      "badgeColor": "bg-indigo-600 text-white",
-      "autoDelivery": false,
-      "warranty": "18 tháng (1 đổi 1)",
-      "desc": "Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...",
-      "iconType": "gemini",
-      "imageUrl": "",
-      "features": [
-        "Bản quyền kích hoạt nhanh chóng 24/7",
-        "Bảo hành 1 đổi 1 nhanh chóng",
-        "Hỗ trợ kỹ thuật qua Zalo 0868668809"
-      ]
-    },
-    {
       "id": "prod-002",
       "name": "[3 Tháng]Gemini Argon 4 Pro + 5TB Drive",
       "category": "cat_gemini",
@@ -190,6 +164,16 @@
       "startDate": "2026-10-29",
       "expireDate": "2026-11-29",
       "notes": "Khách VIP nâng cấp chính chủ"
+    },
+    {
+      "id": "SCH-002",
+      "customerEmail": "huy.dev99@gmail.com",
+      "customerName": "Nguyễn Huy",
+      "managerEmail": "slot2-cursor@shopviet.vip",
+      "serviceName": "Cursor Pro 1 Tháng Chính Chủ",
+      "startDate": "2026-10-25",
+      "expireDate": "2026-11-01",
+      "notes": "Sắp hết hạn cần nhắc gia hạn"
     }
   ],
   "orders": [
@@ -456,6 +440,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:56:15.390Z",
-  "version": 1793422575390
+  "updatedAt": "2026-10-31T05:01:10.547Z",
+  "version": 1793422870547
 }
