@@ -12,14 +12,26 @@
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "usr_cuongcuca111",
-      "name": "Minh Cường",
+      "id": "usr_mvthhfw77ikb",
       "email": "cuongcuca111@gmail.com",
-      "phone": "0868668809",
-      "role": "user",
-      "password": "123456",
+      "password": "minhcuong111",
+      "name": "Minh Cường",
+      "phone": "",
       "balance": 250000,
-      "createdAt": "2026-03-20T10:00:00.000Z"
+      "role": "user",
+      "avatar": "M",
+      "createdAt": "2026-10-29T11:52:28.855Z"
+    },
+    {
+      "id": "usr_mvtibr4c22o7",
+      "email": "cuongcuca222@gmail.com",
+      "password": "minhcuong111",
+      "name": "Minh Cường",
+      "phone": "",
+      "balance": 0,
+      "role": "user",
+      "avatar": "M",
+      "createdAt": "2026-10-29T12:16:03.084Z"
     }
   ],
   "products": [
@@ -37,17 +49,25 @@
       "reviewsCount": 1,
       "soldCount": 0,
       "badge": "Bán chạy nhất",
-      "badgeColor": "bg-indigo-600 text-white",
+      "badgeColor": "bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30",
       "autoDelivery": false,
       "warranty": "18 tháng (1 đổi 1)",
       "desc": "Gói 6 tháng Gemini Argon 4 Pro kèm 5TB Cloud Drive chính chủ, tích hợp Antigravity 2.0 & Veo Video AI tự động 24/7.",
       "iconType": "gemini",
-      "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCI+CiAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIyOCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnZW1pbmk2bUdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWE3M2U4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMzUlIiBzdG9wLWNvbG9yPSIjOGFiNGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNzAlIiBzdG9wLWNvbG9yPSIjYzU4YWY5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmNzU5NyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ2VtaW5pNm1QaWxsIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRmNDZlNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YzNhZWQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxwYXRoIGQ9Ik02MCAxNiBDNjAgMzggNDMgNTQgMjAgNTQgQzQzIDU0IDYwIDcwIDYwIDkyIEM2MCA3MCA3NyA1NCAxMDAgNTQgQzc3IDU0IDYwIDM4IDYwIDE2IFoiIGZpbGw9InVybCgjZ2VtaW5pNm1HcmFkKSIvPgogIDxwYXRoIGQ9Ik05MiAyMCB2MTIgTTg2IDI2IGgxMiIgc3Ryb2tlPSIjRjRCNDAwIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHJlY3QgeD0iMjYiIHk9IjkwIiB3aWR0aD0iNjgiIGhlaWdodD0iMjAiIHJ4PSIxMCIgZmlsbD0idXJsKCNnZW1pbmk2bVBpbGwpIi8+CiAgPHRleHQgeD0iNjAiIHk9IjEwNCIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgJ1NlZ29lIFVJJywgUm9ib3RvLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iMC41Ij42TSBQUk88L3RleHQ+Cjwvc3ZnPg==",
+      "imageUrl": "data:image/webp;base64,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",
       "features": [
         "Bản quyền kích hoạt nhanh chóng 24/7",
         "Bảo hành 1 đổi 1 nhanh chóng",
         "Hỗ trợ kỹ thuật qua Zalo 0868668809"
-      ]
+      ],
+      "isBestSeller": true,
+      "benefits": [
+        "Kích hoạt qua link mời chính chủ Google",
+        "Tích hợp Antigravity 2.0 & Veo Video AI",
+        "Bảo hành chính chủ 1 đổi 1",
+        "Tự động cấp link ngay sau khi thanh toán"
+      ],
+      "usageGuide": "Gói 6 tháng Gemini Argon 4 Pro kèm 5TB Cloud Drive chính chủ, tích hợp Antigravity 2.0 & Veo Video AI tự động 24/7."
     },
     {
       "id": "prod-3749",
@@ -110,62 +130,19 @@
   ],
   "vouchers": [
     {
-      "code": "SV30P-XA8S",
+      "code": "SV20P-KUSD",
       "type": "percent_discount",
-      "percent": 30,
-      "singleUse": false,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "desc": "Giảm 30% tổng đơn hàng",
-      "createdAt": "2026-10-29T22:17:29+07:00"
-    },
-    {
-      "code": "DISCOUNT20K",
-      "type": "order_discount",
-      "value": 20000,
+      "percent": 50,
+      "value": 50,
       "singleUse": true,
       "isUsed": false,
       "usedBy": null,
       "usedAt": null,
       "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
-      "code": "VIP50K",
-      "type": "order_discount",
-      "value": 50000,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
+      "createdAt": "2026-10-31T10:59:26.002Z"
     }
   ],
-  "schedules": [
-    {
-      "id": "SCH-001",
-      "customerEmail": "cuongcuca111@gmail.com",
-      "customerName": "Minh Cường",
-      "managerEmail": "slot1-pro@shopviet.vip",
-      "serviceName": "[1 Tháng] Gemini Argon 4 Pro + 5TB Drive",
-      "startDate": "2026-10-29",
-      "expireDate": "2026-11-29",
-      "notes": "Khách VIP nâng cấp chính chủ"
-    },
-    {
-      "id": "SCH-002",
-      "customerEmail": "huy.dev99@gmail.com",
-      "customerName": "Nguyễn Huy",
-      "managerEmail": "slot2-cursor@shopviet.vip",
-      "serviceName": "Cursor Pro 1 Tháng Chính Chủ",
-      "startDate": "2026-10-25",
-      "expireDate": "2026-11-01",
-      "notes": "Sắp hết hạn cần nhắc gia hạn"
-    }
-  ],
+  "schedules": [],
   "orders": [
     {
       "id": "ORD-TEST-999",
@@ -181,10 +158,237 @@
         }
       ],
       "amount": 138000,
-      "rejectedAt": "2026-10-31T11:25:00.773Z"
+      "rejectedAt": "2026-10-31T11:25:00.773Z",
+      "userEmail": "minhcuong111aaa@gmail.com"
+    },
+    {
+      "id": "#DJ2026THN2",
+      "orderCode": "#DJ2026THN2",
+      "rawCode": "DJ2026THN2",
+      "memo": "DJ2026THN2",
+      "items": [
+        {
+          "id": "prod-002",
+          "name": "[3 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 49000,
+          "originalPrice": 109000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 49000,
+      "discount": 0,
+      "amount": 49000,
+      "voucherCode": null,
+      "appliedVoucher": null,
+      "paymentMethod": "Sacombank (VietQR 24/7)",
+      "bankName": "Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-31T04:45:57.773Z",
+      "createdAtFormatted": "11:45 31/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-31T04:46:01.759Z",
+      "userEmail": "cuongcuca111@gmail.com",
+      "stockDeducted": true,
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "approvedAt": "2026-10-31T04:48:35.416Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026ZBXT",
+      "orderCode": "#DJ2026ZBXT",
+      "rawCode": "DJ2026ZBXT",
+      "memo": "DJ2026ZBXT",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T13:43:50.702Z",
+      "createdAtFormatted": "20:43 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-29T13:43:54.327Z",
+      "userEmail": "minhcuong111aaa@gmail.com",
+      "stockDeducted": true,
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "approvedAt": "2026-10-29T13:44:18.480Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026QSXC",
+      "orderCode": "#DJ2026QSXC",
+      "memo": "YJQT2UHD",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T13:01:37.255Z",
+      "createdAtFormatted": "20:01 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-29T13:02:08.552Z",
+      "userEmail": "minhcuong111aaa@gmail.com",
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "approvedAt": "2026-10-29T13:12:55.496Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026N7RS",
+      "orderCode": "#DJ2026N7RS",
+      "memo": "MA2HFFSY",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T12:42:42.265Z",
+      "createdAtFormatted": "19:42 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-29T12:42:46.439Z",
+      "userEmail": "cuongcuca111@gmail.com",
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "Ban oi",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "Ban oi",
+      "approvedAt": "2026-10-29T12:47:19.342Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "Ban oi",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026T2HS",
+      "orderCode": "#DJ2026T2HS",
+      "memo": "3V5HS94L",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T12:42:12.449Z",
+      "createdAtFormatted": "19:42 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "paidAt": "2026-10-29T12:42:18.191Z",
+      "userEmail": "minhcuong111aaa@gmail.com"
+    },
+    {
+      "id": "DJ2026889",
+      "date": "2026-03-28 14:20:35",
+      "productId": "prod-001",
+      "productName": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
+      "price": 69000,
+      "quantity": 1,
+      "total": 69000,
+      "status": "completed",
+      "statusText": "Đã hoàn tất",
+      "paymentMethod": "VietQR (MB Bank - Tự động)",
+      "deliveryType": "Link mời Google One",
+      "licenseKey": "INVITE-LINK: https://one.google.com/inv/gemini-pro-ag26-889-subviet",
+      "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "deletedIds": [],
-  "updatedAt": "2026-10-31T11:25:00.795Z",
-  "version": 1793445900795
+  "deletedIds": [
+    "SCH-002",
+    "SCH-001",
+    "SV20P-PEY6",
+    "DJ2026771",
+    "#DJ20263LDY",
+    "VIP50K",
+    "DISCOUNT20K",
+    "SV30P-XA8S",
+    "SV20P-PYGL"
+  ],
+  "updatedAt": "2026-10-31T11:31:13.915Z",
+  "version": 1793446273915
 }
