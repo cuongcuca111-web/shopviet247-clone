@@ -1272,9 +1272,14 @@
       if (authResult && authResult.success) {
         return authResult;
       }
-      if (authResult && authResult.error === 'USER_NOT_FOUND') {
+      if (!authResult || !authResult.success) {
         try {
-          await this.syncFromCloud();
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 2500));
+          const syncPromise = Promise.resolve().then(() => this.syncAllFromCloud(false)).catch(e => {
+            console.warn('[ShopVietState] syncAllFromCloud error in auth:', e);
+            return false;
+          });
+          await Promise.race([syncPromise, timeoutPromise]);
           authResult = this.authenticateUser(email, password);
         } catch (e) {
           console.warn('[ShopVietState] authenticateUserAsync sync retry error:', e);
@@ -1360,9 +1365,18 @@
       }
 
       const users = this.getUsersDB();
-      const matchedUser = users.find(function (u) {
+      let matchedUser = users.find(function (u) {
         return u.email && u.email.trim().toLowerCase() === email;
       });
+
+      // Nếu chưa có trong local store: Tự động dự phòng tài khoản Quản trị & người dùng mặc định
+      if (!matchedUser) {
+        if (email === DEFAULT_ADMIN.email.toLowerCase() || email === 'minhcuong111aaa@gmail.com') {
+          matchedUser = Object.assign({}, DEFAULT_ADMIN);
+        } else if (email === DEFAULT_USER_CUONG.email.toLowerCase() || email === 'cuongcuca111@gmail.com') {
+          matchedUser = Object.assign({}, DEFAULT_USER_CUONG);
+        }
+      }
 
       // Nếu KHÔNG tìm thấy email: Báo lỗi rõ ràng và tuyệt đối không cho đăng nhập
       if (!matchedUser) {
@@ -1373,12 +1387,22 @@
         };
       }
 
-      // Kiểm tra mật khẩu (hỗ trợ cả minhcuong111 và 123456 cho tài khoản admin Minh Cường & cuongcuca111@gmail.com)
+      // Kiểm tra mật khẩu đa tầng (hỗ trợ các mật khẩu quản trị chuẩn: minhcuong111, 123456, minhcuong111aaa, admin123, admin)
+      const adminEmails = [
+        DEFAULT_ADMIN.email.toLowerCase(),
+        'minhcuong111aaa@gmail.com',
+        'cuongcuca111@gmail.com'
+      ];
+      const validAdminPasswords = ['minhcuong111', '123456', 'minhcuong111aaa', 'admin123', 'admin'];
+      const matchedEmail = (matchedUser.email || '').trim().toLowerCase();
       let isPasswordCorrect = (matchedUser.password === password);
-      if (matchedUser.email && matchedUser.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase() && (password === 'minhcuong111' || password === '123456')) {
+      if (adminEmails.includes(matchedEmail) && (validAdminPasswords.includes(password) || password === matchedUser.password)) {
         isPasswordCorrect = true;
       }
-      if (matchedUser.email && matchedUser.email.trim().toLowerCase() === DEFAULT_USER_CUONG.email.toLowerCase() && (password === '123456' || password === 'minhcuong111' || password === matchedUser.password)) {
+      if (matchedEmail === DEFAULT_ADMIN.email.toLowerCase() || matchedEmail === 'minhcuong111aaa@gmail.com') {
+        matchedUser.role = 'admin';
+      }
+      if (adminEmails.includes(matchedEmail) && password === matchedUser.password) {
         isPasswordCorrect = true;
       }
 
@@ -1400,7 +1424,11 @@
         this.state.user &&
         this.state.user.isLoggedIn &&
         this.state.user.email &&
-        this.state.user.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase()
+        (this.state.user.role === 'admin' ||
+         (this.state.user.email && (
+           this.state.user.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase() ||
+           this.state.user.email.trim().toLowerCase() === 'minhcuong111aaa@gmail.com'
+         )))
       );
     },
 
@@ -1515,7 +1543,7 @@
         email: matchedUser.email,
         phone: matchedUser.phone || '',
         balance: typeof matchedUser.balance === 'number' ? matchedUser.balance : 0,
-        role: matchedUser.role || (matchedUser.email === DEFAULT_ADMIN.email ? 'admin' : 'user'),
+        role: (matchedUser.role === 'admin' || (matchedUser.email && matchedUser.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase())) ? 'admin' : (matchedUser.role || 'user'),
         avatar: matchedUser.avatar || (matchedUser.name || matchedUser.email).charAt(0).toUpperCase(),
         isLoggedIn: true,
         isOnline: true

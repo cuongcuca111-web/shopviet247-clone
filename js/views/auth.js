@@ -13,6 +13,211 @@
   let isRegisterMode = false;
   let isPasswordVisible = false;
 
+  function markTurnstileVerified() {
+    isTurnstileVerified = true;
+    isTurnstileLoading = false;
+    const turnstileSpinner = document.getElementById('turnstileSpinner');
+    const turnstileCheckmark = document.getElementById('turnstileCheckmark');
+    const turnstileIndicator = document.getElementById('turnstileIndicator');
+    const turnstileLabel = document.getElementById('turnstileLabel');
+    const turnstileSublabel = document.getElementById('turnstileSublabel');
+
+    if (turnstileSpinner) turnstileSpinner.classList.add('hidden');
+    if (turnstileCheckmark) turnstileCheckmark.classList.remove('hidden');
+    if (turnstileIndicator) {
+      turnstileIndicator.className = 'w-6 h-6 rounded-md border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center shadow-xs transition-all duration-300 scale-105';
+    }
+    if (turnstileLabel) {
+      turnstileLabel.textContent = 'Thành công! Bạn là con người';
+      turnstileLabel.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+    }
+    if (turnstileSublabel) {
+      turnstileSublabel.textContent = 'Xác thực Turnstile đã được phê duyệt';
+    }
+  }
+
+  // Xử lý điều hướng sau khi xác thực thành công (ưu tiên khôi phục đơn hàng mua ngay đang chờ)
+  function handlePostAuthRedirect() {
+    const pendingRaw = localStorage.getItem('shopviet_pending_purchase');
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        localStorage.removeItem('shopviet_pending_purchase');
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Đang chuyển tới bước thanh toán gói bản quyền bạn đã chọn...', 'success');
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+          window.ShopVietState.navigate('home');
+        }
+        setTimeout(() => {
+          if (window.ShopVietViews && window.ShopVietViews.modal) {
+            window.ShopVietViews.modal.open(pending.productId);
+            // Tự động kích hoạt tiếp bước thanh toán
+            setTimeout(() => {
+              if (window.ShopVietViews.modal && typeof window.ShopVietViews.modal.handleBuyNow === 'function') {
+                window.ShopVietViews.modal.handleBuyNow();
+              }
+            }, 350);
+          }
+        }, 400);
+        return;
+      } catch (err) {
+        console.error('Pending purchase restore error:', err);
+      }
+    }
+    if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+      window.ShopVietState.navigate('dashboard');
+    }
+  }
+
+  // Hàm xử lý submit form đăng nhập & đăng ký trên Safari và tất cả trình duyệt
+  const submitForm = async function () {
+    const emailInput = document.getElementById('authEmailInput');
+    const nameInput = document.getElementById('authNameInput');
+    const passInput = document.getElementById('authPasswordInput');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const submitBtnText = document.getElementById('authSubmitBtnText');
+
+    const email = emailInput ? emailInput.value.trim() : '';
+    const password = passInput ? passInput.value : '';
+    const name = (isRegisterMode && nameInput) ? nameInput.value.trim() : '';
+
+    if (!email) {
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Vui lòng nhập địa chỉ Email!', 'warning');
+      }
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (!password) {
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Vui lòng nhập mật khẩu!', 'warning');
+      }
+      if (passInput) passInput.focus();
+      return;
+    }
+
+    if (isRegisterMode) {
+      if (!name) {
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Vui lòng nhập họ và tên của bạn!', 'warning');
+        }
+        if (nameInput) nameInput.focus();
+        return;
+      }
+      if (password.length < 6) {
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Mật khẩu phải có ít nhất 6 ký tự!', 'warning');
+        }
+        if (passInput) passInput.focus();
+        return;
+      }
+    }
+
+    // Đảm bảo Turnstile được tích xanh ngay lập tức (0ms) mà không chặn luồng
+    if (!isTurnstileVerified) {
+      markTurnstileVerified();
+    }
+
+    // Đổi giao diện nút submit: disabled = true, thêm icon SVG spinner xoay + chữ loading
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+      submitBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        <span id="authSubmitBtnText">${isRegisterMode ? 'Đang tạo tài khoản...' : 'Đang kiểm tra tài khoản...'}</span>
+      `;
+    }
+
+    try {
+      if (isRegisterMode) {
+        // XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI
+        let regRes;
+        if (window.ShopVietState && typeof window.ShopVietState.registerUserAsync === 'function') {
+          regRes = await window.ShopVietState.registerUserAsync({
+            email: email,
+            password: password,
+            name: name
+          });
+        } else if (window.ShopVietState && typeof window.ShopVietState.registerUser === 'function') {
+          regRes = window.ShopVietState.registerUser({
+            email: email,
+            password: password,
+            name: name
+          });
+        } else {
+          regRes = { success: false, message: 'Hệ thống xác thực chưa sẵn sàng!' };
+        }
+
+        if (!regRes.success) {
+          if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+            window.ShopVietState.showToast(regRes.message || 'Đăng ký tài khoản không thành công!', 'error');
+          }
+          return;
+        }
+
+        // Tự động đăng nhập và lưu session
+        if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
+          window.ShopVietState.login(regRes.user);
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Đăng ký tài khoản thành công! Chào mừng ' + regRes.user.name, 'success');
+        }
+        handlePostAuthRedirect();
+      } else {
+        // XỬ LÝ ĐĂNG NHẬP TÀI KHOẢN THỰC TẾ
+        let authRes = (window.ShopVietState && typeof window.ShopVietState.authenticateUser === 'function')
+          ? window.ShopVietState.authenticateUser(email, password)
+          : { success: false };
+
+        // Nếu xác thực đồng bộ chưa khớp, thử xác thực qua Cloud Firestore / Async
+        if (!authRes.success && window.ShopVietState && typeof window.ShopVietState.authenticateUserAsync === 'function') {
+          const curBtnText = document.getElementById('authSubmitBtnText');
+          if (curBtnText) {
+            curBtnText.textContent = 'Đang đồng bộ đám mây...';
+          }
+          authRes = await window.ShopVietState.authenticateUserAsync(email, password);
+        }
+
+        if (!authRes.success) {
+          if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+            window.ShopVietState.showToast(authRes.message || 'Email hoặc mật khẩu không chính xác!', 'error');
+          }
+          return;
+        }
+
+        // Đăng nhập thành công
+        if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
+          window.ShopVietState.login(authRes.user);
+        }
+        if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Đăng nhập thành công! Chào mừng ' + (authRes.user.name || authRes.user.email), 'success');
+        }
+        handlePostAuthRedirect();
+      }
+    } catch (authErr) {
+      console.error('Submit form auth error:', authErr);
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Có lỗi xảy ra trong quá trình xác thực!', 'error');
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        submitBtn.innerHTML = `
+          <span id="authSubmitBtnText">${isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập'}</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        `;
+      }
+    }
+  };
+
   const authView = {
     /**
      * Render HTML giao diện đăng nhập / đăng ký
@@ -89,7 +294,7 @@
             </div>
 
             <!-- Form Nhập Liệu -->
-            <form id="authForm" onsubmit="return false;" class="space-y-4">
+            <form id="authForm" onsubmit="event.preventDefault(); window.ShopVietViews.auth.submitForm(); return false;" class="space-y-4">
               
               <!-- Trường Họ và Tên (chỉ hiện khi Đăng ký) -->
               <div id="nameFieldGroup" class="${isRegisterMode ? 'block' : 'hidden'}">
@@ -210,7 +415,7 @@
               </div>
 
               <!-- Nút chính: "Đăng nhập" nền đen full-width -->
-              <button type="submit" id="authSubmitBtn" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 text-sm mt-4 cursor-pointer">
+              <button type="button" id="authSubmitBtn" onclick="window.ShopVietViews.auth.submitForm()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 text-sm mt-4 cursor-pointer">
                 <span id="authSubmitBtnText">${isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập'}</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -255,40 +460,6 @@
      * Khởi tạo các sự kiện tương tác sau khi mount view
      */
     afterRender: function () {
-      // Xử lý điều hướng sau khi xác thực thành công (ưu tiên khôi phục đơn hàng mua ngay đang chờ)
-      function handlePostAuthRedirect() {
-        const pendingRaw = localStorage.getItem('shopviet_pending_purchase');
-        if (pendingRaw) {
-          try {
-            const pending = JSON.parse(pendingRaw);
-            localStorage.removeItem('shopviet_pending_purchase');
-            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-              window.ShopVietState.showToast('Đang chuyển tới bước thanh toán gói bản quyền bạn đã chọn...', 'success');
-            }
-            if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
-              window.ShopVietState.navigate('home');
-            }
-            setTimeout(() => {
-              if (window.ShopVietViews && window.ShopVietViews.modal) {
-                window.ShopVietViews.modal.open(pending.productId);
-                // Tự động kích hoạt tiếp bước thanh toán
-                setTimeout(() => {
-                  if (window.ShopVietViews.modal && typeof window.ShopVietViews.modal.handleBuyNow === 'function') {
-                    window.ShopVietViews.modal.handleBuyNow();
-                  }
-                }, 350);
-              }
-            }, 400);
-            return;
-          } catch (err) {
-            console.error('Pending purchase restore error:', err);
-          }
-        }
-        if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
-          window.ShopVietState.navigate('dashboard');
-        }
-      }
-
       // 1. Nút Về trang chủ
       const backHomeBtn = document.getElementById('authBackHomeBtn');
       if (backHomeBtn) {
@@ -314,59 +485,18 @@
         });
       }
 
-      // 3. Giả lập Cloudflare Turnstile tương tác
+      // 3. Giả lập Cloudflare Turnstile tương tác: Tự động tick xanh sau 200ms hoặc khi click
       const turnstileBox = document.getElementById('turnstileBox');
-      const turnstileIndicator = document.getElementById('turnstileIndicator');
-      const turnstileSpinner = document.getElementById('turnstileSpinner');
-      const turnstileCheckmark = document.getElementById('turnstileCheckmark');
-      const turnstileLabel = document.getElementById('turnstileLabel');
-      const turnstileSublabel = document.getElementById('turnstileSublabel');
+      isTurnstileVerified = false;
 
-      function triggerTurnstileVerification(callback) {
-        if (isTurnstileVerified) {
-          if (typeof callback === 'function') callback();
-          return;
-        }
-
-        if (isTurnstileLoading) return;
-        isTurnstileLoading = true;
-
-        // Trạng thái: Đang xác thực spinner xoay trong 0.8s
-        if (turnstileSpinner) turnstileSpinner.classList.remove('hidden');
-        if (turnstileCheckmark) turnstileCheckmark.classList.add('hidden');
-        if (turnstileIndicator) {
-          turnstileIndicator.className = 'w-6 h-6 rounded-md border-2 border-indigo-400 bg-indigo-50 dark:bg-slate-800 flex items-center justify-center transition-all duration-300';
-        }
-        if (turnstileLabel) {
-          turnstileLabel.textContent = 'Đang xác thực...';
-          turnstileLabel.className = 'font-semibold text-indigo-600 dark:text-indigo-400';
-        }
-
-        // Sau 0.8s: Hiện dấu tích xanh "Thành công! Bạn là con người"
-        setTimeout(function () {
-          isTurnstileLoading = false;
-          isTurnstileVerified = true;
-
-          if (turnstileSpinner) turnstileSpinner.classList.add('hidden');
-          if (turnstileCheckmark) turnstileCheckmark.classList.remove('hidden');
-          if (turnstileIndicator) {
-            turnstileIndicator.className = 'w-6 h-6 rounded-md border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center shadow-xs transition-all duration-300 scale-105';
-          }
-          if (turnstileLabel) {
-            turnstileLabel.textContent = 'Thành công! Bạn là con người';
-            turnstileLabel.className = 'font-bold text-emerald-600 dark:text-emerald-400';
-          }
-          if (turnstileSublabel) {
-            turnstileSublabel.textContent = 'Xác thực Turnstile đã được phê duyệt';
-          }
-
-          if (typeof callback === 'function') callback();
-        }, 800);
-      }
+      // Kích hoạt tích xanh hợp lệ sau 200ms
+      setTimeout(function () {
+        markTurnstileVerified();
+      }, 200);
 
       if (turnstileBox) {
         turnstileBox.addEventListener('click', function () {
-          triggerTurnstileVerification();
+          markTurnstileVerified();
         });
       }
 
@@ -436,6 +566,24 @@
 
 
 
+      // 7. Bắt sự kiện phím Enter trên cả ô input Email, Password và Họ tên
+      const emailInput = document.getElementById('authEmailInput');
+      const passInput = document.getElementById('authPasswordInput');
+      const nameInput = document.getElementById('authNameInput');
+
+      [emailInput, passInput, nameInput].forEach(function (input) {
+        if (input) {
+          input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (window.ShopVietViews && window.ShopVietViews.auth && typeof window.ShopVietViews.auth.submitForm === 'function') {
+                window.ShopVietViews.auth.submitForm();
+              }
+            }
+          });
+        }
+      });
+
       // 8. Chuyển đổi giữa Đăng nhập & Đăng ký
       const authToggleModeBtn = document.getElementById('authToggleModeBtn');
       if (authToggleModeBtn) {
@@ -445,133 +593,20 @@
         });
       }
 
-      // 9. Submit Form Đăng nhập & Đăng ký (Kiểm tra thực tế qua users_db)
+      // 9. Submit Form Đăng nhập & Đăng ký (Fallback bắt sự kiện submit form trên Safari / mobile)
       const authForm = document.getElementById('authForm');
       if (authForm) {
         authForm.addEventListener('submit', function (e) {
           e.preventDefault();
-          const emailInput = document.getElementById('authEmailInput');
-          const nameInput = document.getElementById('authNameInput');
-          const passInput = document.getElementById('authPasswordInput');
-          const submitBtn = document.getElementById('authSubmitBtn');
-          const submitBtnText = document.getElementById('authSubmitBtnText');
-
-          const email = emailInput ? emailInput.value.trim() : '';
-          const password = passInput ? passInput.value : '';
-          const name = (isRegisterMode && nameInput) ? nameInput.value.trim() : '';
-
-          if (!email) {
-            window.ShopVietState.showToast('Vui lòng nhập địa chỉ Email!', 'warning');
-            if (emailInput) emailInput.focus();
-            return;
-          }
-
-          if (!password) {
-            window.ShopVietState.showToast('Vui lòng nhập mật khẩu!', 'warning');
-            if (passInput) passInput.focus();
-            return;
-          }
-
-          if (isRegisterMode) {
-            if (!name) {
-              window.ShopVietState.showToast('Vui lòng nhập họ và tên của bạn!', 'warning');
-              if (nameInput) nameInput.focus();
-              return;
-            }
-            if (password.length < 6) {
-              window.ShopVietState.showToast('Mật khẩu phải có ít nhất 6 ký tự!', 'warning');
-              if (passInput) passInput.focus();
-              return;
-            }
-          }
-
-          const executeOnlineAuth = async function () {
-            if (submitBtn) {
-              submitBtn.disabled = true;
-              submitBtn.classList.add('opacity-80');
-            }
-            if (submitBtnText) {
-              submitBtnText.textContent = isRegisterMode ? 'Đang tạo tài khoản...' : 'Đang kiểm tra tài khoản...';
-            }
-
-            try {
-              if (isRegisterMode) {
-                // XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI
-                let regRes;
-                if (window.ShopVietState && typeof window.ShopVietState.registerUserAsync === 'function') {
-                  regRes = await window.ShopVietState.registerUserAsync({
-                    email: email,
-                    password: password,
-                    name: name
-                  });
-                } else if (window.ShopVietState && typeof window.ShopVietState.registerUser === 'function') {
-                  regRes = window.ShopVietState.registerUser({
-                    email: email,
-                    password: password,
-                    name: name
-                  });
-                } else {
-                  regRes = { success: false, message: 'Hệ thống xác thực chưa sẵn sàng!' };
-                }
-
-                if (!regRes.success) {
-                  // Báo lỗi nếu email đã tồn tại hoặc không hợp lệ
-                  window.ShopVietState.showToast(regRes.message, 'error');
-                  return;
-                }
-
-                // Tự động đăng nhập và lưu session
-                window.ShopVietState.login(regRes.user);
-                window.ShopVietState.showToast('Đăng ký tài khoản thành công! Chào mừng ' + regRes.user.name, 'success');
-                handlePostAuthRedirect();
-              } else {
-                // XỬ LÝ ĐĂNG NHẬP TÀI KHOẢN THỰC TẾ
-                let authRes = window.ShopVietState && typeof window.ShopVietState.authenticateUser === 'function'
-                  ? window.ShopVietState.authenticateUser(email, password)
-                  : { success: false };
-
-                // Nếu xác thực đồng bộ chưa khớp, thử xác thực qua Cloud Firestore / Async
-                if (!authRes.success && window.ShopVietState && typeof window.ShopVietState.authenticateUserAsync === 'function') {
-                  if (submitBtnText) {
-                    submitBtnText.textContent = 'Đang đồng bộ đám mây...';
-                  }
-                  authRes = await window.ShopVietState.authenticateUserAsync(email, password);
-                }
-
-                if (!authRes.success) {
-                  // Nếu không tồn tại hoặc sai mật khẩu: BÁO LỖI RÕ RÀNG VÀ TUYỆT ĐỐI KHÔNG CHO ĐĂNG NHẬP!
-                  window.ShopVietState.showToast(authRes.message || 'Email hoặc mật khẩu không chính xác!', 'error');
-                  return;
-                }
-
-                // Đăng nhập thành công
-                window.ShopVietState.login(authRes.user);
-                window.ShopVietState.showToast('Đăng nhập thành công! Chào mừng ' + authRes.user.name, 'success');
-                handlePostAuthRedirect();
-              }
-            } catch (authErr) {
-              console.error('Online Auth error:', authErr);
-              window.ShopVietState.showToast('Có lỗi xảy ra trong quá trình xác thực!', 'error');
-            } finally {
-              if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-80');
-              }
-              if (submitBtnText) {
-                submitBtnText.textContent = isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập';
-              }
-            }
-          };
-
-          // Nếu chưa tick Turnstile, kích hoạt xác thực 0.8s rồi thực thi
-          if (!isTurnstileVerified) {
-            triggerTurnstileVerification(executeOnlineAuth);
-          } else {
-            executeOnlineAuth();
+          if (window.ShopVietViews && window.ShopVietViews.auth && typeof window.ShopVietViews.auth.submitForm === 'function') {
+            window.ShopVietViews.auth.submitForm();
           }
         });
       }
-    }
+    },
+
+    submitForm: submitForm,
+    handlePostAuthRedirect: handlePostAuthRedirect
   };
 
   // Gắn vào window.ShopVietViews.login và window.ShopVietViews.auth
