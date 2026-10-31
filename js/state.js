@@ -592,15 +592,31 @@
               return lCode && lCode === cCode;
             });
             if (idx === -1) {
+              if (self.isOrderCompletedLocked(cCode)) {
+                co.status = 'completed';
+                co.statusText = 'Đã hoàn tất';
+              }
               mergedOrders.unshift(co);
               ordersChanged = true;
             } else {
               const currentStatus = mergedOrders[idx].status;
               const cloudStatus = co.status;
-              if (cloudStatus === 'completed' || (cloudStatus && cloudStatus !== currentStatus)) {
+              const isLocked = self.isOrderCompletedLocked(cCode);
+
+              // NGUYÊN TẮC BẤT BIẾN: ĐƠN ĐÃ COMPLETED HOẶC BỊ KHÓA KHÔNG BAO GIỜ BỊ HẠ CẤP VỀ PENDING_REVIEW!
+              if (currentStatus === 'completed' || isLocked) {
+                mergedOrders[idx].status = 'completed';
+                mergedOrders[idx].statusText = 'Đã hoàn tất';
+                if (co.customDeliveryLink || co.deliveryInfo || co.licenseKey || co.adminMessage) {
+                  mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co, {
+                    status: 'completed',
+                    statusText: 'Đã hoàn tất'
+                  });
+                }
+              } else if (cloudStatus === 'completed') {
                 mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co);
                 ordersChanged = true;
-              } else if (co.customDeliveryLink || co.deliveryInfo || co.adminMessage) {
+              } else if (cloudStatus && cloudStatus !== currentStatus) {
                 mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co);
                 ordersChanged = true;
               }
@@ -876,12 +892,13 @@
                         const k = cleanCode(rawKey);
                         if (!k) return;
                         if (!orderMap.has(k)) {
+                          if (self.isOrderCompletedLocked && self.isOrderCompletedLocked(k)) { ro.status = 'completed'; ro.statusText = 'Đã hoàn tất'; }
                           orderMap.set(k, ro);
                         } else {
                           const cur = orderMap.get(k);
                           let merged = Object.assign({}, cur, ro);
                           // Nếu bản ghi trên Cloud đã completed mà local chưa completed thì giữ completed
-                          if (cur.status === 'completed' || ro.status === 'completed') {
+                          if (cur.status === 'completed' || ro.status === 'completed' || (self.isOrderCompletedLocked && self.isOrderCompletedLocked(k))) {
                             merged.status = 'completed';
                             merged.statusText = 'Đã hoàn tất';
                             merged.customDeliveryLink = cur.customDeliveryLink || ro.customDeliveryLink || '';
@@ -1596,9 +1613,37 @@
          (this.state.user.email && (
            this.state.user.email.trim().toLowerCase() === DEFAULT_ADMIN.email.toLowerCase() ||
            this.state.user.email.trim().toLowerCase() === 'minhcuong111aaa@gmail.com' ||
+           this.state.user.email.trim().toLowerCase() === 'cuongcuca111@gmail.com' ||
            this.state.user.email.trim().toLowerCase().startsWith('minhcuong111')
          )))
       );
+    },
+
+    // GIAO THỨC KHÓA BẤT BIẾN ĐƠN HÀNG ĐÃ DUYỆT (IMMUTABLE COMPLETED ORDER LOCK)
+    COMPLETED_LOCK_KEY: 'shopviet_completed_orders_lock',
+    getCompletedLockList: function () {
+      try {
+        const raw = localStorage.getItem(this.COMPLETED_LOCK_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    },
+    isOrderCompletedLocked: function (code) {
+      if (!code) return false;
+      const clean = String(code).replace(/^#/, '').trim().toUpperCase();
+      return this.getCompletedLockList().includes(clean);
+    },
+    lockOrderAsCompleted: function (code) {
+      if (!code) return;
+      try {
+        const clean = String(code).replace(/^#/, '').trim().toUpperCase();
+        const list = this.getCompletedLockList();
+        if (!list.includes(clean)) {
+          list.push(clean);
+          localStorage.setItem(this.COMPLETED_LOCK_KEY, JSON.stringify(list));
+        }
+      } catch (e) {}
     },
 
     // ==================== CÔ LẬP ĐƠN HÀNG & DỮ LIỆU ĐỘC LẬP THEO TÀI KHOẢN ====================

@@ -3652,7 +3652,10 @@
     },
 
     // 15. Duyệt hoàn tất đơn hàng
-    approveOrder: function (orderCode) {
+    approveOrder: async function (orderCode) {
+      if (window.ShopVietState && typeof window.ShopVietState.lockOrderAsCompleted === 'function') {
+        window.ShopVietState.lockOrderAsCompleted(orderCode);
+      }
       if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
         const ord = window.ShopVietState.state.orders.find(o => (o.orderCode === orderCode || o.id === orderCode || o.orderCode === '#' + orderCode || ('#' + o.orderCode) === orderCode));
         if (ord) {
@@ -3666,7 +3669,22 @@
             window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
           }
           if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-            window.ShopVietState.pushAllToCloud().catch(() => {});
+            try {
+              localStorage.setItem('shopviet_orders', JSON.stringify(window.ShopVietState.state.orders));
+              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
+            } catch (eLs) {}
+            await window.ShopVietState.pushAllToCloud(true).catch(() => {});
+            try {
+              if (typeof BroadcastChannel !== 'undefined') {
+                const bc1 = new BroadcastChannel('shopviet_admin_sync');
+                bc1.postMessage({ type: 'order_completed', action: 'order_approved', orderCode: orderCode, status: 'completed', timestamp: Date.now() });
+                const bc2 = new BroadcastChannel('shopviet_realtime_sync');
+                bc2.postMessage({ type: 'order_completed', action: 'order_approved', orderCode: orderCode, status: 'completed', timestamp: Date.now() });
+              }
+            } catch (eBc) {}
+            try {
+              localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({ type: 'order_completed', orderCode: orderCode, status: 'completed', timestamp: Date.now() }));
+            } catch (eSt) {}
           }
         }
       }
@@ -3824,7 +3842,10 @@
     },
 
     // 15c. Xác nhận Phê Duyệt & Gửi Link
-    submitApproveWithDelivery: function (orderCode) {
+    submitApproveWithDelivery: async function (orderCode) {
+      if (window.ShopVietState && typeof window.ShopVietState.lockOrderAsCompleted === 'function') {
+        window.ShopVietState.lockOrderAsCompleted(orderCode);
+      }
       const linkInput = document.getElementById('adminDeliveryLinkInput');
       const msgInput = document.getElementById('adminDeliveryMessageInput');
       const deliveryLink = (linkInput ? linkInput.value : '').trim();
@@ -3857,7 +3878,22 @@
             window.ShopVietFirebase.syncOrderToCloud(ord).catch(() => {});
           }
           if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-            window.ShopVietState.pushAllToCloud().catch(() => {});
+            try {
+              localStorage.setItem('shopviet_orders', JSON.stringify(window.ShopVietState.state.orders));
+              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
+            } catch (eLs) {}
+            await window.ShopVietState.pushAllToCloud(true).catch(() => {});
+            try {
+              if (typeof BroadcastChannel !== 'undefined') {
+                const bc1 = new BroadcastChannel('shopviet_admin_sync');
+                bc1.postMessage({ type: 'order_completed', action: 'order_approved', orderCode: orderCode, status: 'completed', timestamp: Date.now() });
+                const bc2 = new BroadcastChannel('shopviet_realtime_sync');
+                bc2.postMessage({ type: 'order_completed', action: 'order_approved', orderCode: orderCode, status: 'completed', timestamp: Date.now() });
+              }
+            } catch (eBc) {}
+            try {
+              localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({ type: 'order_completed', orderCode: orderCode, status: 'completed', timestamp: Date.now() }));
+            } catch (eSt) {}
           }
         }
       }
@@ -5240,6 +5276,8 @@
       const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.rawCode || ord.id || changeDocId;
       const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
       if (!cleanCode) return;
+      const isLocked = Boolean(window.ShopVietState && typeof window.ShopVietState.isOrderCompletedLocked === 'function' && window.ShopVietState.isOrderCompletedLocked(cleanCode));
+      if (isLocked) { ord.status = 'completed'; ord.statusText = 'Đã hoàn tất'; }
 
       // 1. Tự động nạp hoặc cập nhật vào State
       if (window.ShopVietState && window.ShopVietState.state) {
@@ -5250,7 +5288,12 @@
         });
 
         if (existingIdx > -1) {
-          window.ShopVietState.state.orders[existingIdx] = Object.assign({}, window.ShopVietState.state.orders[existingIdx], ord);
+          const prevOrd = window.ShopVietState.state.orders[existingIdx];
+          if (prevOrd.status === 'completed' || isLocked) {
+            window.ShopVietState.state.orders[existingIdx] = Object.assign({}, prevOrd, ord, { status: 'completed', statusText: 'Đã hoàn tất' });
+          } else {
+            window.ShopVietState.state.orders[existingIdx] = Object.assign({}, prevOrd, ord);
+          }
         } else {
           window.ShopVietState.state.orders.unshift(ord);
         }
@@ -5474,7 +5517,8 @@
               if (!ro) return;
               const rawCode = ro.orderCode || ro.memo || ro.paymentMemo || ro.rawCode || ro.id;
               const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
-              if (ro.status === 'pending_review') {
+              const isLocked = Boolean(window.ShopVietState && typeof window.ShopVietState.isOrderCompletedLocked === 'function' && window.ShopVietState.isOrderCompletedLocked(cleanCode));
+              if (ro.status === 'pending_review' && !isLocked) {
                 if (cleanCode && !notifiedList.includes(cleanCode)) {
                   hasNewPending = true;
                   console.log('[AdminWatcher] Phát hiện đơn hàng mới từ Cloud Auto-Poll:', cleanCode, ro);

@@ -149,7 +149,8 @@
       const productName = ord.productName || (ord.product ? ord.product.name : (ord.items && ord.items[0] ? ord.items[0].name : 'Gói dịch vụ AI Pro'));
       const date = ord.createdAtFormatted ? (ord.createdAtFormatted.includes(' ') ? ord.createdAtFormatted.split(' ')[1] : ord.createdAtFormatted) : (ord.date ? (ord.date.includes(' ') ? ord.date.split(' ')[0] : ord.date) : '28/10/2026');
       const total = ord.amount || ord.total || ord.price || 0;
-      const status = ord.status || 'completed';
+      const isLocked = Boolean(window.ShopVietState && typeof window.ShopVietState.isOrderCompletedLocked === 'function' && window.ShopVietState.isOrderCompletedLocked(id));
+      const status = isLocked ? 'completed' : (ord.status || 'completed');
       const statusText = status === 'completed' ? 'Hoàn tất' : (status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' || status === 'pending_payment' ? 'Chờ thanh toán' : (ord.statusText || 'Hoàn tất')));
       const customDeliveryLink = ord.customDeliveryLink || (ord.deliveryInfo && (ord.deliveryInfo.customDeliveryLink || ord.deliveryInfo.licenseKey)) || ord.licenseKey || '';
       const adminMessage = ord.adminMessage || (ord.deliveryInfo && (ord.deliveryInfo.adminMessage || ord.deliveryInfo.guide)) || '';
@@ -2101,6 +2102,34 @@
     };
 
     const setupDashboardRealtime = function () {
+      // 0. Lắng nghe BroadcastChannel liên lạc tức thì từ Admin Portal (0ms latency)
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          const bcAdmin = new BroadcastChannel('shopviet_admin_sync');
+          bcAdmin.onmessage = function (ev) {
+            if (ev && ev.data && (ev.data.type === 'order_completed' || ev.data.status === 'completed')) {
+              if (ev.data.orderCode && window.ShopVietState && typeof window.ShopVietState.lockOrderAsCompleted === 'function') {
+                window.ShopVietState.lockOrderAsCompleted(ev.data.orderCode);
+              }
+              if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+                window.ShopVietViews.dashboard.refreshOrders(false);
+              }
+            }
+          };
+          const bcRealtime = new BroadcastChannel('shopviet_realtime_sync');
+          bcRealtime.onmessage = function (ev) {
+            if (ev && ev.data && (ev.data.type === 'order_completed' || ev.data.status === 'completed')) {
+              if (ev.data.orderCode && window.ShopVietState && typeof window.ShopVietState.lockOrderAsCompleted === 'function') {
+                window.ShopVietState.lockOrderAsCompleted(ev.data.orderCode);
+              }
+              if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+                window.ShopVietViews.dashboard.refreshOrders(false);
+              }
+            }
+          };
+        } catch (eBc) {}
+      }
+
       // 1. Lắng nghe storage event (khi shopviet_orders hoặc shopviet247_cloud_orders_sync thay đổi)
       window.addEventListener('storage', function (e) {
         if (e.key === 'shopviet_orders' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_state_v1') {
