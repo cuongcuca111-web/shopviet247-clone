@@ -1471,33 +1471,67 @@ window.ShopVietViews.modal = (function () {
           order.stockDeducted = true;
           const boughtItem = order.items[0];
           const prodId = boughtItem.id;
-          const buyQty = boughtItem.quantity || 1;
+          const buyQty = Number(boughtItem.quantity) || 1;
 
-          if (window.ShopVietData && Array.isArray(window.ShopVietData.products)) {
-            const targetProd = window.ShopVietData.products.find(p => p.id === prodId);
-            if (targetProd) {
-              const currentStock = typeof targetProd.stock === 'number' ? targetProd.stock : parseInt(targetProd.stock, 10) || 111;
-              const newStock = Math.max(0, currentStock - buyQty);
-              targetProd.stock = newStock;
-              updatedStock = newStock;
-              if (newStock === 0) {
-                targetProd.status = 'out_of_stock';
-              } else if (newStock <= 5) {
-                targetProd.status = 'low_stock';
+          window.ShopVietData = window.ShopVietData || {};
+          window.ShopVietData.products = window.ShopVietData.products || [];
+
+          let targetProd = window.ShopVietData.products.find(p => p.id === prodId);
+          if (!targetProd && boughtItem.name) {
+            targetProd = window.ShopVietData.products.find(p => p.name === boughtItem.name);
+          }
+
+          if (targetProd) {
+            const currentStock = typeof targetProd.stock === 'number' ? targetProd.stock : parseInt(targetProd.stock, 10) || 100;
+            const newStock = Math.max(0, currentStock - buyQty);
+            targetProd.stock = newStock;
+            updatedStock = newStock;
+            if (newStock === 0) {
+              targetProd.status = 'out_of_stock';
+            } else if (newStock <= 5) {
+              targetProd.status = 'low_stock';
+            }
+
+            // 1. Lưu đồng bộ vào TẤT CẢ các key LocalStorage
+            const jsonStr = JSON.stringify(window.ShopVietData.products);
+            try {
+              localStorage.setItem('shopviet_custom_products', jsonStr);
+              localStorage.setItem('shopviet_admin_products', jsonStr);
+              localStorage.setItem('shopviet247_custom_products_v1', jsonStr);
+            } catch (e) {}
+
+            // 2. Cập nhật State
+            if (window.ShopVietState && typeof window.ShopVietState.saveCustomProducts === 'function') {
+              window.ShopVietState.saveCustomProducts(window.ShopVietData.products);
+            }
+
+            // 3. ĐẨY LÊN GITHUB CLOUD STORAGE NGAY LẬP TỨC
+            if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+              window.ShopVietState.pushAllToCloud(true).catch(function (e) {
+                console.warn('[Modal Stock Cloud Push Error]:', e);
+              });
+            }
+
+            // 4. Phát sóng Realtime để các tab khác và Admin đều cập nhật số lượng tồn kho
+            if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+              window.ShopVietState.broadcastAdminChange('products_updated', {
+                productId: targetProd.id,
+                productName: targetProd.name,
+                newStock: newStock,
+                timestamp: Date.now()
+              });
+            }
+
+            // 5. Re-render trang chủ nếu đang hiển thị
+            if (window.ShopVietViews && window.ShopVietViews.home) {
+              if (typeof window.ShopVietViews.home.renderProducts === 'function') {
+                window.ShopVietViews.home.renderProducts();
               }
-              // Lưu vào localStorage
-              try {
-                localStorage.setItem('shopviet_custom_products', JSON.stringify(window.ShopVietData.products));
-              } catch (e) {}
-
-              // Đồng bộ cập nhật giao diện Trang chủ ngay lập tức
-              if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.render === 'function') {
-                const homeContainer = document.getElementById('view-home');
-                if (homeContainer && !homeContainer.classList.contains('hidden')) {
-                  homeContainer.innerHTML = window.ShopVietViews.home.render();
-                  if (window.ShopVietViews.home.afterRender) {
-                    window.ShopVietViews.home.afterRender();
-                  }
+              const homeContainer = document.getElementById('view-home');
+              if (homeContainer && !homeContainer.classList.contains('hidden') && typeof window.ShopVietViews.home.render === 'function') {
+                homeContainer.innerHTML = window.ShopVietViews.home.render();
+                if (window.ShopVietViews.home.afterRender) {
+                  window.ShopVietViews.home.afterRender();
                 }
               }
             }

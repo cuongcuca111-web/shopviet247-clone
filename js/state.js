@@ -226,9 +226,96 @@
       }
     },
 
+    // ==================== CƠ CHẾ TOMBSTONE QUẢN LÝ XÓA DỮ LIỆU ĐỒNG BỘ CLOUD ====================
+    getDeletedIds: function () {
+      try {
+        const raw = localStorage.getItem('shopviet_deleted_ids');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    },
+    markAsDeleted: function (idOrCode) {
+      if (!idOrCode) return;
+      try {
+        const ids = this.getDeletedIds();
+        const clean = String(idOrCode).trim();
+        const cleanUpper = clean.toUpperCase();
+        let changed = false;
+        if (!ids.includes(clean)) {
+          ids.push(clean);
+          changed = true;
+        }
+        if (!ids.includes(cleanUpper)) {
+          ids.push(cleanUpper);
+          changed = true;
+        }
+        if (changed) {
+          localStorage.setItem('shopviet_deleted_ids', JSON.stringify(ids));
+        }
+      } catch (e) {}
+    },
+    isDeleted: function (idOrCode) {
+      if (!idOrCode) return false;
+      const ids = this.getDeletedIds();
+      const clean = String(idOrCode).trim();
+      const cleanUpper = clean.toUpperCase();
+      return ids.includes(clean) || ids.includes(cleanUpper);
+    },
+
     // ==================== QUẢN LÝ ĐƠN HÀNG TOÀN CỤC (ORDERS) ====================
     // Lấy danh sách toàn bộ đơn hàng
+    // Xóa đơn hàng theo ID hoặc OrderCode
+    deleteOrder: function (orderId) {
+      if (!orderId) return { success: false, message: 'ID đơn hàng không hợp lệ!' };
+      const cleanId = String(orderId).trim();
+      this.markAsDeleted(cleanId);
+      
+      let orders = this.getOrders();
+      orders = orders.filter(function (o) {
+        if (!o) return false;
+        const currentId = o.id || o.orderCode;
+        return currentId !== cleanId && o.id !== cleanId && o.orderCode !== cleanId;
+      });
+      
+      this.state.orders = orders;
+      this.save();
+      try {
+        localStorage.setItem('shopviet_orders', JSON.stringify(orders));
+      } catch (e) {}
+      this.notify('orders_updated', orders);
+      this.pushAllToCloud().catch(function (e) {
+        console.warn('[ShopVietState] Push to cloud after delete order failed:', e);
+      });
+      return { success: true, message: 'Đã xóa đơn hàng thành công!' };
+    },
+
     getOrders: function () {
+      try {
+        let orders = [];
+        if (this.state && Array.isArray(this.state.orders) && this.state.orders.length > 0) {
+          orders = this.state.orders;
+        } else {
+          const raw = localStorage.getItem('shopviet_orders');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) orders = parsed;
+          } else {
+            orders = (this.state && this.state.orders) || [];
+          }
+        }
+        const self = this;
+        return orders.filter(function (o) {
+          if (!o) return false;
+          const orderId = o.id || o.orderCode;
+          return !self.isDeleted(orderId) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+        });
+      } catch (e) {
+        return (this.state && this.state.orders) || [];
+      }
+    },
+
+    _deprecatedGetOrders: function () {
       try {
         if (this.state && Array.isArray(this.state.orders) && this.state.orders.length > 0) {
           return this.state.orders;
@@ -248,6 +335,12 @@
     saveOrders: function (orders) {
       try {
         if (!Array.isArray(orders)) return false;
+        const self = this;
+        orders = orders.filter(function (o) {
+          if (!o) return false;
+          const orderId = o.id || o.orderCode;
+          return !self.isDeleted(orderId) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+        });
         this.state.orders = orders;
         this.save();
         localStorage.setItem('shopviet_orders', JSON.stringify(orders));
@@ -367,6 +460,14 @@
 
         let hasChange = false;
 
+        // 0. Đồng bộ Tombstone Deleted IDs (Danh sách các ID đã xóa vĩnh viễn)
+        if (Array.isArray(data.deletedIds) && data.deletedIds.length > 0) {
+          const self = this;
+          data.deletedIds.forEach(function (did) {
+            self.markAsDeleted(did);
+          });
+        }
+
         // 1. Đồng bộ Users (Tài khoản)
         if (Array.isArray(data.users) && data.users.length > 0) {
           const localUsers = this.getUsersDB();
@@ -415,11 +516,15 @@
 
         // 3. Đồng bộ Vouchers (Mã giảm giá & quà tặng ví)
         if (Array.isArray(data.vouchers) && data.vouchers.length > 0) {
-          const localVouchers = this.getVouchers();
+          const self = this;
+          const localVouchers = this.getVouchers().filter(function (lv) {
+            return lv && lv.code && !self.isDeleted(lv.code);
+          });
           const mergedVouchers = [...localVouchers];
           data.vouchers.forEach(function (cv) {
             if (!cv || !cv.code) return;
             const cleanCode = cv.code.trim().toUpperCase();
+            if (self.isDeleted(cleanCode) || self.isDeleted(cv.code)) return;
             const idx = mergedVouchers.findIndex(function (lv) {
               return lv.code && lv.code.trim().toUpperCase() === cleanCode;
             });
@@ -432,17 +537,22 @@
             }
           });
           try {
-            localStorage.setItem(VOUCHERS_KEY, JSON.stringify(mergedVouchers));
+            const finalCleanVouchers = mergedVouchers.filter(function (v) { return v && v.code && !self.isDeleted(v.code); });
+            localStorage.setItem(VOUCHERS_KEY, JSON.stringify(finalCleanVouchers));
             hasChange = true;
           } catch (e) {}
         }
 
         // 4. Đồng bộ Schedules (Khách hẹn lịch & Quản lý Slot Excel)
         if (Array.isArray(data.schedules) && data.schedules.length > 0) {
-          const localSchedules = this.getSchedules();
+          const self = this;
+          const localSchedules = this.getSchedules().filter(function (ls) {
+            return ls && ls.id && !self.isDeleted(ls.id);
+          });
           const mergedSchedules = [...localSchedules];
           data.schedules.forEach(function (cs) {
             if (!cs || !cs.id) return;
+            if (self.isDeleted(cs.id)) return;
             const idx = mergedSchedules.findIndex(function (ls) {
               return ls.id === cs.id;
             });
@@ -453,20 +563,26 @@
             }
           });
           try {
-            localStorage.setItem(SCHEDULES_KEY, JSON.stringify(mergedSchedules));
+            const finalCleanSchedules = mergedSchedules.filter(function (s) { return s && s.id && !self.isDeleted(s.id); });
+            localStorage.setItem(SCHEDULES_KEY, JSON.stringify(finalCleanSchedules));
             hasChange = true;
           } catch (e) {}
         }
 
         // 5. Đồng bộ Orders (Đơn hàng)
         if (Array.isArray(data.orders) && data.orders.length > 0) {
-          const localOrders = this.getOrders();
+          const self = this;
+          const localOrders = this.getOrders().filter(function (lo) {
+            const orderId = lo.id || lo.orderCode;
+            return !self.isDeleted(orderId) && !self.isDeleted(lo.id) && !self.isDeleted(lo.orderCode);
+          });
           const mergedOrders = [...localOrders];
           let ordersChanged = false;
           data.orders.forEach(function (co) {
             if (!co) return;
             const orderId = co.id || co.orderCode;
             if (!orderId) return;
+            if (self.isDeleted(orderId) || self.isDeleted(co.id) || self.isDeleted(co.orderCode)) return;
             const idx = mergedOrders.findIndex(function (lo) {
               return (lo.id && lo.id === orderId) || (lo.orderCode && lo.orderCode === orderId);
             });
@@ -481,10 +597,15 @@
             }
           });
           if (ordersChanged) {
-            this.state.orders = mergedOrders;
+            const cleanFinalOrders = mergedOrders.filter(function (o) {
+              if (!o) return false;
+              const oid = o.id || o.orderCode;
+              return !self.isDeleted(oid) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+            });
+            this.state.orders = cleanFinalOrders;
             this.save();
             try {
-              localStorage.setItem('shopviet_orders', JSON.stringify(mergedOrders));
+              localStorage.setItem('shopviet_orders', JSON.stringify(cleanFinalOrders));
             } catch (e) {}
             hasChange = true;
           }
@@ -603,6 +724,7 @@
           vouchers: vouchers,
           schedules: schedules,
           orders: orders,
+          deletedIds: this.getDeletedIds(),
           updatedAt: isoNow,
           version: now
         };
@@ -1539,7 +1661,21 @@
           }
 
           // Khôi phục đơn hàng và đảm bảo mỗi đơn có userEmail
-          if (parsed.orders && Array.isArray(parsed.orders) && parsed.orders.length > 0) {
+          const self = this;
+          if (parsed.orders && Array.isArray(parsed.orders)) {
+            this.state.orders = parsed.orders
+              .filter(function (o) {
+                if (!o) return false;
+                const oid = o.id || o.orderCode;
+                return !self.isDeleted(oid) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+              })
+              .map(function (o) {
+                if (!o.userEmail) {
+                  o.userEmail = (o.customer && o.customer.email) ? o.customer.email : DEFAULT_ADMIN.email;
+                }
+                return o;
+              });
+          } else if (false) {
             this.state.orders = parsed.orders.map(function (o) {
               if (!o.userEmail) {
                 o.userEmail = (o.customer && o.customer.email) ? o.customer.email : DEFAULT_ADMIN.email;
@@ -1565,6 +1701,17 @@
           } catch (e) {}
           // Khởi tạo đơn hàng mẫu cho tài khoản admin
           if (window.ShopVietData && window.ShopVietData.defaultOrders) {
+            const self = this;
+            this.state.orders = window.ShopVietData.defaultOrders
+              .filter(function (o) {
+                if (!o) return false;
+                const oid = o.id || o.orderCode;
+                return !self.isDeleted(oid) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+              })
+              .map(function (o) {
+                return Object.assign({}, o, { userEmail: DEFAULT_ADMIN.email });
+              });
+            //
             this.state.orders = window.ShopVietData.defaultOrders.map(function (o) {
               return Object.assign({}, o, { userEmail: DEFAULT_ADMIN.email });
             });
@@ -1731,6 +1878,24 @@
     getVouchers: function () {
       try {
         const raw = localStorage.getItem(VOUCHERS_KEY);
+        let list = raw !== null ? JSON.parse(raw) : null;
+        if (!Array.isArray(list)) {
+          list = JSON.parse(JSON.stringify(DEFAULT_VOUCHERS));
+          localStorage.setItem(VOUCHERS_KEY, JSON.stringify(list));
+        }
+        const self = this;
+        return list.filter(function (v) {
+          return v && v.code && !self.isDeleted(v.code);
+        });
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi đọc vouchers:', e);
+        return [];
+      }
+    },
+
+    _deprecatedGetVouchers: function () {
+      try {
+        const raw = localStorage.getItem(VOUCHERS_KEY);
         let list = raw ? JSON.parse(raw) : null;
         if (!Array.isArray(list) || list.length === 0) {
           list = JSON.parse(JSON.stringify(DEFAULT_VOUCHERS));
@@ -1793,6 +1958,22 @@
 
     // Xóa mã voucher
     deleteVoucher: function (code) {
+      if (!code) return { success: false, message: 'Mã voucher không hợp lệ!' };
+      const cleanCode = String(code).trim().toUpperCase();
+      this.markAsDeleted(cleanCode);
+      this.markAsDeleted(code);
+      let list = this.getVouchers();
+      list = list.filter(function (v) {
+        return !(v.code && v.code.toUpperCase() === cleanCode);
+      });
+      this.saveVouchers(list);
+      this.pushAllToCloud().catch(function (e) {
+        console.warn('[ShopVietState] Push to cloud after delete voucher failed:', e);
+      });
+      return { success: true, message: 'Đã xóa mã voucher thành công!' };
+    },
+
+    _deprecatedDeleteVoucher: function (code) {
       if (!code) return { success: false, message: 'Mã voucher không hợp lệ!' };
       const cleanCode = String(code).trim().toUpperCase();
       let list = this.getVouchers();
@@ -1912,6 +2093,24 @@
     getSchedules: function () {
       try {
         const raw = localStorage.getItem(SCHEDULES_KEY);
+        let list = raw !== null ? JSON.parse(raw) : null;
+        if (!Array.isArray(list)) {
+          list = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+          localStorage.setItem(SCHEDULES_KEY, JSON.stringify(list));
+        }
+        const self = this;
+        return list.filter(function (s) {
+          return s && s.id && !self.isDeleted(s.id);
+        });
+      } catch (e) {
+        console.warn('[ShopVietState] Lỗi đọc schedules:', e);
+        return [];
+      }
+    },
+
+    _deprecatedGetSchedules: function () {
+      try {
+        const raw = localStorage.getItem(SCHEDULES_KEY);
         let list = raw ? JSON.parse(raw) : null;
         if (!Array.isArray(list) || list.length === 0) {
           list = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
@@ -1970,6 +2169,19 @@
 
     // Xóa khách hẹn lịch theo ID
     deleteSchedule: function (id) {
+      if (!id) return false;
+      const cleanId = String(id).trim();
+      this.markAsDeleted(cleanId);
+      let list = this.getSchedules();
+      list = list.filter(function (s) { return s.id !== cleanId; });
+      this.saveSchedules(list);
+      this.pushAllToCloud().catch(function (e) {
+        console.warn('[ShopVietState] Push to cloud after delete schedule failed:', e);
+      });
+      return true;
+    },
+
+    _deprecatedDeleteSchedule: function (id) {
       if (!id) return false;
       let list = this.getSchedules();
       const initialLen = list.length;

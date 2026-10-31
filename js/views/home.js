@@ -827,9 +827,9 @@ window.ShopVietViews.home = (function () {
         // 1. Kích hoạt hiệu ứng icon mây xoay tít & pill nháy sáng trên Header (#header-sync-btn)
         self.triggerHeaderLivePulse();
 
-        // 2. Hiển thị toast thông báo nổi bật
-        const msg = (e && e.detail && e.detail.message) || '🔔 Cửa hàng vừa cập nhật sản phẩm mới!';
-        self.showRealtimeUpdateToast(msg);
+        // 2. Thông báo Toast nổi bật: Đã ẩn theo yêu cầu người dùng để không làm phiền trải nghiệm, tính năng cập nhật ngầm và nhấp nháy icon Live Cloud vẫn hoạt động 100%
+        // const msg = (e && e.detail && e.detail.message) || '🔔 Cửa hàng vừa cập nhật sản phẩm mới!';
+        // self.showRealtimeUpdateToast(msg);
 
         // 3. Nếu đang ở view home (hoặc view mặc định), cập nhật lại danh sách sản phẩm và áp dụng highlight viền sáng 1.5s
         const currentView = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.currentView) || 'home';

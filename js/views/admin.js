@@ -433,7 +433,7 @@
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               <span>Thanh toán VietQR & Đơn hàng</span>
-              <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold">${orders.length}</span>
+              <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold" id="adminOrderTabBadge">${orders.length}</span>
             </button>
 
             <!-- Tab 3: Cấu hình VietQR -->
@@ -862,6 +862,14 @@
                 <span>Tùy chỉnh gửi link</span>
               </button>
             `}
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.deleteOrder('${order.id || code}')" 
+              title="Xóa đơn hàng" 
+              class="p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-xl transition-all cursor-pointer shrink-0 ml-1.5"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
           </div>
           ${order.customDeliveryLink ? `
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-mono mt-1">Đã gửi link riêng</span>
@@ -3360,6 +3368,47 @@
 
       notify(`Đã phê duyệt đơn hàng #${orderCode} và bàn giao link riêng thành công!`, 'success');
       notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+    },
+
+    // Xóa vĩnh viễn đơn hàng
+    deleteOrder: function (orderId) {
+      if (!orderId) return;
+      if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng #${orderId} khỏi hệ thống?`)) {
+        return;
+      }
+      if (window.ShopVietState && window.ShopVietState.deleteOrder) {
+        const res = window.ShopVietState.deleteOrder(orderId);
+        if (res && res.success) {
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(function () {});
+          }
+          if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+            window.ShopVietState.broadcastAdminChange('orders_updated', {
+              action: 'delete',
+              orderCode: orderId,
+              timestamp: Date.now()
+            });
+          }
+          recordBroadcast('orders_updated', `Xóa đơn hàng #${orderId}`);
+
+          const tabContent = document.getElementById('adminTabContent');
+          if (tabContent && currentActiveTab === 'orders') {
+            tabContent.innerHTML = renderTabOrders();
+          } else {
+            this.switchTab('orders');
+          }
+
+          const tabBadge = document.getElementById('adminOrderTabBadge');
+          if (tabBadge && window.ShopVietState.getOrders) {
+            tabBadge.textContent = window.ShopVietState.getOrders().length;
+          }
+
+          notify(`Đã xóa đơn hàng #${orderId} thành công!`, 'success');
+          notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+        } else {
+          notify((res && res.message) || 'Không thể xóa đơn hàng!', 'error');
+        }
+      }
     },
 
     // 16. Xem hóa đơn / Bill
