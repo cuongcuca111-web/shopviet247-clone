@@ -171,6 +171,36 @@
   "schedules": [],
   "orders": [
     {
+      "id": "#DJ2026RRTQ",
+      "orderCode": "#DJ2026RRTQ",
+      "rawCode": "DJ2026RRTQ",
+      "memo": "DJ2026RRTQ",
+      "status": "pending_review",
+      "statusText": "Chờ duyệt",
+      "stockDeducted": true,
+      "items": [
+        {
+          "id": "gemini-argon-6m",
+          "name": "[6 Tháng]Gemini Argon 4 Pro + 5TB Cloud (Gói Cao Cấp)",
+          "category": "AI Software",
+          "price": 89000,
+          "originalPrice": 169000,
+          "quantity": 1
+        }
+      ],
+      "amount": 89000,
+      "userEmail": "cuongcuca111@gmail.com",
+      "customerName": "Minh Cường",
+      "customer": {
+        "name": "Minh Cường",
+        "email": "cuongcuca111@gmail.com"
+      },
+      "paymentMethod": "Sacombank (VietQR 24/7)",
+      "createdAt": "2026-10-31T15:20:00.000Z",
+      "createdAtFormatted": "22:20 31/10/2026",
+      "submittedAt": "2026-10-31T15:20:10.000Z"
+    },
+    {
       "id": "#DJ2026CDZE",
       "orderCode": "#DJ2026CDZE",
       "rawCode": "DJ2026CDZE",
@@ -627,6 +657,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T15:05:00.000Z",
-  "version": 1793459100000
+  "updatedAt": "2026-10-31T15:39:32.683Z",
+  "version": 1793461172689
 }

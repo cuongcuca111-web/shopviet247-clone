@@ -292,24 +292,65 @@
 
     getOrders: function () {
       try {
-        let orders = [];
-        if (this.state && Array.isArray(this.state.orders) && this.state.orders.length > 0) {
-          orders = this.state.orders;
-        } else {
+        let stateOrders = (this.state && Array.isArray(this.state.orders)) ? this.state.orders : [];
+        let localOrders = [];
+        try {
           const raw = localStorage.getItem('shopviet_orders');
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) orders = parsed;
-          } else {
-            orders = (this.state && this.state.orders) || [];
+            if (Array.isArray(parsed)) localOrders = parsed;
           }
-        }
+        } catch (e) {}
+
+        let syncOrders = [];
+        try {
+          const rawSync = localStorage.getItem('shopviet247_cloud_orders_sync');
+          if (rawSync) {
+            const parsed = JSON.parse(rawSync);
+            if (Array.isArray(parsed)) syncOrders = parsed;
+          }
+        } catch (e) {}
+
+        const cleanCode = function (k) {
+          return String(k || '').replace(/^#/, '').trim().toUpperCase();
+        };
+
+        const orderMap = new Map();
+        [...syncOrders, ...localOrders, ...stateOrders].forEach(function (o) {
+          if (!o) return;
+          const k = cleanCode(o.id || o.orderCode || o.rawCode || o.memo);
+          if (!k) return;
+          if (!orderMap.has(k)) {
+            orderMap.set(k, o);
+          } else {
+            orderMap.set(k, Object.assign({}, orderMap.get(k), o));
+          }
+        });
+
         const self = this;
-        return orders.filter(function (o) {
+        const orders = Array.from(orderMap.values()).filter(function (o) {
           if (!o) return false;
           const orderId = o.id || o.orderCode;
           return !self.isDeleted(orderId) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+        }).map(function (o) {
+          const k = cleanCode(o.id || o.orderCode || o.rawCode);
+          if (self.isOrderCompletedLocked && self.isOrderCompletedLocked(k)) {
+            o.status = 'completed';
+            o.statusText = 'Đã hoàn tất';
+          }
+          return o;
         });
+
+        orders.sort(function (a, b) {
+          if (a.status === 'pending_review' && b.status !== 'pending_review') return -1;
+          if (b.status === 'pending_review' && a.status !== 'pending_review') return 1;
+          const timeA = new Date(a.createdAt || a.submittedAt || 0).getTime();
+          const timeB = new Date(b.createdAt || b.submittedAt || 0).getTime();
+          return timeB - timeA;
+        });
+
+        this.state.orders = orders;
+        return orders;
       } catch (e) {
         return (this.state && this.state.orders) || [];
       }
@@ -1643,6 +1684,33 @@
           list.push(clean);
           localStorage.setItem(this.COMPLETED_LOCK_KEY, JSON.stringify(list));
         }
+
+        // Cập nhật trạng thái tức thì trong in-memory state.orders và LocalStorage
+        if (this.state && Array.isArray(this.state.orders)) {
+          this.state.orders.forEach(function (o) {
+            const oCode = String(o.id || o.orderCode || o.rawCode || o.memo || '').replace(/^#/, '').trim().toUpperCase();
+            if (oCode === clean) {
+              o.status = 'completed';
+              o.statusText = 'Đã hoàn tất';
+            }
+          });
+          this.save();
+        }
+        if (Array.isArray(this.orders)) {
+          this.orders.forEach(function (o) {
+            const oCode = String(o.id || o.orderCode || o.rawCode || o.memo || '').replace(/^#/, '').trim().toUpperCase();
+            if (oCode === clean) {
+              o.status = 'completed';
+              o.statusText = 'Đã hoàn tất';
+            }
+          });
+        }
+        try {
+          if (this.state && this.state.orders) {
+            localStorage.setItem('shopviet_orders', JSON.stringify(this.state.orders));
+            localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(this.state.orders));
+          }
+        } catch (eLs) {}
       } catch (e) {}
     },
 
@@ -1654,10 +1722,46 @@
       if (!targetEmail) {
         return [];
       }
-      const allOrders = this.state.orders || [];
+
+      // HỢP NHẤT IN-MEMORY VỚI LOCALSTORAGE ĐỂ LUÔN MỚI NHẤT
+      let allOrders = this.state.orders || [];
+      try {
+        const rawLocal = localStorage.getItem('shopviet_orders') || localStorage.getItem('shopviet247_cloud_orders_sync');
+        if (rawLocal) {
+          const parsed = JSON.parse(rawLocal);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const ordMap = new Map();
+            allOrders.forEach(o => {
+              const k = String(o.id || o.orderCode || o.rawCode || o.memo || '').replace(/^#/, '').trim().toUpperCase();
+              if (k) ordMap.set(k, o);
+            });
+            parsed.forEach(o => {
+              const k = String(o.id || o.orderCode || o.rawCode || o.memo || '').replace(/^#/, '').trim().toUpperCase();
+              if (k) {
+                if (ordMap.has(k)) {
+                  ordMap.set(k, Object.assign({}, ordMap.get(k), o));
+                } else {
+                  ordMap.set(k, o);
+                }
+              }
+            });
+            allOrders = Array.from(ordMap.values());
+            this.state.orders = allOrders;
+          }
+        }
+      } catch (e) {}
+
+      const self = this;
       return allOrders.filter(function (order) {
         const orderEmail = (order.userEmail || (order.customer && order.customer.email) || '').trim().toLowerCase();
         return orderEmail === targetEmail;
+      }).map(function (order) {
+        const rawKey = order.id || order.orderCode || order.rawCode || order.memo;
+        if (self.isOrderCompletedLocked && self.isOrderCompletedLocked(rawKey)) {
+          order.status = 'completed';
+          order.statusText = 'Đã hoàn tất';
+        }
+        return order;
       });
     },
 

@@ -1607,13 +1607,6 @@ window.ShopVietViews.modal = (function () {
               window.ShopVietState.saveCustomProducts(window.ShopVietData.products);
             }
 
-            // 3. ĐẨY LÊN GITHUB CLOUD STORAGE NGAY LẬP TỨC
-            if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-              window.ShopVietState.pushAllToCloud(true).catch(function (e) {
-                console.warn('[Modal Stock Cloud Push Error]:', e);
-              });
-            }
-
             // 4. Phát sóng Realtime để các tab khác và Admin đều cập nhật số lượng tồn kho
             if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
               window.ShopVietState.broadcastAdminChange('products_updated', {

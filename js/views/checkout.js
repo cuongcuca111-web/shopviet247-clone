@@ -1385,6 +1385,74 @@
         };
       }
 
+      // HÀM XỬ LÝ CHỜ DUYỆT (KHI KHÁCH BẤM "TÔI ĐÃ CHUYỂN KHOẢN")
+      async function completePaymentWaitingReview() {
+        clearPaymentCountdown();
+
+        order.status = 'pending_review';
+        order.statusText = 'Chờ duyệt';
+        order.submittedAt = new Date().toISOString();
+
+        const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) || {};
+        if (!order.userEmail) {
+          order.userEmail = (currentUser.isLoggedIn && currentUser.email)
+            ? currentUser.email.trim().toLowerCase()
+            : ((order.customer && order.customer.email) ? order.customer.email.trim().toLowerCase() : 'khachhang@gmail.com');
+        }
+        order.customer = order.customer || {};
+        order.customer.email = order.userEmail;
+
+        if (window.ShopVietState && typeof window.ShopVietState.addOrder === 'function') {
+          window.ShopVietState.addOrder(order);
+        } else {
+          window.ShopVietState.orders = window.ShopVietState.orders || [];
+          window.ShopVietState.orders.unshift(order);
+          if (typeof window.ShopVietState.save === 'function') {
+            window.ShopVietState.save();
+          }
+        }
+
+        try {
+          if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
+            localStorage.setItem('shopviet_orders', JSON.stringify(window.ShopVietState.state.orders));
+            localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
+          }
+        } catch (e) {}
+
+        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+          try { window.ShopVietFirebase.syncOrderToCloud(order); } catch (eFb) {}
+        }
+
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          try { await window.ShopVietState.pushAllToCloud(true); } catch (ePush) {}
+        }
+
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc1 = new BroadcastChannel('shopviet_admin_sync');
+            bc1.postMessage({ type: 'new_order_pending_review', action: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() });
+            const bc2 = new BroadcastChannel('shopviet_realtime_sync');
+            bc2.postMessage({ type: 'new_order_pending_review', action: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() });
+          }
+        } catch (eBc) {}
+
+        try {
+          localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({ type: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() }));
+        } catch (eSt) {}
+
+        if (typeof window.triggerAdminOrderNotification === 'function') {
+          window.triggerAdminOrderNotification(order);
+        }
+
+        showToast('Đã ghi nhận chuyển khoản! Đơn hàng đang chờ Quản trị viên duyệt...', 'info');
+
+        setTimeout(() => {
+          if (window.ShopVietState && typeof window.ShopVietState.navigate === 'function') {
+            window.ShopVietState.navigate('dashboard');
+          }
+        }, 1200);
+      }
+
       // HÀM CHUNG HOÀN TẤT THANH TOÁN (ĐẨY CLOUD ĐA TẦNG 100%)
       async function completePaymentSuccess() {
         clearPaymentCountdown();
@@ -1613,7 +1681,7 @@
           showToast('Đang kết nối cổng Sacombank để kiểm tra số dư...', 'info');
 
           setTimeout(async () => {
-            await completePaymentSuccess();
+            await completePaymentWaitingReview();
           }, 1500);
         };
       }
