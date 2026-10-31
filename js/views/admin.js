@@ -78,7 +78,7 @@
   restoreProductsFromStorage();
 
   // Biến trạng thái nội bộ của Admin Module
-  let currentActiveTab = 'pricing'; // 'pricing' | 'orders' | 'vietqr' | 'vouchers' | 'schedules' | 'realtime'
+  let currentActiveTab = 'pricing'; // 'pricing' | 'orders' | 'vietqr' | 'vouchers' | 'schedules'
   let sessionCountdownSeconds = 59 * 60 + 54; // 59:54
   let sessionIntervalTimer = null;
   let editingProductId = null; // null = tạo mới, string = sửa
@@ -362,57 +362,8 @@
               </div>
             </div>
 
-            <!-- Cụm Nút Phải Chuẩn: Test Ping Realtime, Đồng Bộ Cloud, Làm Mới, Về Trang Chủ, Đăng Xuất -->
+            <!-- Cụm Nút Phải: Làm Mới, Về Trang Chủ, Đăng Xuất (Đã tinh gọn chuẩn Clean SaaS, bảo toàn 100% logic ngầm) -->
             <div class="flex items-center gap-2">
-              <!-- Nút Nhanh: Phát Tín Hiệu Thử Nghiệm Realtime -->
-              <button 
-                type="button" 
-                onclick="window.ShopVietViews.admin.broadcastTestPing()" 
-                title="⚡ Phát tín hiệu Realtime thử nghiệm (Broadcast Test Ping)"
-                class="px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300/60 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span class="hidden md:inline">Test Ping Realtime</span>
-              </button>
-
-              <!-- NÚT MASTER: XUẤT BẢN & ĐỒNG BỘ TOÀN CẦU TỨC THÌ -->
-              <button 
-                type="button" 
-                id="adminMasterPublishBtn"
-                onclick="window.ShopVietViews.admin.masterPublish()" 
-                title="Xuất bản dữ liệu lên GitHub Cloud Storage và phát sóng tức thì đến tất cả thiết bị trên toàn cầu"
-                class="px-4 py-2 sm:px-5 sm:py-2 rounded-[14px] bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 border border-white/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 cursor-pointer shrink-0"
-              >
-                <span class="relative flex h-2.5 w-2.5 shrink-0">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
-                </span>
-                <svg id="adminMasterPublishIcon" class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
-                  <path d="M12 9V4s3.03.55 4 2c1.08 1.62 0 5 0 5"/>
-                </svg>
-                <span id="adminMasterPublishText">🚀 XUẤT BẢN &amp; ĐỒNG BỘ TOÀN CẦU TỨC THÌ</span>
-              </button>
-
-              <!-- Nút Đồng Bộ Đám Mây Đa Thiết Bị -->
-              <button 
-                type="button" 
-                id="adminCloudSyncBtn"
-                onclick="window.ShopVietViews.admin.syncCloudAll()" 
-                title="Đồng bộ 2 chiều Đám Mây Đa Thiết Bị (Cloud REST Sync)"
-                class="px-3 py-2 rounded-xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-violet-500/10 hover:from-sky-500/20 hover:to-indigo-500/20 text-sky-600 dark:text-sky-400 border border-sky-300/60 dark:border-sky-800/60 transition text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <svg id="adminCloudSyncIcon" class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-                </svg>
-                <span id="adminCloudSyncText" class="hidden sm:inline">Đồng bộ Cloud</span>
-              </button>
-
               <!-- Nút Làm Mới -->
               <button 
                 type="button" 
@@ -530,21 +481,6 @@
               </svg>
               <span>Hẹn lịch khách (Excel)</span>
               <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold" id="adminScheduleTabBadge">${schedules.length}</span>
-            </button>
-
-            <!-- Tab 6: Trạm Phát Sóng Thời Gian Thực (Realtime Sync Hub) -->
-            <button 
-              type="button" 
-              onclick="window.ShopVietViews.admin.switchTab('realtime')" 
-              id="adminTabBtn-realtime"
-              class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'realtime' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/40' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
-            >
-              <span class="relative flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              <span>Trạm Realtime Hub</span>
-              <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">🟢 Live</span>
             </button>
           </div>
 
@@ -2850,8 +2786,11 @@
       notify('Đã đăng xuất khỏi Phiên Quản Trị an toàn!', 'info');
     },
 
-    // 8. Chuyển Tab
+    // 8. Chuyển Tab (5 Tab kinh doanh cốt lõi, tự động fallback mượt về pricing nếu gọi realtime hoặc overview)
     switchTab: function (tabKey) {
+      if (tabKey === 'realtime' || tabKey === 'overview' || !tabKey) {
+        tabKey = 'pricing';
+      }
       currentActiveTab = tabKey;
       const tabContent = document.getElementById('adminTabContent');
       if (tabContent) {
@@ -2864,11 +2803,7 @@
       });
       const activeBtn = document.getElementById(`adminTabBtn-${tabKey}`);
       if (activeBtn) {
-        if (tabKey === 'realtime') {
-          activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/40';
-        } else {
-          activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30';
-        }
+        activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30';
       }
     },
 
