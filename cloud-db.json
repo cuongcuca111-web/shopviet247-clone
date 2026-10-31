@@ -86,7 +86,7 @@
       "isBestSeller": true,
       "badgeColor": "bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30",
       "autoDelivery": false,
-      "warranty": "Bảo hành chính chủ 3 tháng",
+      "warranty": "",
       "desc": "Gói 3 tháng Gemini Argon 4 Pro kèm 5TB Cloud Drive chính chủ, tích hợp Antigravity 2.0 & Veo Video AI.",
       "instructions": "Sau khi thanh toán thành công, hệ thống gửi ngay Link kích hoạt vào màn hình và email. Click link để nhận tài khoản ngay lập tức!",
       "iconType": "gemini",
@@ -471,6 +471,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T13:22:34.703Z",
-  "version": 1793452954703
+  "updatedAt": "2026-10-31T13:22:39.591Z",
+  "version": 1793452959591
 }
