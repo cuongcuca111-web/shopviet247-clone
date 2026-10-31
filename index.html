@@ -225,6 +225,160 @@
       }
     }
   </style>
+
+  <!-- ==================== [ELEMENT] FILTER-AND-REFLOW GALLERY (LUCIAN #292) ==================== -->
+  <!-- Lucian UX/UI Prompt #292 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#292 -->
+  <style>
+    /* Lucian UX/UI Prompt #292 · Scoped Filter-and-Reflow Gallery Styles */
+    .u292 {
+      position: relative;
+      width: 100%;
+    }
+
+    /* Filter Strip Container */
+    .u292-fs {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .u292-fs::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Filter Chip / Button */
+    .u292-f {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      background-color: rgba(241, 245, 249, 0.85); /* slate-100 */
+      color: #475569; /* slate-600 */
+    }
+    .u292-f:hover {
+      background-color: rgba(226, 232, 240, 0.95); /* slate-200 */
+      color: #0f172a; /* slate-900 */
+      transform: scale(1.02);
+    }
+    .u292-f:active {
+      transform: scale(0.96);
+    }
+    .dark .u292-f {
+      background-color: rgba(30, 41, 59, 0.7); /* slate-800 */
+      color: #cbd5e1; /* slate-300 */
+      border-color: rgba(51, 65, 85, 0.5);
+    }
+    .dark .u292-f:hover {
+      background-color: rgba(51, 65, 85, 0.85); /* slate-700 */
+      color: #ffffff;
+    }
+
+    /* Active State for .u292-f */
+    .u292-f.is-active,
+    .u292-f[aria-pressed="true"] {
+      background-color: #0f172a; /* slate-900 */
+      color: #ffffff;
+      box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.25), 0 0 0 2px rgba(99, 102, 241, 0.25);
+      border-color: transparent;
+      transform: scale(1.02);
+    }
+    .dark .u292-f.is-active,
+    .dark .u292-f[aria-pressed="true"] {
+      background-color: #4f46e5; /* indigo-600 */
+      color: #ffffff;
+      box-shadow: 0 4px 16px -2px rgba(79, 70, 229, 0.4), 0 0 0 2px rgba(129, 140, 248, 0.3);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    /* Counter Pill (.u292-n) */
+    .u292-n {
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.125rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background-color: #eef2ff; /* indigo-50 */
+      color: #4338ca; /* indigo-700 */
+      border: 1px solid rgba(199, 210, 254, 0.8); /* indigo-200 */
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .dark .u292-n {
+      background-color: rgba(30, 27, 75, 0.7); /* indigo-950 */
+      color: #a5b4fc; /* indigo-300 */
+      border: 1px solid rgba(67, 56, 202, 0.5); /* indigo-800 */
+    }
+    .u292-n-val {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    /* Gallery Grid (.u292-g) */
+    .u292-g {
+      position: relative;
+      width: 100%;
+      contain: layout;
+    }
+
+    /* Gallery Tile (.u292-t) */
+    .u292-t {
+      position: relative;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      transition: transform .6s cubic-bezier(.3,1.25,.4,1), opacity .35s ease;
+    }
+
+    /* Tile Exit State (.u292-t.out) */
+    .u292-t.out {
+      transform: scale(0.2) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    /* Tile Enter Initial State */
+    .u292-t.is-entering {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    /* Empty State in Gallery */
+    .u292-empty {
+      grid-column: 1 / -1;
+      width: 100%;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Accessibility: prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .u292-f,
+      .u292-t,
+      .u292-empty {
+        transition: none !important;
+        animation: none !important;
+      }
+      .u292-t.out {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -1220,17 +1374,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_i18n_v13"></script>
+  <script src="js/firebase-config.js?v=20261031_reflow_v14"></script>
 
-  <script src="js/data.js?v=20261031_i18n_v13"></script>
-  <script src="js/state.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/home.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/modal.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/checkout.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/auth.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/dashboard.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/admin.js?v=20261031_i18n_v13"></script>
-  <script src="js/views/blog.js?v=20261031_i18n_v13"></script>
-  <script src="js/app.js?v=20261031_i18n_v13"></script>
+  <script src="js/data.js?v=20261031_reflow_v14"></script>
+  <script src="js/state.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/home.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/modal.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/checkout.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/auth.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/dashboard.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/admin.js?v=20261031_reflow_v14"></script>
+  <script src="js/views/blog.js?v=20261031_reflow_v14"></script>
+  <script src="js/app.js?v=20261031_reflow_v14"></script>
 </body>
 </html>

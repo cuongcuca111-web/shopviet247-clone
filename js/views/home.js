@@ -356,26 +356,32 @@ window.ShopVietViews.home = (function () {
         ? window.ShopVietState.getCustomProducts()
         : ((window.ShopVietData && window.ShopVietData.products) ? window.ShopVietData.products : []);
 
-      // Lọc danh sách sản phẩm theo Tag và Từ khóa
-      let displayedProducts = allProducts || [];
-      if (currentFilter && currentFilter !== 'Tất cả') {
-        displayedProducts = displayedProducts.filter(function (p) {
-          if (p.tag === currentFilter) return true;
-          if (p.category && p.category.toLowerCase().includes(currentFilter.toLowerCase())) return true;
-          if (currentFilter.includes('Gemini') && ((p.name && p.name.includes('Gemini')) || (p.tag && p.tag.includes('Gemini')))) return true;
-          if (currentFilter.includes('Cursor') && ((p.name && p.name.includes('Cursor')) || (p.tag && p.tag.includes('Cursor')))) return true;
-          return false;
-        });
+      // Helper phân loại thẻ theo Tag chuẩn Lucian #292
+      function isProductMatchingTag(p, tag) {
+        if (!tag || tag === 'Tất cả') return true;
+        if (p.tag === tag) return true;
+        if (p.category && p.category.toLowerCase().includes(tag.toLowerCase())) return true;
+        if (tag.includes('Gemini') && ((p.name && p.name.includes('Gemini')) || (p.tag && p.tag.includes('Gemini')))) return true;
+        if (tag.includes('Cursor') && ((p.name && p.name.includes('Cursor')) || (p.tag && p.tag.includes('Cursor')))) return true;
+        return false;
       }
 
+      // Lọc danh sách sản phẩm theo Từ khóa tìm kiếm
+      let searchProducts = allProducts || [];
       if (searchQuery.trim()) {
         const query = searchQuery.trim().toLowerCase();
-        displayedProducts = displayedProducts.filter(function (p) {
+        searchProducts = searchProducts.filter(function (p) {
           return (p.name && p.name.toLowerCase().includes(query)) ||
                  (p.desc && p.desc.toLowerCase().includes(query)) ||
                  (p.tag && p.tag.toLowerCase().includes(query));
         });
       }
+
+      // Danh sách sản phẩm thực tế hiển thị theo bộ lọc đang kích hoạt
+      const matchingProducts = searchProducts.filter(function (p) {
+        return isProductMatchingTag(p, currentFilter);
+      });
+      const displayedProducts = matchingProducts;
 
       // Xác định sản phẩm tiêu biểu cho Hero Banner (Ưu tiên sản phẩm isBestSeller -> hoặc sản phẩm đầu tiên có sẵn trong kho)
       let heroProduct = allProducts.find(function (p) { return p.isBestSeller; });
@@ -459,18 +465,17 @@ window.ShopVietViews.home = (function () {
                     </button>
                   ` : ''}
                 </div>
-                <div class="flex flex-wrap items-center gap-1.5">
+                <div class="flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Bộ lọc nhanh">
                   ${(data.filterTags || []).map(tag => {
                     const isSelected = tag === currentFilter;
                     return `
                       <button 
                         type="button" 
+                        role="button"
+                        aria-pressed="${isSelected ? 'true' : 'false'}"
+                        data-tag="${tag}"
                         onclick="ShopVietViews.home.filterByTag('${tag}')" 
-                        class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 ease-out transform active:scale-95 cursor-pointer select-none ${
-                          isSelected 
-                            ? 'bg-slate-900 text-white dark:bg-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/20 scale-[1.02]' 
-                            : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white hover:scale-[1.02]'
-                        }"
+                        class="u292-f ${isSelected ? 'is-active' : ''}"
                       >
                         ${tag}
                       </button>
@@ -621,8 +626,9 @@ window.ShopVietViews.home = (function () {
 
           </section>
 
-          <!-- ==================== KHU VỰC "SẢN PHẨM HOT" ==================== -->
-          <section id="productsSection" class="space-y-6 pt-2">
+          <!-- ==================== KHU VỰC "SẢN PHẨM HOT" (LUCIAN #292) ==================== -->
+          <!-- Lucian UX/UI Prompt #292 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#292 -->
+          <section id="productsSection" class="u292 space-y-6 pt-2">
             
             <!-- Header Khu Vực Sản Phẩm -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/70 dark:border-slate-800/80">
@@ -631,8 +637,8 @@ window.ShopVietViews.home = (function () {
                   <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                     Sản phẩm nổi bật
                   </h2>
-                  <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/50">
-                    ${displayedProducts.length} sản phẩm
+                  <span id="u292CountBadge" class="u292-n font-bold" aria-live="polite">
+                    <span id="u292CountVal" class="u292-n-val">${matchingProducts.length}</span> sản phẩm sẵn có
                   </span>
                 </div>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -640,19 +646,18 @@ window.ShopVietViews.home = (function () {
                 </p>
               </div>
 
-              <!-- Filter Tags Pills (Secondary Selector) -->
-              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none max-w-full">
+              <!-- Filter Tags Pills (Secondary Selector) - Chuẩn Lucian UX/UI Prompt #292 -->
+              <div class="u292-fs" role="toolbar" aria-label="Bộ lọc danh mục sản phẩm">
                 ${(data.filterTags || []).map(tag => {
                   const isSelected = tag === currentFilter;
                   return `
                     <button 
                       type="button" 
+                      role="button"
+                      aria-pressed="${isSelected ? 'true' : 'false'}"
+                      data-tag="${tag}"
                       onclick="ShopVietViews.home.filterByTag('${tag}')" 
-                      class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ease-out transform active:scale-95 shrink-0 cursor-pointer select-none ${
-                        isSelected 
-                          ? 'bg-slate-900 text-white dark:bg-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/20 scale-[1.02]' 
-                          : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white hover:scale-[1.02]'
-                      }"
+                      class="u292-f ${isSelected ? 'is-active' : ''}"
                     >
                       ${tag}
                     </button>
@@ -661,9 +666,85 @@ window.ShopVietViews.home = (function () {
               </div>
             </div>
 
-            <!-- LƯỚI 5 CỘT TRÊN DESKTOP: grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 -->
-            ${displayedProducts.length === 0 ? `
-              <div id="productListGrid" class="py-16 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 transition-all duration-300 ease-out opacity-100 transform scale-100">
+            <!-- LƯỚI 5 CỘT TRÊN DESKTOP (LUCIAN #292 FILTER-AND-REFLOW GALLERY): grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 -->
+            <div id="productListGrid" class="u292-g grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              ${searchProducts.map(prod => {
+                const isOutOfStock = prod.status === 'out_of_stock' || prod.stock <= 0;
+                const isMatch = isProductMatchingTag(prod, currentFilter);
+
+                return `
+                  <div 
+                    data-product-card="true" 
+                    data-product-id="${prod.id}"
+                    data-product-tag="${prod.tag || ''}"
+                    data-product-category="${prod.category || ''}"
+                    data-product-name="${(prod.name || '').replace(/"/g, '&quot;')}"
+                    class="u292-t ${isMatch ? '' : 'out'} bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:-translate-y-1 transition-all duration-500 group cursor-pointer"
+                    style="${isMatch ? '' : 'display: none;'}"
+                    onclick="ShopVietViews.modal.open('${prod.id}')"
+                  >
+                    <!-- Top Thumbnail -->
+                    <div>
+                      ${renderThumbnail(prod)}
+
+                      <!-- Product Title (Giới hạn 2 dòng) -->
+                      <h3 class="line-clamp-2 text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mt-3 leading-snug">
+                        ${prod.name}
+                      </h3>
+
+                      <!-- Rating & Sold Count -->
+                      <div class="flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-400">
+                        <span class="flex items-center gap-1 text-amber-500 font-bold">
+                          <svg class="w-3.5 h-3.5 text-amber-400 fill-current inline-block" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> ${prod.rating || '5.0'}
+                        </span>
+                        <span>•</span>
+                        <span>${prod.soldCount ? `${(prod.soldCount / 1000).toFixed(1)}k đã bán` : 'Mới mở bán'}</span>
+                      </div>
+
+                      <!-- Stock Status Badge -->
+                      <div class="mt-2">
+                        ${renderStockBadge(prod)}
+                      </div>
+                    </div>
+
+                    <!-- Bottom Price & CTA Button -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                      <div class="flex flex-col min-w-0">
+                        <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                          ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.price) : `${prod.price.toLocaleString('vi-VN')} đ`}
+                        </span>
+                        ${prod.oldPrice ? `
+                          <span class="text-[11px] text-slate-400 line-through truncate -mt-0.5">
+                            ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.oldPrice) : `${prod.oldPrice.toLocaleString('vi-VN')} đ`}
+                          </span>
+                        ` : ''}
+                      </div>
+
+                      ${isOutOfStock ? `
+                        <button 
+                          disabled 
+                          onclick="event.stopPropagation()" 
+                          class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-xs font-semibold px-3 py-1.5 rounded-full cursor-not-allowed shrink-0"
+                        >
+                          Hết hàng
+                        </button>
+                      ` : `
+                        <button 
+                          onclick="event.stopPropagation(); ShopVietViews.modal.open('${prod.id}')" 
+                          class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-xs font-semibold px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        >
+                          <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                          <span>Mua ngay</span>
+                        </button>
+                      `}
+                    </div>
+
+                  </div>
+                `;
+              }).join('')}
+
+              <!-- Empty State Card (Lucian #292 Reflow Empty State) -->
+              <div id="u292EmptyState" class="u292-empty py-16 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 transition-all duration-300 ease-out" style="${matchingProducts.length === 0 ? '' : 'display: none; opacity: 0;'}">
                 <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
@@ -673,79 +754,8 @@ window.ShopVietViews.home = (function () {
                   Xem toàn bộ kho hàng
                 </button>
               </div>
-            ` : `
-              <div id="productListGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 transition-all duration-300 ease-out opacity-100 transform scale-100">
-                ${displayedProducts.map(prod => {
-                  const isOutOfStock = prod.status === 'out_of_stock' || prod.stock <= 0;
 
-                  return `
-                    <div 
-                      data-product-card="true" 
-                      data-product-id="${prod.id}"
-                      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:-translate-y-1 transition-all duration-500 group cursor-pointer"
-                      onclick="ShopVietViews.modal.open('${prod.id}')"
-                    >
-                      <!-- Top Thumbnail -->
-                      <div>
-                        ${renderThumbnail(prod)}
-
-                        <!-- Product Title (Giới hạn 2 dòng) -->
-                        <h3 class="line-clamp-2 text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mt-3 leading-snug">
-                          ${prod.name}
-                        </h3>
-
-                        <!-- Rating & Sold Count -->
-                        <div class="flex items-center gap-1.5 mt-1.5 text-[11px] text-slate-400">
-                          <span class="flex items-center gap-1 text-amber-500 font-bold">
-                            <svg class="w-3.5 h-3.5 text-amber-400 fill-current inline-block" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> ${prod.rating || '5.0'}
-                          </span>
-                          <span>•</span>
-                          <span>${prod.soldCount ? `${(prod.soldCount / 1000).toFixed(1)}k đã bán` : 'Mới mở bán'}</span>
-                        </div>
-
-                        <!-- Stock Status Badge -->
-                        <div class="mt-2">
-                          ${renderStockBadge(prod)}
-                        </div>
-                      </div>
-
-                      <!-- Bottom Price & CTA Button -->
-                      <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                        <div class="flex flex-col min-w-0">
-                          <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
-                            ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.price) : `${prod.price.toLocaleString('vi-VN')} đ`}
-                          </span>
-                          ${prod.oldPrice ? `
-                            <span class="text-[11px] text-slate-400 line-through truncate -mt-0.5">
-                              ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.oldPrice) : `${prod.oldPrice.toLocaleString('vi-VN')} đ`}
-                            </span>
-                          ` : ''}
-                        </div>
-
-                        ${isOutOfStock ? `
-                          <button 
-                            disabled 
-                            onclick="event.stopPropagation()" 
-                            class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-xs font-semibold px-3 py-1.5 rounded-full cursor-not-allowed shrink-0"
-                          >
-                            Hết hàng
-                          </button>
-                        ` : `
-                          <button 
-                            onclick="event.stopPropagation(); ShopVietViews.modal.open('${prod.id}')" 
-                            class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-xs font-semibold px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
-                          >
-                            <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                            <span>Mua ngay</span>
-                          </button>
-                        `}
-                      </div>
-
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            `}
+            </div>
 
           </section>
 
@@ -753,46 +763,236 @@ window.ShopVietViews.home = (function () {
       `;
     },
 
-    // Hàm filter theo Tag
+    // Hàm filter theo Tag - Chuẩn Lucian UX/UI Prompt #292 (Filter-and-Reflow Gallery)
     filterByTag: function (tag) {
       if (!window.ShopVietState) return;
 
       const currentFilter = window.ShopVietState.state.activeFilter || 'Tất cả';
       if (currentFilter === tag) return;
 
-      const grid = document.getElementById('productListGrid');
-      if (grid) {
-        // Fade-out 60fps mượt mà trước khi chuyển tab
-        grid.style.transition = 'opacity 120ms ease-out, transform 120ms ease-out';
-        grid.style.opacity = '0';
-        grid.style.transform = 'scale(0.98)';
-      }
+      window.ShopVietState.state.activeFilter = tag;
 
-      setTimeout(() => {
-        window.ShopVietState.state.activeFilter = tag;
+      // 1. Đồng bộ trạng thái active & aria-pressed cho toàn bộ các nút chip lọc (.u292-f)
+      const allFilterButtons = document.querySelectorAll('.u292-f');
+      allFilterButtons.forEach(btn => {
+        const btnTag = btn.getAttribute('data-tag');
+        const isSelected = btnTag === tag;
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        if (isSelected) {
+          btn.classList.add('is-active');
+        } else {
+          btn.classList.remove('is-active');
+        }
+      });
+
+      const grid = document.getElementById('productListGrid');
+      const emptyState = document.getElementById('u292EmptyState');
+      const countValEl = document.getElementById('u292CountVal');
+
+      // Nếu grid không tồn tại trong DOM (ví dụ đang ở view khác), render lại view bình thường
+      if (!grid) {
         const appMount = document.getElementById('appMount');
         if (appMount) {
           appMount.innerHTML = this.render();
-
-          const newGrid = document.getElementById('productListGrid');
-          if (newGrid) {
-            newGrid.style.opacity = '0';
-            newGrid.style.transform = 'scale(0.98)';
-            newGrid.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                newGrid.style.opacity = '1';
-                newGrid.style.transform = 'scale(1)';
-              });
-            });
-          }
-
           const target = document.getElementById('productsSection');
           if (target && tag !== 'Tất cả') {
             target.scrollIntoView({ behavior: 'smooth' });
           }
         }
-      }, grid ? 100 : 0);
+        return;
+      }
+
+      // Helper kiểm tra card có khớp với tag hay không
+      function checkCardMatches(card, filterTag) {
+        if (!filterTag || filterTag === 'Tất cả') return true;
+        const cTag = card.getAttribute('data-product-tag') || '';
+        const cCat = card.getAttribute('data-product-category') || '';
+        const cName = card.getAttribute('data-product-name') || '';
+        if (cTag === filterTag) return true;
+        if (cCat && cCat.toLowerCase().includes(filterTag.toLowerCase())) return true;
+        if (filterTag.includes('Gemini') && (cName.includes('Gemini') || cTag.includes('Gemini'))) return true;
+        if (filterTag.includes('Cursor') && (cName.includes('Cursor') || cTag.includes('Cursor'))) return true;
+        return false;
+      }
+
+      // Rolling Counter Animation (Lăn số mượt mà tabular-nums)
+      function rollCounter(el, start, end, duration) {
+        if (!el) return;
+        duration = duration || 400;
+        const startTime = performance.now();
+        function update(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+          const current = Math.round(start + (end - start) * ease);
+          el.textContent = current;
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          } else {
+            el.textContent = end;
+          }
+        }
+        requestAnimationFrame(update);
+      }
+
+      const cards = Array.from(grid.querySelectorAll('.u292-t'));
+      let visibleCount = 0;
+      cards.forEach(card => {
+        if (checkCardMatches(card, tag)) visibleCount++;
+      });
+
+      const oldCount = countValEl ? parseInt(countValEl.textContent || '0', 10) : 0;
+      rollCounter(countValEl, oldCount, visibleCount, 400);
+
+      // Cuộn êm ái tới khu vực sản phẩm nếu bấm từ Hero banner
+      const productsSection = document.getElementById('productsSection');
+      if (productsSection) {
+        const rect = productsSection.getBoundingClientRect();
+        if (rect.top < -100 || rect.top > window.innerHeight) {
+          productsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      // Kiểm tra accessibility prefers-reduced-motion
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) {
+        cards.forEach(card => {
+          const matches = checkCardMatches(card, tag);
+          if (matches) {
+            card.classList.remove('out');
+            card.style.display = '';
+            card.style.transform = '';
+            card.style.opacity = '';
+          } else {
+            card.classList.add('out');
+            card.style.display = 'none';
+          }
+        });
+        if (emptyState) {
+          emptyState.style.display = visibleCount === 0 ? '' : 'none';
+          emptyState.style.opacity = visibleCount === 0 ? '1' : '0';
+        }
+        return;
+      }
+
+      // ==================== REFLOW PHYSICS 60FPS (LUCIAN #292) ====================
+      // BƯỚC 1: FIRST (F) - Ghi nhận tọa độ ban đầu của các thẻ đang hiển thị
+      const firstPositions = new Map();
+      cards.forEach(card => {
+        if (!card.classList.contains('out') && card.style.display !== 'none') {
+          firstPositions.set(card, card.getBoundingClientRect());
+        }
+      });
+
+      // Phân loại thẻ: exiting (chuẩn bị biến mất), staying (tiếp tục hiển thị), entering (chuẩn bị xuất hiện)
+      const exitingCards = [];
+      const stayingCards = [];
+      const enteringCards = [];
+
+      cards.forEach(card => {
+        const matches = checkCardMatches(card, tag);
+        const isCurrentlyVisible = !card.classList.contains('out') && card.style.display !== 'none';
+        if (isCurrentlyVisible && !matches) {
+          exitingCards.push(card);
+        } else if (isCurrentlyVisible && matches) {
+          stayingCards.push(card);
+        } else if (!isCurrentlyVisible && matches) {
+          enteringCards.push(card);
+        }
+      });
+
+      // BƯỚC 2: Thẻ không khớp thu nhỏ dần scale(0.2) và mờ dần opacity: 0
+      exitingCards.forEach(card => {
+        card.style.transition = 'transform .22s cubic-bezier(.4,0,1,1), opacity .22s ease-in';
+        card.classList.add('out');
+      });
+
+      // Sau 200ms khi exitingCards đã thu nhỏ xong, kích hoạt Reflow FLIP lấp khoảng trống
+      setTimeout(() => {
+        // Ẩn hoàn toàn exitingCards khỏi layout
+        exitingCards.forEach(card => {
+          card.style.display = 'none';
+        });
+
+        // Đưa enteringCards vào DOM layout nhưng khởi tạo scale(0) mờ
+        enteringCards.forEach(card => {
+          card.classList.remove('out');
+          card.style.display = '';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0)';
+          card.style.transition = 'none';
+        });
+
+        if (emptyState) {
+          if (visibleCount === 0) {
+            emptyState.style.display = '';
+            requestAnimationFrame(() => {
+              emptyState.style.opacity = '1';
+              emptyState.style.transform = 'scale(1)';
+            });
+          } else {
+            emptyState.style.opacity = '0';
+            emptyState.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              if (emptyState.style.opacity === '0') emptyState.style.display = 'none';
+            }, 250);
+          }
+        }
+
+        // BƯỚC 3: LAST (L) - Đo đạc tọa độ mới sau khi layout đã reflow
+        const lastPositions = new Map();
+        stayingCards.forEach(card => {
+          lastPositions.set(card, card.getBoundingClientRect());
+        });
+
+        // BƯỚC 4: INVERT (I) - Nghịch đảo vị trí thẻ staying
+        stayingCards.forEach(card => {
+          const first = firstPositions.get(card);
+          const last = lastPositions.get(card);
+          if (first && last) {
+            const dx = first.left - last.left;
+            const dy = first.top - last.top;
+            if (dx !== 0 || dy !== 0) {
+              card.style.transition = 'none';
+              card.style.transform = `translate(${dx}px, ${dy}px)`;
+            }
+          }
+        });
+
+        // Ép reflow trình duyệt
+        grid.offsetHeight;
+
+        // BƯỚC 5: PLAY (P) - Các thẻ lướt tới lấp đầy khoảng trống với đường cong nguyên bản Lucian #292
+        requestAnimationFrame(() => {
+          // Thẻ staying lướt về vị trí mới
+          stayingCards.forEach((card, idx) => {
+            const stagger = (idx % 5) * 35; // so le mượt mà 35ms
+            card.style.transition = `transform .6s cubic-bezier(.3,1.25,.4,1) ${stagger}ms, opacity .35s ease`;
+            card.style.transform = 'translate(0, 0) scale(1)';
+            card.style.opacity = '1';
+          });
+
+          // Thẻ entering nở to từ scale(0) lên scale(1) tại vị trí mới
+          enteringCards.forEach((card, idx) => {
+            const stagger = (idx % 5) * 35 + 50;
+            card.style.transition = `transform .6s cubic-bezier(.3,1.25,.4,1) ${stagger}ms, opacity .35s ease`;
+            card.style.transform = 'scale(1)';
+            card.style.opacity = '1';
+          });
+
+          // Dọn dẹp inline transition sau khi hoàn tất để nhường lại cho hover CSS
+          setTimeout(() => {
+            cards.forEach(card => {
+              if (!card.classList.contains('out')) {
+                card.style.transition = '';
+                card.style.transform = '';
+                card.style.opacity = '';
+              }
+            });
+          }, 700);
+        });
+
+      }, 200);
     },
 
     // Xử lý gửi form tìm kiếm
