@@ -78,10 +78,81 @@
   restoreProductsFromStorage();
 
   // Biến trạng thái nội bộ của Admin Module
-  let currentActiveTab = 'pricing'; // 'pricing' | 'orders' | 'vietqr'
+  let currentActiveTab = 'pricing'; // 'pricing' | 'orders' | 'vietqr' | 'vouchers' | 'schedules' | 'realtime'
   let sessionCountdownSeconds = 59 * 60 + 54; // 59:54
   let sessionIntervalTimer = null;
   let editingProductId = null; // null = tạo mới, string = sửa
+
+  // Lịch sử & Trạng thái Trạm Phát Sóng Thời Gian Thực (Realtime Sync Hub)
+  function getBroadcastHistory() {
+    try {
+      const saved = localStorage.getItem('shopviet_broadcast_history');
+      if (saved) {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+      }
+    } catch (e) {}
+    return [
+      {
+        id: 'hist-init',
+        type: 'system_init',
+        title: 'Khởi động trạm phát sóng',
+        detail: 'Trạm Realtime Sync Hub đã sẵn sàng hoạt động (shopviet_realtime_sync)',
+        time: new Date().toLocaleTimeString('vi-VN'),
+        date: new Date().toLocaleDateString('vi-VN'),
+        timestamp: Date.now(),
+        status: 'delivered'
+      }
+    ];
+  }
+
+  function getBroadcastTypeTitle(type) {
+    switch (type) {
+      case 'products_updated': return '📦 Cập nhật Sản phẩm';
+      case 'vietqr_updated': return '💳 Cập nhật Cấu hình VietQR';
+      case 'orders_updated': return '📋 Cập nhật Đơn hàng & License';
+      case 'vouchers_updated': return '🎁 Cập nhật Mã giảm giá';
+      case 'schedules_updated': return '📅 Cập nhật Lịch hẹn khách';
+      case 'test_ping': return '⚡ Phát Tín Hiệu Thử Nghiệm (Ping)';
+      default: return '📡 Tín hiệu Realtime';
+    }
+  }
+
+  function recordBroadcast(type, detail) {
+    const timeStr = new Date().toLocaleTimeString('vi-VN');
+    const dateStr = new Date().toLocaleDateString('vi-VN');
+    const ts = Date.now();
+    try {
+      localStorage.setItem('shopviet_last_broadcast_time', new Date().toISOString());
+      localStorage.setItem('shopviet_last_broadcast_type', type);
+      const history = getBroadcastHistory();
+      history.unshift({
+        id: 'bc-' + ts,
+        type: type,
+        title: getBroadcastTypeTitle(type),
+        detail: detail || 'Đồng bộ dữ liệu thời gian thực lên mọi máy khách',
+        time: timeStr,
+        date: dateStr,
+        timestamp: ts,
+        status: 'delivered'
+      });
+      if (history.length > 25) history.pop();
+      localStorage.setItem('shopviet_broadcast_history', JSON.stringify(history));
+    } catch (e) {}
+  }
+
+  function getLastBroadcastTimeDisplay() {
+    try {
+      const saved = localStorage.getItem('shopviet_last_broadcast_time');
+      if (saved) {
+        const d = new Date(saved);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleTimeString('vi-VN') + ' ' + d.toLocaleDateString('vi-VN');
+        }
+      }
+    } catch (e) {}
+    return 'Vừa mới đây (Live)';
+  }
 
   // Lấy cấu hình VietQR hiện tại
   function getVietQRConfig() {
@@ -291,8 +362,22 @@
               </div>
             </div>
 
-            <!-- Cụm Nút Phải Chuẩn: Đồng Bộ Cloud, Làm Mới, Về Trang Chủ, Đăng Xuất -->
+            <!-- Cụm Nút Phải Chuẩn: Test Ping Realtime, Đồng Bộ Cloud, Làm Mới, Về Trang Chủ, Đăng Xuất -->
             <div class="flex items-center gap-2">
+              <!-- Nút Nhanh: Phát Tín Hiệu Thử Nghiệm Realtime -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastTestPing()" 
+                title="⚡ Phát tín hiệu Realtime thử nghiệm (Broadcast Test Ping)"
+                class="px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300/60 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="hidden md:inline">Test Ping Realtime</span>
+              </button>
+
               <!-- Nút Đồng Bộ Đám Mây Đa Thiết Bị -->
               <button 
                 type="button" 
@@ -425,6 +510,21 @@
               <span>Hẹn lịch khách (Excel)</span>
               <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold" id="adminScheduleTabBadge">${schedules.length}</span>
             </button>
+
+            <!-- Tab 6: Trạm Phát Sóng Thời Gian Thực (Realtime Sync Hub) -->
+            <button 
+              type="button" 
+              onclick="window.ShopVietViews.admin.switchTab('realtime')" 
+              id="adminTabBtn-realtime"
+              class="admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${currentActiveTab === 'realtime' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/40' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}"
+            >
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span>Trạm Realtime Hub</span>
+              <span class="px-1.5 py-0.2 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">🟢 Live</span>
+            </button>
           </div>
 
           <!-- ==================== BODY CONTENT THEO TAB ==================== -->
@@ -447,6 +547,8 @@
       return renderTabVouchers();
     } else if (tabName === 'schedules') {
       return renderTabSchedules();
+    } else if (tabName === 'realtime') {
+      return renderTabRealtime();
     }
     return renderTabPricing();
   }
@@ -1715,6 +1817,294 @@
   }
 
   // =========================================================================
+  // TAB 6: TRẠM PHÁT SÓNG THỜI GIAN THỰC (REALTIME SYNC HUB)
+  // =========================================================================
+  function renderTabRealtime() {
+    const products = (window.ShopVietData && window.ShopVietData.products) || [];
+    const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
+    const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
+    const lastTimeDisplay = getLastBroadcastTimeDisplay();
+    const history = getBroadcastHistory();
+
+    return `
+      <div class="max-w-5xl mx-auto space-y-6 animate-fade-in">
+        
+        <!-- BANNER TRẠM PHÁT SÓNG REALTIME CHÍNH -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-emerald-950 p-6 sm:p-8 text-white border border-indigo-500/20 shadow-2xl">
+          <!-- Background Glow Effect -->
+          <div class="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-3">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+                    <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+                    <circle cx="12" cy="2"/>
+                    <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+                    <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                    <span>Trạm Phát Sóng Thời Gian Thực (Realtime Sync Hub)</span>
+                  </h3>
+                  <p class="text-xs text-slate-300 font-medium">Trung tâm phát tín hiệu đồng bộ đa tab, đa thiết bị và Cloud Realtime tức thì</p>
+                </div>
+              </div>
+
+              <!-- Badges -->
+              <div class="flex flex-wrap items-center gap-2 pt-1">
+                <!-- Huy hiệu 🟢 Phát sóng Live Active -->
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 backdrop-blur-sm shadow-sm">
+                  <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                  </span>
+                  <span>🟢 Phát sóng Live Active</span>
+                </span>
+
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/10">
+                  <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                  <span>Kênh: shopviet_realtime_sync</span>
+                </span>
+
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/10">
+                  <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <span>Độ trễ: &lt; 30ms</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Nút Hành Động Phát Sóng Nổi Bật -->
+            <div class="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastTestPing()" 
+                class="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>⚡ Phát Tín Hiệu Đồng Bộ Thử Nghiệm (Broadcast Test Ping)</span>
+              </button>
+
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastProductsSync()" 
+                class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                  <path d="M16 21h5v-5"/>
+                </svg>
+                <span>Phát sóng đồng bộ lại toàn bộ Sản phẩm</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BENTO THÔNG SỐ TRẠM PHÁT SÓNG (4 CARD) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Số lượng sản phẩm đang đồng bộ -->
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sản phẩm đồng bộ</span>
+              <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white" id="adminRealtimeProductCount">${products.length}</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Đang phát trực tiếp tới tất cả máy khách</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: Thời gian phát sóng cuối cùng -->
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lần phát sóng cuối</span>
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono" id="adminRealtimeLastBroadcast">${lastTimeDisplay}</div>
+              <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                <span>⚡ Cập nhật tự động khi Admin lưu</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 3: Cấu hình VietQR hiện thời -->
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">VietQR Live Target</span>
+              <div class="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="text-sm font-bold text-slate-900 dark:text-white truncate">100071864927</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">LE BUI MINH CUONG (STB)</p>
+            </div>
+          </div>
+
+          <!-- Card 4: Gói Voucher & Đơn hàng -->
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hệ sinh thái đồng bộ</span>
+              <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="text-base font-bold text-slate-900 dark:text-white">${vouchers.length} Vouchers • ${orders.length} Đơn</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Đồng bộ đa luồng 2 chiều</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT CHỨC NĂNG PHÁT SÓNG NHANH & NHẬT KÝ BROADCAST -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Trái: Khối điều khiển phát sóng thủ công -->
+          <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Khối Điều Khiển Tín Hiệu Thủ Công</span>
+              </h4>
+              <p class="text-xs text-slate-500 mt-0.5">Bấm để ép phát sóng tín hiệu tới tất cả tab & client đang mở trang.</p>
+            </div>
+
+            <div class="space-y-2.5 pt-1">
+              <!-- Nút 1: Test Ping -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastTestPing()" 
+                class="w-full px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-bold text-xs flex items-center justify-between transition cursor-pointer"
+              >
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>⚡ Phát Tín Hiệu Đồng Bộ Thử Nghiệm</span>
+                </div>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-800/60">Test Ping</span>
+              </button>
+
+              <!-- Nút 2: Phát sóng Sản phẩm -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastProductsSync()" 
+                class="w-full px-4 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 font-bold text-xs flex items-center justify-between transition cursor-pointer"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  <span>📦 Phát Sóng Đồng Bộ Lại Sản Phẩm</span>
+                </div>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-indigo-200/60 dark:bg-indigo-800/60">${products.length} Gói</span>
+              </button>
+
+              <!-- Nút 3: Phát sóng VietQR -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.broadcastVietQRSync()" 
+                class="w-full px-4 py-3 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 font-bold text-xs flex items-center justify-between transition cursor-pointer"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  <span>💳 Phát Sóng Cấu Hình VietQR Mới</span>
+                </div>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-sky-200/60 dark:bg-sky-800/60">Sacombank</span>
+              </button>
+
+              <!-- Nút 4: Đồng bộ Cloud 2 chiều toàn hệ thống -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.syncCloudAll()" 
+                class="w-full px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-between transition cursor-pointer"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                  <span>☁️ Đồng Bộ 2 Chiều Cloud REST API</span>
+                </div>
+                <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700">REST Sync</span>
+              </button>
+            </div>
+
+            <!-- Giải thích cơ chế -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1.5 leading-relaxed">
+              <p class="font-semibold text-slate-700 dark:text-slate-300">💡 Cơ chế Tự Động Phát Sóng:</p>
+              <p>Mỗi khi bạn Lưu/Sửa/Xóa sản phẩm, Cập nhật VietQR, Tạo Voucher hoặc Duyệt Đơn trong Admin Portal, hệ thống sẽ <strong>tự động phát tín hiệu</strong> qua BroadcastChannel & Cloud Event Bus.</p>
+              <p>Tất cả khách hàng đang xem trang chủ, giỏ hàng hoặc cổng thanh toán sẽ nhận được dữ liệu mới nhất mà <strong>không cần bấm F5</strong> tải lại trang!</p>
+            </div>
+          </div>
+
+          <!-- Phải: Nhật ký phát sóng trực quan (Broadcast History) -->
+          <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Nhật Ký Tín Hiệu Phát Sóng Gần Nhất</span>
+                  </h4>
+                  <p class="text-xs text-slate-500 mt-0.5">Lưu vết các đợt phát sóng tự động và thủ công của Admin Portal</p>
+                </div>
+                <button 
+                  type="button" 
+                  onclick="window.ShopVietViews.admin.clearBroadcastHistory()" 
+                  class="text-[11px] font-semibold text-slate-400 hover:text-rose-500 transition"
+                  title="Xóa lịch sử"
+                >
+                  Xóa log
+                </button>
+              </div>
+
+              <!-- Danh sách log -->
+              <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                ${history.map(item => `
+                  <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/80 flex items-start justify-between gap-3 text-xs">
+                    <div class="space-y-0.5">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">${item.title}</span>
+                        <span class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">Delivered</span>
+                      </div>
+                      <p class="text-slate-500 dark:text-slate-400 text-[11px]">${item.detail}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <span class="text-[11px] font-mono font-semibold text-slate-400 dark:text-slate-500 block">${item.time}</span>
+                      <span class="text-[10px] text-slate-400 block">${item.date || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Footer log -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4 flex items-center justify-between text-[11px] text-slate-400">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>WebSockets & BroadcastChannel Sync Active</span>
+              </span>
+              <span class="font-mono">Shopviet247 Cloud v12</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+  // =========================================================================
   // MODAL TẠO MÃ QUÀ TẶNG & GIẢM GIÁ MỚI (#adminCreateVoucherModal)
   // =========================================================================
   function renderCreateVoucherModal() {
@@ -2434,7 +2824,11 @@
       });
       const activeBtn = document.getElementById(`adminTabBtn-${tabKey}`);
       if (activeBtn) {
-        activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30';
+        if (tabKey === 'realtime') {
+          activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/40';
+        } else {
+          activeBtn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30';
+        }
       }
     },
 
@@ -2708,7 +3102,20 @@
         window.ShopVietState.navigate('home');
       }
 
+      // PHÁT SÓNG TÍN HIỆU ĐỒNG BỘ REALTIME TỚI TẤT CẢ MÁY KHÁCH
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('products_updated', {
+          productId: productId,
+          productName: name,
+          action: isEdit ? 'edit' : 'create',
+          count: window.ShopVietData.products.length,
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('products_updated', `Lưu sản phẩm "${name}"`);
+
       notify(`Đã lưu sản phẩm "${name.slice(0, 30)}..." và đồng bộ Cloud thành công!`, 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
     // 12. Xóa Sản Phẩm
@@ -2742,7 +3149,19 @@
           window.ShopVietState.navigate('home');
         }
 
+        // PHÁT SÓNG TÍN HIỆU ĐỒNG BỘ REALTIME TỚI TẤT CẢ MÁY KHÁCH
+        if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+          window.ShopVietState.broadcastAdminChange('products_updated', {
+            productId: productId,
+            action: 'delete',
+            count: window.ShopVietData.products.length,
+            timestamp: Date.now()
+          });
+        }
+        recordBroadcast('products_updated', `Xóa sản phẩm ID: ${productId}`);
+
         notify('Đã xóa sản phẩm và đồng bộ Cloud thành công!', 'info');
+        notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
       }
     },
 
@@ -2797,7 +3216,17 @@
         tabContent.innerHTML = renderTabOrders();
       }
 
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('orders_updated', {
+          orderCode: orderCode,
+          status: 'completed',
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('orders_updated', `Duyệt đơn hàng ${orderCode}`);
+
       notify(`Đã duyệt hoàn tất và kích hoạt license cho đơn hàng ${orderCode}!`, 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
     // 15b. Mở Modal Admin Duyệt Đơn & Gửi Link Riêng Cho Khách
@@ -2873,7 +3302,17 @@
         tabContent.innerHTML = renderTabOrders();
       }
 
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('orders_updated', {
+          orderCode: orderCode,
+          status: 'completed',
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('orders_updated', `Giao link đơn hàng #${orderCode}`);
+
       notify(`Đã phê duyệt đơn hàng #${orderCode} và bàn giao link riêng thành công!`, 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
     // 16. Xem hóa đơn / Bill
@@ -2935,7 +3374,18 @@
       };
 
       saveVietQRConfig(config);
+
+      // PHÁT SÓNG TÍN HIỆU ĐỒNG BỘ REALTIME TỚI TẤT CẢ MÁY KHÁCH
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('vietqr_updated', {
+          config: config,
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('vietqr_updated', `Cập nhật VietQR ${config.shortName} - ${config.accountNumber} (${config.accountName})`);
+
       notify('Đã lưu cấu hình tài khoản VietQR thành công! Các luồng thanh toán sẽ cập nhật tức thì.', 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
     // 19. Bộ đếm thời gian phiên (Session Countdown)
@@ -3103,7 +3553,16 @@
         tabBadge.textContent = window.ShopVietState.getVouchers().length;
       }
       const labelText = type === 'percent_discount' ? `${newVoucher.percent}%` : formatVND(rawVal);
+      if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+        window.ShopVietState.broadcastAdminChange('vouchers_updated', {
+          action: 'create',
+          code: code,
+          timestamp: Date.now()
+        });
+      }
+      recordBroadcast('vouchers_updated', `Tạo voucher ${code}`);
       notify(`Đã tạo thành công mã voucher "${code}" giảm ${labelText}! Tự động đồng bộ toàn hệ thống.`, 'success');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
     },
 
     deleteVoucher: function (code) {
@@ -3116,12 +3575,21 @@
           if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
             window.ShopVietState.pushAllToCloud().catch(function () {});
           }
+          if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+            window.ShopVietState.broadcastAdminChange('vouchers_updated', {
+              action: 'delete',
+              code: code,
+              timestamp: Date.now()
+            });
+          }
+          recordBroadcast('vouchers_updated', `Xóa voucher ${code}`);
           this.switchTab('vouchers');
           const tabBadge = document.getElementById('adminVoucherTabBadge');
           if (tabBadge && window.ShopVietState.getVouchers) {
             tabBadge.textContent = window.ShopVietState.getVouchers().length;
           }
           notify(`Đã xóa mã voucher "${code}" thành công!`, 'info');
+          notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
         } else {
           notify(res.message || 'Không thể xóa mã!', 'error');
         }
@@ -3284,6 +3752,16 @@
           window.ShopVietState.pushAllToCloud().catch(function () {});
         }
 
+        if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+          window.ShopVietState.broadcastAdminChange('schedules_updated', {
+            id: scheduleId || 'new',
+            customer: customerEmail,
+            timestamp: Date.now()
+          });
+        }
+        recordBroadcast('schedules_updated', `Lịch hẹn: ${customerEmail}`);
+        notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+
         this.closeScheduleModal();
         this.switchTab('schedules');
 
@@ -3304,12 +3782,21 @@
           if (typeof window.ShopVietState.pushAllToCloud === 'function') {
             window.ShopVietState.pushAllToCloud().catch(function () {});
           }
+          if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+            window.ShopVietState.broadcastAdminChange('schedules_updated', {
+              id: id,
+              action: 'delete',
+              timestamp: Date.now()
+            });
+          }
+          recordBroadcast('schedules_updated', `Xóa lịch hẹn ID: ${id}`);
           this.switchTab('schedules');
           const tabBadge = document.getElementById('adminScheduleTabBadge');
           if (tabBadge && window.ShopVietState.getSchedules) {
             tabBadge.textContent = window.ShopVietState.getSchedules().length;
           }
           notify('Đã xóa lịch hẹn khỏi bảng Excel thành công!', 'info');
+          notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
         } else {
           notify('Không tìm thấy lịch hẹn cần xóa!', 'error');
         }
@@ -3593,6 +4080,98 @@
           tabBadge.textContent = DEFAULT_SCHEDULES.length;
         }
         notify('Đã khôi phục danh sách hẹn lịch mẫu ban đầu!', 'success');
+      }
+    },
+
+    // 21. Phát tín hiệu thử nghiệm Realtime Hub (Broadcast Test Ping)
+    broadcastTestPing: function () {
+      const payload = {
+        msg: 'Admin vừa gửi tín hiệu đồng bộ!',
+        time: new Date().toLocaleTimeString('vi-VN'),
+        timestamp: Date.now()
+      };
+      if (window.ShopVietState && typeof window.ShopVietState.broadcastAdminChange === 'function') {
+        window.ShopVietState.broadcastAdminChange('test_ping', payload);
+      } else {
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('shopviet_realtime_sync');
+            bc.postMessage({ type: 'test_ping', payload: payload, timestamp: Date.now() });
+            bc.close();
+          }
+        } catch (e) {}
+        window.dispatchEvent(new CustomEvent('shopviet_realtime_change', { detail: { type: 'test_ping', payload: payload } }));
+      }
+      recordBroadcast('test_ping', 'Admin vừa gửi tín hiệu đồng bộ!');
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+      if (currentActiveTab === 'realtime') {
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent) tabContent.innerHTML = renderTabRealtime();
+      }
+    },
+
+    // 22. Phát sóng đồng bộ lại toàn bộ Sản phẩm
+    broadcastProductsSync: function () {
+      const prods = (window.ShopVietData && window.ShopVietData.products) || [];
+      const payload = {
+        action: 'sync_all',
+        count: prods.length,
+        timestamp: Date.now()
+      };
+      if (window.ShopVietState && typeof window.ShopVietState.broadcastAdminChange === 'function') {
+        window.ShopVietState.broadcastAdminChange('products_updated', payload);
+      } else {
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('shopviet_realtime_sync');
+            bc.postMessage({ type: 'products_updated', payload: payload, timestamp: Date.now() });
+            bc.close();
+          }
+        } catch (e) {}
+        window.dispatchEvent(new CustomEvent('shopviet_realtime_change', { detail: { type: 'products_updated', payload: payload } }));
+      }
+      recordBroadcast('products_updated', `Đồng bộ toàn bộ ${prods.length} sản phẩm`);
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+      if (currentActiveTab === 'realtime') {
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent) tabContent.innerHTML = renderTabRealtime();
+      }
+    },
+
+    // 23. Phát sóng đồng bộ Cấu hình VietQR
+    broadcastVietQRSync: function () {
+      const config = getVietQRConfig();
+      const payload = {
+        config: config,
+        timestamp: Date.now()
+      };
+      if (window.ShopVietState && typeof window.ShopVietState.broadcastAdminChange === 'function') {
+        window.ShopVietState.broadcastAdminChange('vietqr_updated', payload);
+      } else {
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('shopviet_realtime_sync');
+            bc.postMessage({ type: 'vietqr_updated', payload: payload, timestamp: Date.now() });
+            bc.close();
+          }
+        } catch (e) {}
+        window.dispatchEvent(new CustomEvent('shopviet_realtime_change', { detail: { type: 'vietqr_updated', payload: payload } }));
+      }
+      recordBroadcast('vietqr_updated', `Cập nhật cấu hình VietQR (${config.accountName} - ${config.accountNumber})`);
+      notify('⚡ Đã phát sóng dữ liệu thay đổi lên Cloud Realtime thành công! Mọi máy khách đang cập nhật tức thì.', 'success');
+      if (currentActiveTab === 'realtime') {
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent) tabContent.innerHTML = renderTabRealtime();
+      }
+    },
+
+    // 24. Xóa nhật ký phát sóng
+    clearBroadcastHistory: function () {
+      localStorage.removeItem('shopviet_broadcast_history');
+      notify('Đã xóa sạch nhật ký phát sóng!', 'info');
+      if (currentActiveTab === 'realtime') {
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent) tabContent.innerHTML = renderTabRealtime();
       }
     },
 

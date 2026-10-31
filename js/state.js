@@ -323,6 +323,19 @@
           return false;
         }
 
+        // Cập nhật timestamp & version đám mây vào LocalStorage để theo dõi
+        let cloudTimestamp = 0;
+        if (data.updatedAt) {
+          cloudTimestamp = typeof data.updatedAt === 'number'
+            ? data.updatedAt
+            : new Date(data.updatedAt).getTime();
+        } else if (data.version && typeof data.version === 'number') {
+          cloudTimestamp = data.version;
+        }
+        if (cloudTimestamp && !isNaN(cloudTimestamp) && cloudTimestamp > 0) {
+          this.setLastUpdatedAt(cloudTimestamp);
+        }
+
         let hasChange = false;
 
         // 1. Đồng bộ Users (Tài khoản)
@@ -454,7 +467,7 @@
         }
 
         if (hasChange || isManual) {
-          this.notify('cloud_sync_completed', { timestamp: new Date().toISOString() });
+          this.notify('cloud_sync_completed', { timestamp: new Date().toISOString(), cloudTimestamp: cloudTimestamp || Date.now() });
           console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
           this.renderCurrentRoute(true);
         }
@@ -499,7 +512,7 @@
     },
 
     // Đẩy toàn bộ cơ sở dữ liệu hiện tại (Users, Products, Vouchers, Schedules, Orders) lên GitHub Cloud Storage & Fallback REST API
-    pushAllToCloud: async function () {
+    pushAllToCloud: async function (silent = false) {
       try {
         const users = this.getUsersDB();
         const customProducts = this.getCustomProducts();
@@ -507,14 +520,34 @@
         const schedules = this.getSchedules();
         const orders = this.getOrders();
 
+        const now = Date.now();
+        const isoNow = new Date(now).toISOString();
+        this.setLastUpdatedAt(now);
+
         const dbData = {
           users: users,
           products: customProducts,
           vouchers: vouchers,
           schedules: schedules,
           orders: orders,
-          updatedAt: new Date().toISOString()
+          updatedAt: isoNow,
+          version: now
         };
+
+        // 0. GHI NHẬN TÍN HIỆU REALTIME LÊN FIRESTORE NẾU KHẢ DỤNG
+        if (window.ShopVietFirebase && window.ShopVietFirebase.db && window.ShopVietFirebase.isOnline) {
+          try {
+            window.ShopVietFirebase.db.collection('shopviet_realtime_sync').doc('latest_state').set({
+              type: 'cloud_sync_push',
+              updatedAt: now,
+              isoTimestamp: isoNow,
+              senderTab: this.tabId || 'main',
+              lastAdmin: (this.state && this.state.user && this.state.user.email) || 'admin'
+            }, { merge: true }).catch(function (e) {
+              console.warn('[ShopVietState] Firestore sync signal error:', e.message);
+            });
+          } catch (e) {}
+        }
 
         // 1. ĐẨY LÊN GITHUB CLOUD STORAGE (API CONTENTS PUT)
         try {
@@ -589,7 +622,7 @@
         }
 
         // 3. THÔNG BÁO TOAST THÀNH CÔNG CHO NGƯỜI DÙNG
-        if (this.showToast) {
+        if (!silent && this.showToast) {
           this.showToast('Đã lưu và đồng bộ toàn hệ thống lên Cloud thành công!', 'success');
         }
 
@@ -607,6 +640,362 @@
 
     pushToCloud: async function (users) {
       return this.pushAllToCloud();
+    },
+
+    // ==================== HỆ THỐNG REALTIME BROADCAST & SMART DAEMON ====================
+    // Lấy timestamp cập nhật lần cuối
+    getLastUpdatedAt: function () {
+      try {
+        if (typeof this._lastUpdatedAt === 'number' && this._lastUpdatedAt > 0) {
+          return this._lastUpdatedAt;
+        }
+        const saved = localStorage.getItem('shopviet_last_updated_at');
+        if (saved) {
+          const parsed = Number(saved);
+          if (!isNaN(parsed) && parsed > 0) {
+            this._lastUpdatedAt = parsed;
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      return 0;
+    },
+
+    // Ghi nhận timestamp cập nhật
+    setLastUpdatedAt: function (ts) {
+      try {
+        const timeNum = typeof ts === 'number' ? ts : (ts ? new Date(ts).getTime() : Date.now());
+        if (!isNaN(timeNum) && timeNum > 0) {
+          this._lastUpdatedAt = timeNum;
+          localStorage.setItem('shopviet_last_updated_at', String(timeNum));
+          localStorage.setItem('shopviet_cloud_updated_at', new Date(timeNum).toISOString());
+        }
+      } catch (e) {}
+    },
+
+    // Khởi tạo BroadcastChannel để đồng bộ 0ms giữa các tab cùng trình duyệt
+    initBroadcastChannel: function () {
+      if (this.realtimeChannel) return this.realtimeChannel;
+      if (typeof window === 'undefined') return null;
+
+      const self = this;
+      this.tabId = this.tabId || ('tab_' + Math.random().toString(36).substring(2, 9));
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          this.realtimeChannel = new BroadcastChannel('shopviet247_realtime_channel');
+          this.realtimeChannel.onmessage = function (event) {
+            self.handleBroadcastMessage(event ? event.data : null);
+          };
+          console.log('[ShopVietState] BroadcastChannel "shopviet247_realtime_channel" đã kích hoạt (0ms delay)!');
+        } catch (e) {
+          console.warn('[ShopVietState] Lỗi khởi tạo BroadcastChannel:', e);
+        }
+      }
+
+      // Lắng nghe fallback qua storage event cho các trình duyệt/môi trường không hỗ trợ BroadcastChannel
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('storage', function (e) {
+          if (e.key === 'shopviet_realtime_broadcast_message' && e.newValue) {
+            try {
+              const msg = JSON.parse(e.newValue);
+              self.handleBroadcastMessage(msg);
+            } catch (err) {}
+          }
+        });
+      }
+
+      return this.realtimeChannel;
+    },
+
+    // Xử lý thông điệp nhận được từ BroadcastChannel
+    handleBroadcastMessage: function (data) {
+      if (!data) return;
+      // Bỏ qua nếu là tin nhắn do chính tab này phát đi
+      if (data.senderId && data.senderId === this.tabId) return;
+
+      console.log('[ShopVietState] Nhận tín hiệu Realtime qua BroadcastChannel:', data.type, data);
+
+      let needReRender = false;
+
+      // 1. Đồng bộ danh sách sản phẩm Products
+      if (data.payload && data.payload.products && Array.isArray(data.payload.products)) {
+        if (window.ShopVietData) {
+          window.ShopVietData.products = data.payload.products;
+        }
+        this.saveCustomProducts(data.payload.products);
+        needReRender = true;
+      } else if (data.payload && Array.isArray(data.payload)) {
+        if (window.ShopVietData) {
+          window.ShopVietData.products = data.payload;
+        }
+        this.saveCustomProducts(data.payload);
+        needReRender = true;
+      } else {
+        const prods = this.getCustomProducts();
+        if (window.ShopVietData && prods && prods.length > 0) {
+          window.ShopVietData.products = prods;
+          needReRender = true;
+        }
+      }
+
+      // 2. Đồng bộ đơn hàng Orders
+      if (data.payload && data.payload.orders && Array.isArray(data.payload.orders)) {
+        this.saveOrders(data.payload.orders);
+        needReRender = true;
+      }
+
+      // 3. Đồng bộ tài khoản Users
+      if (data.payload && data.payload.users && Array.isArray(data.payload.users)) {
+        this.saveUsersDB(data.payload.users);
+      }
+
+      // 4. Đồng bộ Vouchers
+      if (data.payload && data.payload.vouchers && Array.isArray(data.payload.vouchers)) {
+        try {
+          localStorage.setItem(VOUCHERS_KEY, JSON.stringify(data.payload.vouchers));
+        } catch (e) {}
+      }
+
+      // 5. Đồng bộ Lịch hẹn Schedules
+      if (data.payload && data.payload.schedules && Array.isArray(data.payload.schedules)) {
+        try {
+          localStorage.setItem(SCHEDULES_KEY, JSON.stringify(data.payload.schedules));
+        } catch (e) {}
+      }
+
+      // Cập nhật timestamp cục bộ
+      if (data.updatedAt) {
+        this.setLastUpdatedAt(data.updatedAt);
+      }
+
+      // Tức tốc cập nhật giao diện mà không cần reload trang
+      if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
+        window.ShopVietViews.home.renderProducts();
+      }
+      this.renderCurrentRoute(true);
+
+      // Bắn CustomEvent trên window
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        try {
+          window.dispatchEvent(new CustomEvent('shopviet_realtime_update', { detail: data }));
+        } catch (e) {}
+      }
+    },
+
+    // Phát tín hiệu thay đổi từ Admin tới mọi tab, mọi thiết bị
+    broadcastAdminChange: function (changeType, payload) {
+      try {
+        const now = Date.now();
+        this.setLastUpdatedAt(now);
+
+        const messageData = {
+          type: changeType || 'admin_change',
+          payload: payload || null,
+          updatedAt: now,
+          timestamp: new Date(now).toISOString(),
+          senderId: this.tabId || (this.tabId = 'tab_' + Math.random().toString(36).substring(2, 9))
+        };
+
+        // Đảm bảo BroadcastChannel đã khởi tạo
+        this.initBroadcastChannel();
+
+        // 1. Gửi qua BroadcastChannel (0ms delay)
+        if (this.realtimeChannel && typeof this.realtimeChannel.postMessage === 'function') {
+          try {
+            this.realtimeChannel.postMessage(messageData);
+          } catch (e) {
+            console.warn('[ShopVietState] BroadcastChannel postMessage error:', e);
+          }
+        }
+
+        // Fallback qua localStorage cho các môi trường khác
+        try {
+          localStorage.setItem('shopviet_realtime_broadcast_message', JSON.stringify(messageData));
+        } catch (e) {}
+
+        // 2. Bắn CustomEvent shopviet_realtime_update trên window
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('shopviet_realtime_update', { detail: messageData }));
+          } catch (e) {
+            console.warn('[ShopVietState] dispatchEvent error:', e);
+          }
+        }
+
+        // 3. Tương thích ShopVietFirebase: Lưu snapshot lên collection/document shopviet_realtime_sync
+        if (window.ShopVietFirebase && window.ShopVietFirebase.db && window.ShopVietFirebase.isOnline) {
+          try {
+            window.ShopVietFirebase.db.collection('shopviet_realtime_sync').doc('latest_state').set({
+              type: changeType || 'admin_change',
+              updatedAt: now,
+              isoTimestamp: new Date(now).toISOString(),
+              senderTab: this.tabId,
+              lastAdmin: (this.state && this.state.user && this.state.user.email) || 'admin'
+            }, { merge: true }).catch(function (e) {
+              console.warn('[ShopVietState] Firestore sync signal error:', e.message);
+            });
+          } catch (e) {}
+        }
+
+        // 4. Gọi pushAllToCloud() để đẩy lên GitHub Cloud Storage & REST API
+        this.pushAllToCloud(true).catch(function (err) {
+          console.warn('[ShopVietState] pushAllToCloud in broadcastAdminChange error:', err);
+        });
+
+        console.log('[ShopVietState] broadcastAdminChange đã gửi tín hiệu:', changeType, messageData);
+        return true;
+      } catch (err) {
+        console.warn('[ShopVietState] broadcastAdminChange error:', err);
+        return false;
+      }
+    },
+
+    // Thiết lập listener onSnapshot trên Firestore collection shopviet_realtime_sync
+    setupFirestoreRealtimeListener: function () {
+      try {
+        if (this._firestoreListenerUnsubscribe) return; // Đã đăng ký rồi
+        if (window.ShopVietFirebase && window.ShopVietFirebase.db && window.ShopVietFirebase.isOnline) {
+          const db = window.ShopVietFirebase.db;
+          const self = this;
+          this._firestoreListenerUnsubscribe = db.collection('shopviet_realtime_sync').doc('latest_state')
+            .onSnapshot(function (docSnapshot) {
+              if (docSnapshot && docSnapshot.exists) {
+                const data = docSnapshot.data();
+                if (data && data.updatedAt) {
+                  const remoteTime = typeof data.updatedAt === 'number' ? data.updatedAt : new Date(data.updatedAt).getTime();
+                  const localTime = self.getLastUpdatedAt();
+                  if (remoteTime > localTime + 1000) {
+                    console.log('[ShopVietState] Firestore onSnapshot phát hiện cập nhật mới từ Cloud:', data);
+                    self.setLastUpdatedAt(remoteTime);
+                    self.syncAllFromCloud(false).then(function () {
+                      self.renderCurrentRoute(true);
+                    });
+                  }
+                }
+              }
+            }, function (err) {
+              console.warn('[ShopVietState] Firestore onSnapshot error:', err.message);
+            });
+          console.log('[ShopVietState] Đã thiết lập Firestore Realtime onSnapshot listener thành công!');
+        }
+      } catch (err) {
+        console.warn('[ShopVietState] setupFirestoreRealtimeListener error:', err);
+      }
+    },
+
+    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat)
+    startRealtimeDaemon: function (intervalMs = 3000) {
+      if (this._realtimeDaemonRunning) return this;
+      this._realtimeDaemonRunning = true;
+      this.initBroadcastChannel();
+      this.setupFirestoreRealtimeListener();
+
+      const self = this;
+      let isChecking = false;
+
+      const checkCloudHeartbeat = async function () {
+        if (isChecking) return;
+        isChecking = true;
+        try {
+          // Thử gắn Firestore listener nếu vừa online
+          if (!self._firestoreListenerUnsubscribe && window.ShopVietFirebase && window.ShopVietFirebase.db && window.ShopVietFirebase.isOnline) {
+            self.setupFirestoreRealtimeListener();
+          }
+
+          // Kiểm tra GitHub Raw Cloud hoặc REST API
+          const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
+          let cloudUpdatedAt = 0;
+          let cloudData = null;
+
+          try {
+            const res = await fetch(ghRawUrl, {
+              method: 'GET',
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+              }
+            });
+            if (res.ok) {
+              const json = await res.json();
+              if (json) {
+                cloudData = json.data || json;
+                if (cloudData && cloudData.updatedAt) {
+                  cloudUpdatedAt = typeof cloudData.updatedAt === 'number'
+                    ? cloudData.updatedAt
+                    : new Date(cloudData.updatedAt).getTime();
+                } else if (cloudData && cloudData.version && typeof cloudData.version === 'number') {
+                  cloudUpdatedAt = cloudData.version;
+                }
+              }
+            }
+          } catch (eGh) {
+            // Fallback sang REST API
+            try {
+              const restUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
+              const restRes = await fetch(restUrl, {
+                method: 'GET',
+                cache: 'no-store'
+              });
+              if (restRes.ok) {
+                const rJson = await restRes.json();
+                if (rJson) {
+                  cloudData = rJson.data || rJson;
+                  if (cloudData && cloudData.updatedAt) {
+                    cloudUpdatedAt = typeof cloudData.updatedAt === 'number'
+                      ? cloudData.updatedAt
+                      : new Date(cloudData.updatedAt).getTime();
+                  }
+                }
+              }
+            } catch (eRest) {}
+          }
+
+          const localUpdatedAt = self.getLastUpdatedAt();
+          if (cloudUpdatedAt && cloudUpdatedAt > localUpdatedAt + 1000) {
+            console.log('[ShopVietState] Smart Heartbeat phát hiện cập nhật mới từ Cloud:', {
+              cloudUpdatedAt: new Date(cloudUpdatedAt).toISOString(),
+              localUpdatedAt: new Date(localUpdatedAt).toISOString()
+            });
+            await self.syncAllFromCloud(false);
+            self.setLastUpdatedAt(cloudUpdatedAt);
+            self.renderCurrentRoute(true);
+            if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+              try {
+                window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+                  detail: { type: 'cloud_heartbeat_sync', updatedAt: cloudUpdatedAt }
+                }));
+              } catch (e) {}
+            }
+          }
+        } catch (err) {
+          // Bỏ qua lỗi ngầm
+        } finally {
+          isChecking = false;
+        }
+      };
+
+      this._realtimeDaemonTimer = setInterval(checkCloudHeartbeat, intervalMs);
+      console.log(`[ShopVietState] Realtime Daemon đã khởi động (Smart Heartbeat ${intervalMs}ms)!`);
+      return this;
+    },
+
+    // Dừng daemon kiểm tra ngầm
+    stopRealtimeDaemon: function () {
+      if (this._realtimeDaemonTimer) {
+        clearInterval(this._realtimeDaemonTimer);
+        this._realtimeDaemonTimer = null;
+      }
+      this._realtimeDaemonRunning = false;
+      if (this._firestoreListenerUnsubscribe) {
+        try {
+          this._firestoreListenerUnsubscribe();
+        } catch (e) {}
+        this._firestoreListenerUnsubscribe = null;
+      }
+      console.log('[ShopVietState] Realtime Daemon đã dừng.');
+      return this;
     },
 
     // Đăng ký tài khoản bất đồng bộ kèm tự động đẩy lên Cloud
@@ -925,11 +1314,17 @@
 
     // Khởi tạo hệ thống toàn cục và tự động đồng bộ tài khoản đa thiết bị
     init: function () {
+      if (this._isInitialized) return this;
+      this._isInitialized = true;
+
       this.load();
+      this.initBroadcastChannel();
+      this.setupFirestoreRealtimeListener();
+      this.startRealtimeDaemon(3000);
       this.syncAllFromCloud().catch(function () {});
 
       // Auto-Sync on Focus & Tab Visibility Change (Đồng bộ tức thì khi chuyển tab / mở lại màn hình)
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
         const self = this;
         window.addEventListener('focus', function () {
           self.syncAllFromCloud(false).catch(function () {});
@@ -961,6 +1356,13 @@
       try {
         // Đảm bảo users_db được khởi tạo
         this.getUsersDB();
+
+        // Kích hoạt BroadcastChannel & Realtime nếu chưa khởi chạy
+        if (!this._isInitialized) {
+          this.initBroadcastChannel();
+          this.setupFirestoreRealtimeListener();
+          this.startRealtimeDaemon(3000);
+        }
 
         // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền
         this.syncAllFromCloud().catch(function () {});
@@ -1585,5 +1987,14 @@
 
   // Alias AppState toàn cục
   window.AppState = window.ShopVietState;
+
+  // Tự động khởi tạo hệ sinh thái ShopVietState & Realtime Broadcast Engine
+  try {
+    if (typeof window !== 'undefined' && window.ShopVietState && typeof window.ShopVietState.init === 'function') {
+      window.ShopVietState.init();
+    }
+  } catch (errInit) {
+    console.warn('[ShopVietState] Lỗi tự động khởi chạy init():', errInit);
+  }
 
 })();

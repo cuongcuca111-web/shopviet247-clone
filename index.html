@@ -152,21 +152,26 @@
             </svg>
           </button>
 
-          <!-- Nút Đồng bộ Cloud (#header-sync-btn) -->
+          <!-- Live Pulse Status Pill (#header-sync-btn) -->
           <button 
             id="header-sync-btn" 
             type="button" 
             onclick="ShopVietState && ShopVietState.syncAllFromCloud ? ShopVietState.syncAllFromCloud(true) : location.reload()" 
-            title="Đồng bộ dữ liệu thời gian thực từ Cloud (Sản phẩm, Ảnh, Voucher)" 
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-indigo-600 hover:bg-white/80 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer group active:scale-95"
+            title="🟢 Realtime Live (Tự động đồng bộ)" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200/70 dark:border-emerald-800/70 shadow-2xs hover:shadow-emerald-500/20 transition-all duration-300 cursor-pointer group active:scale-95 relative"
           >
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <svg id="cloudSyncHeaderIcon" class="w-3.5 h-3.5 text-indigo-500 group-hover:rotate-180 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Chấm LED xanh ngọc animate-ping và animate-pulse -->
+            <span class="relative flex h-2 w-2 shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-xs shadow-emerald-500/50"></span>
+            </span>
+            <svg id="cloudSyncHeaderIcon" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:rotate-180 transition-transform duration-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
               <polyline points="13 13 10 16 7 13"/>
               <line x1="10" y1="9" x2="10" y2="16"/>
             </svg>
-            <span class="text-xs font-semibold hidden md:inline">Đồng bộ</span>
+            <span class="text-xs font-semibold hidden md:inline text-emerald-800 dark:text-emerald-200">🟢 Realtime Live (Tự động đồng bộ)</span>
+            <span class="text-xs font-semibold md:hidden text-emerald-800 dark:text-emerald-200">Live</span>
           </button>
 
           <!-- Nút Đổi Giao Diện Sáng/Tối (#headerThemeToggle) -->

@@ -273,7 +273,7 @@ window.ShopVietViews.home = (function () {
             <div class="lg:col-span-7 flex flex-col justify-between gap-4">
               
               <!-- BANNER QUẢNG CÁO NỀN TỐI NEON CHO SẢN PHẨM NỔI BẬT THỰC TẾ -->
-              <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 border border-slate-800 shadow-md relative overflow-hidden flex flex-col justify-between group">
+              <div data-product-card="true" data-product-id="${heroProduct.id || 'prod-001'}" class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 border border-slate-800 shadow-md relative overflow-hidden flex flex-col justify-between group transition-all duration-500">
                 
                 <!-- Glowing Ambient Orbs -->
                 <div class="absolute -right-8 -bottom-8 w-56 h-56 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/35 transition-all duration-500"></div>
@@ -529,7 +529,9 @@ window.ShopVietViews.home = (function () {
 
                   return `
                     <div 
-                      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                      data-product-card="true" 
+                      data-product-id="${prod.id}"
+                      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:-translate-y-1 transition-all duration-500 group cursor-pointer"
                       onclick="ShopVietViews.modal.open('${prod.id}')"
                     >
                       <!-- Top Thumbnail -->
@@ -674,8 +676,188 @@ window.ShopVietViews.home = (function () {
 
     // Lifecycle hook sau khi view được render
     afterRender: function () {
-      // Tự động focus hoặc gán sự kiện nếu cần
+      // 1. Gắn listener lắng nghe sự kiện đồng bộ thời gian thực từ window
+      this.initRealtimeListener();
+
+      // 2. Nếu có cờ pending highlight (sau khi chuyển view về home)
+      if (window._shopviet_pending_highlight) {
+        window._shopviet_pending_highlight = false;
+        this.highlightProductCards();
+      }
+    },
+
+    /**
+     * Khởi tạo listener lắng nghe sự kiện shopviet_realtime_update từ window
+     */
+    initRealtimeListener: function () {
+      if (window._shopviet_home_realtime_bound) return;
+      window._shopviet_home_realtime_bound = true;
+
+      const self = this;
+      window.addEventListener('shopviet_realtime_update', function (e) {
+        console.log('[ShopVietRealtime] Đã nhận sự kiện shopviet_realtime_update:', e ? e.detail : null);
+
+        // 1. Kích hoạt hiệu ứng icon mây xoay tít & pill nháy sáng trên Header (#header-sync-btn)
+        self.triggerHeaderLivePulse();
+
+        // 2. Hiển thị toast thông báo tinh tế hoặc notification badge nhỏ
+        const msg = (e && e.detail && e.detail.message) || '🔔 Admin vừa cập nhật dữ liệu cửa hàng thời gian thực!';
+        self.showRealtimeUpdateToast(msg);
+
+        // 3. Nếu đang ở view home (hoặc view mặc định), cập nhật lại danh sách sản phẩm và áp dụng highlight viền sáng 1.5s
+        const currentView = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.currentView) || 'home';
+        if (currentView === 'home') {
+          const appMount = document.getElementById('appMount');
+          if (appMount) {
+            const currentScrollY = window.scrollY;
+            appMount.innerHTML = self.render();
+            window.scrollTo(0, currentScrollY);
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+              window.lucide.createIcons();
+            }
+          }
+
+          // Kích hoạt hiệu ứng highlight viền sáng (ring glow transition 1.5s)
+          setTimeout(function () {
+            self.highlightProductCards();
+          }, 80);
+        } else {
+          // Đánh dấu pending để khi user quay lại trang chủ sẽ thấy highlight
+          window._shopviet_pending_highlight = true;
+        }
+      });
+    },
+
+    /**
+     * Kích hoạt hiệu ứng icon mây xoay tít và pill nháy sáng hiệu ứng xanh ngọc (emerald glow) trên Header
+     */
+    triggerHeaderLivePulse: function () {
+      const syncBtn = document.getElementById('header-sync-btn');
+      const syncIcon = document.getElementById('cloudSyncHeaderIcon');
+      if (syncBtn) {
+        syncBtn.classList.add(
+          'ring-4',
+          'ring-emerald-400/60',
+          'bg-emerald-100/90',
+          'dark:bg-emerald-900/80',
+          'scale-105',
+          'shadow-lg',
+          'shadow-emerald-500/25'
+        );
+        if (syncIcon) {
+          syncIcon.classList.add('animate-spin');
+        }
+        setTimeout(function () {
+          syncBtn.classList.remove(
+            'ring-4',
+            'ring-emerald-400/60',
+            'bg-emerald-100/90',
+            'dark:bg-emerald-900/80',
+            'scale-105',
+            'shadow-lg',
+            'shadow-emerald-500/25'
+          );
+          if (syncIcon) {
+            syncIcon.classList.remove('animate-spin');
+          }
+        }, 1800);
+      }
+    },
+
+    /**
+     * Hiển thị toast thông báo tinh tế hoặc notification badge nhỏ
+     */
+    showRealtimeUpdateToast: function (message) {
+      const msg = message || '🔔 Admin vừa cập nhật dữ liệu cửa hàng thời gian thực!';
+      let toast = document.getElementById('shopviet-realtime-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'shopviet-realtime-toast';
+        toast.className = 'fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900/95 dark:bg-slate-800/95 text-white border border-emerald-500/50 shadow-2xl shadow-emerald-500/20 backdrop-blur-md transform transition-all duration-500 translate-y-12 opacity-0 pointer-events-none select-none';
+        document.body.appendChild(toast);
+      }
+
+      toast.innerHTML = `
+        <span class="relative flex h-3 w-3 shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+        </span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs sm:text-sm font-semibold tracking-tight text-emerald-300">${msg}</span>
+        </div>
+      `;
+
+      requestAnimationFrame(function () {
+        toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      if (toast._timer) clearTimeout(toast._timer);
+      toast._timer = setTimeout(function () {
+        toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+
+      if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast(msg, 'success');
+      }
+    },
+
+    /**
+     * Thêm hiệu ứng highlight viền sáng (ring glow transition 1.5s) cho các thẻ sản phẩm
+     */
+    highlightProductCards: function () {
+      const cards = document.querySelectorAll('[data-product-card="true"], #productListGrid > div');
+      if (!cards || cards.length === 0) return;
+
+      cards.forEach(function (card) {
+        card.classList.add(
+          'ring-2',
+          'ring-emerald-400',
+          'dark:ring-emerald-500',
+          'shadow-xl',
+          'shadow-emerald-500/30',
+          'scale-[1.01]'
+        );
+      });
+
+      setTimeout(function () {
+        cards.forEach(function (card) {
+          card.classList.remove(
+            'ring-2',
+            'ring-emerald-400',
+            'dark:ring-emerald-500',
+            'shadow-xl',
+            'shadow-emerald-500/30',
+            'scale-[1.01]'
+          );
+        });
+      }, 1500);
+    },
+
+    /**
+     * Kích hoạt thủ công sự kiện shopviet_realtime_update
+     */
+    triggerRealtimeUpdate: function (detail) {
+      window.dispatchEvent(new CustomEvent('shopviet_realtime_update', { detail: detail || {} }));
     }
   };
+
+  // Tự động kích hoạt listener toàn cục ngay khi nạp file
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.initRealtimeListener === 'function') {
+          window.ShopVietViews.home.initRealtimeListener();
+        }
+      });
+    } else {
+      setTimeout(function () {
+        if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.initRealtimeListener === 'function') {
+          window.ShopVietViews.home.initRealtimeListener();
+        }
+      }, 0);
+    }
+  }
 
 })();
