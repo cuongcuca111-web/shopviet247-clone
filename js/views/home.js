@@ -1407,8 +1407,8 @@ window.ShopVietViews.home = (function () {
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-200/70 dark:border-slate-800/80">
               <div class="space-y-1.5">
                 <div class="flex flex-wrap items-center gap-2.5">
-                  <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Sản phẩm nổi bật
+                  <h2 id="u205FeaturedTitle" class="u205-title-wrap font-black tracking-tight" role="heading" aria-label="Sản phẩm nổi bật">
+                    <span class="u205-l" aria-hidden="true">S</span><span class="u205-l" aria-hidden="true">ả</span><span class="u205-l" aria-hidden="true">n</span><span class="u205-space" aria-hidden="true">&nbsp;</span><span class="u205-l" aria-hidden="true">p</span><span class="u205-l" aria-hidden="true">h</span><span class="u205-l" aria-hidden="true">ẩ</span><span class="u205-l" aria-hidden="true">m</span><span class="u205-space" aria-hidden="true">&nbsp;</span><span class="u205-l" aria-hidden="true">n</span><span class="u205-l" aria-hidden="true">ổ</span><span class="u205-l" aria-hidden="true">i</span><span class="u205-space" aria-hidden="true">&nbsp;</span><span class="u205-l" aria-hidden="true">b</span><span class="u205-l" aria-hidden="true">ậ</span><span class="u205-l" aria-hidden="true">t</span>
                   </h2>
                   <span id="u292CountBadge" class="u292-n font-bold" aria-live="polite">
                     <span id="u292CountVal" class="u292-n-val">${matchingProducts.length}</span> sản phẩm sẵn có
@@ -1861,7 +1861,12 @@ window.ShopVietViews.home = (function () {
         this.initDeviceViewMode();
       }
 
-      // 3. Nếu có cờ pending highlight (sau khi chuyển view về home)
+      // 3. Khởi tạo hiệu ứng Lucian #205 Rippling Letter Logo cho Tiêu đề Sản phẩm nổi bật
+      if (typeof this.initU205RipplingTitle === 'function') {
+        this.initU205RipplingTitle();
+      }
+
+      // 4. Nếu có cờ pending highlight (sau khi chuyển view về home)
       if (window._shopviet_pending_highlight) {
         window._shopviet_pending_highlight = false;
         this.highlightProductCards();
@@ -1884,6 +1889,9 @@ window.ShopVietViews.home = (function () {
           }
           if (typeof this.initDeviceViewMode === 'function') {
             this.initDeviceViewMode();
+          }
+          if (typeof this.initU205RipplingTitle === 'function') {
+            this.initU205RipplingTitle();
           }
         }
       } else if (window.ShopVietState && typeof window.ShopVietState.renderCurrentRoute === 'function') {
@@ -2156,6 +2164,240 @@ window.ShopVietViews.home = (function () {
         window.ShopVietState.showToast('Đã chuyển sang chế độ xem: ' + (modeLabels[mode] || mode), 'info');
       }
     },
+
+    /**
+     * Khởi tạo hiệu ứng Lucian UX/UI Prompt #205 - Rippling Letter Logo (Spring Physics & Wave)
+     * Cho tiêu đề "Sản phẩm nổi bật" (#u205FeaturedTitle)
+     */
+    initU205RipplingTitle: function () {
+      var titleWrap = document.getElementById('u205FeaturedTitle');
+      if (!titleWrap) return;
+
+      // Hủy requestAnimationFrame cũ nếu có để tránh chạy trùng lặp
+      if (titleWrap._u205RafId) {
+        cancelAnimationFrame(titleWrap._u205RafId);
+        titleWrap._u205RafId = null;
+      }
+      if (titleWrap._u205CleanUp && typeof titleWrap._u205CleanUp === 'function') {
+        titleWrap._u205CleanUp();
+      }
+
+      // Kiểm tra prefers-reduced-motion
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      var letterNodes = titleWrap.querySelectorAll('.u205-l');
+      if (!letterNodes || !letterNodes.length) return;
+      var letterEls = Array.prototype.slice.call(letterNodes);
+
+      // Cấu trúc dữ liệu từng ký tự với Spring Physics
+      var letters = letterEls.map(function (el) {
+        return {
+          el: el,
+          x: 0,        // Tọa độ tâm X tương đối so với titleWrap
+          y: 0,        // Vị trí translateY hiện tại (px, số âm là nhấc lên)
+          vy: 0        // Vận tốc y (spring velocity)
+        };
+      });
+
+      var wrapRect = titleWrap.getBoundingClientRect();
+
+      // Cập nhật tọa độ tâm của từng chữ cái
+      function measure() {
+        wrapRect = titleWrap.getBoundingClientRect();
+        letters.forEach(function (item) {
+          var r = item.el.getBoundingClientRect();
+          item.x = (r.left + r.width / 2) - wrapRect.left;
+        });
+      }
+
+      measure();
+
+      // Trạng thái con trỏ và danh sách sóng
+      var isPointerOver = false;
+      var pointerX = -9999;
+      var waves = []; // Mỗi wave: { startTime, originX, speed, width, amplitude }
+      var isRunning = false;
+      var lastTime = performance.now();
+
+      // Kích hoạt 1 đợt sóng (Send a wave)
+      function triggerWave(originX, amplitude, speed) {
+        wrapRect = titleWrap.getBoundingClientRect();
+        waves.push({
+          startTime: performance.now(),
+          originX: typeof originX === 'number' ? originX : (wrapRect.left - 40),
+          speed: speed || 480,       // px / giây
+          width: 95,                 // độ rộng xung sóng (sigma)
+          amplitude: amplitude || 22 // độ nảy cực đại
+        });
+        wakeUp();
+      }
+
+      // Đánh thức vòng lặp nếu đang ngủ đông
+      function wakeUp() {
+        if (!isRunning) {
+          isRunning = true;
+          lastTime = performance.now();
+          titleWrap._u205RafId = requestAnimationFrame(loop);
+        }
+      }
+
+      // Xử lý sự kiện Pointer (hỗ trợ cả Desktop Mouse và Mobile Touch)
+      function onPointerMove(e) {
+        isPointerOver = true;
+        pointerX = e.clientX;
+        wakeUp();
+      }
+
+      function onPointerLeave() {
+        isPointerOver = false;
+        pointerX = -9999;
+        wakeUp();
+      }
+
+      function onPointerDown(e) {
+        triggerWave(e.clientX, 24, 520);
+      }
+
+      titleWrap.addEventListener('pointerenter', onPointerMove);
+      titleWrap.addEventListener('pointermove', onPointerMove);
+      titleWrap.addEventListener('pointerleave', onPointerLeave);
+      titleWrap.addEventListener('pointercancel', onPointerLeave);
+      titleWrap.addEventListener('pointerdown', onPointerDown);
+
+      // Lắng nghe window resize để tính lại vị trí
+      var resizeTimer = null;
+      function onResize() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          measure();
+          wakeUp();
+        }, 100);
+      }
+      window.addEventListener('resize', onResize);
+
+      // Tự động phát sóng nhẹ khi cuộn vào tầm mắt (IntersectionObserver)
+      var observer = null;
+      if ('IntersectionObserver' in window) {
+        var hasTriggeredInView = false;
+        observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !hasTriggeredInView) {
+              hasTriggeredInView = true;
+              setTimeout(function () {
+                triggerWave(wrapRect.left - 60, 20, 420);
+              }, 250);
+            }
+          });
+        }, { threshold: 0.25 });
+        observer.observe(titleWrap);
+      } else {
+        setTimeout(function () {
+          triggerWave(wrapRect.left - 60, 20, 420);
+        }, 600);
+      }
+
+      // Vòng lặp vật lý lò xo (Spring Physics Loop)
+      var STIFFNESS = 0.20; // Độ cứng lò xo
+      var DAMPING = 0.74;   // Giảm chấn (damping)
+      var MAX_LIFT = 22;    // Độ nhấc cực đại khi hover chuột (px)
+      var SIGMA = 65;       // Bán kính phân phối Gauss chuột (px)
+
+      function loop(currentTime) {
+        titleWrap._u205RafId = null;
+        var now = currentTime || performance.now();
+        lastTime = now;
+
+        wrapRect = titleWrap.getBoundingClientRect();
+
+        // Cập nhật và dọn dẹp các đợt sóng đã kết thúc
+        for (var i = waves.length - 1; i >= 0; i--) {
+          var w = waves[i];
+          var elapsed = (now - w.startTime) / 1000;
+          var waveFront = w.originX + w.speed * elapsed;
+          if (waveFront > wrapRect.right + 250) {
+            waves.splice(i, 1);
+          }
+        }
+
+        var isAnyMoving = false;
+
+        letters.forEach(function (item) {
+          var letterCenterX = wrapRect.left + item.x;
+
+          // 1. Độ nhấc do con trỏ chuột (Gaussian bell curve)
+          var mouseLift = 0;
+          if (isPointerOver && pointerX > -1000) {
+            var dist = Math.abs(pointerX - letterCenterX);
+            if (dist < SIGMA * 2.8) {
+              mouseLift = MAX_LIFT * Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
+            }
+          }
+
+          // 2. Độ nhấc do các đợt sóng đang lan truyền (Pulse Wave)
+          var waveLift = 0;
+          waves.forEach(function (w) {
+            var elapsed = (now - w.startTime) / 1000;
+            var waveFront = w.originX + w.speed * elapsed;
+            var distWave = Math.abs(waveFront - letterCenterX);
+            if (distWave < w.width * 2.5) {
+              waveLift += w.amplitude * Math.exp(-(distWave * distWave) / (2 * w.width * w.width));
+            }
+          });
+
+          // Mục tiêu translateY (số âm là nhấc lên)
+          var targetY = -(mouseLift + waveLift);
+
+          // Tính lực lò xo (Hooke's Law + Damping)
+          var force = (targetY - item.y) * STIFFNESS;
+          item.vy = (item.vy + force) * DAMPING;
+          item.y += item.vy;
+
+          // Giới hạn y không bị rơi lún xuống đất
+          if (item.y > 1.5) item.y = 1.5;
+
+          // Kiểm tra xem ký tự còn chuyển động đáng kể không
+          if (Math.abs(item.vy) > 0.02 || Math.abs(item.y - targetY) > 0.05 || waves.length > 0 || isPointerOver) {
+            isAnyMoving = true;
+          }
+
+          // Tính tỷ lệ nâng t [0..1] để điều khiển bóng sàn và tỷ lệ co giãn
+          var normT = Math.min(Math.max(-item.y / 22, 0), 1);
+          var scaleY = (1 + normT * 0.16).toFixed(3);
+          var yVal = item.y.toFixed(2);
+          var tVal = normT.toFixed(3);
+
+          item.el.style.setProperty('--y', yVal + 'px');
+          item.el.style.setProperty('--sy', scaleY);
+          item.el.style.setProperty('--t', tVal);
+        });
+
+        // Nếu tất cả ký tự đã về trạng thái tĩnh và không còn sự kiện: tạm dừng loop để tiết kiệm CPU
+        if (isAnyMoving || isPointerOver || waves.length > 0) {
+          titleWrap._u205RafId = requestAnimationFrame(loop);
+        } else {
+          isRunning = false;
+        }
+      }
+
+      // Lưu hàm dọn dẹp vào element
+      titleWrap._u205CleanUp = function () {
+        titleWrap.removeEventListener('pointerenter', onPointerMove);
+        titleWrap.removeEventListener('pointermove', onPointerMove);
+        titleWrap.removeEventListener('pointerleave', onPointerLeave);
+        titleWrap.removeEventListener('pointercancel', onPointerLeave);
+        titleWrap.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('resize', onResize);
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+      };
+
+      // Đánh thức ban đầu
+      wakeUp();
+    },
     handleBuyNowClick: handleBuyNowClick,
     openMobileExpander: openMobileExpander,
     closeMobileExpander: closeMobileExpander,
@@ -2170,6 +2412,7 @@ window.ShopVietViews.home = (function () {
     window.ShopVietViews.handleBuyNowClick = handleBuyNowClick;
     window.ShopVietViews.openMobileExpander = openMobileExpander;
     window.ShopVietViews.closeMobileExpander = closeMobileExpander;
+    window.ShopVietViews.initU205RipplingTitle = ShopVietViews.home.initU205RipplingTitle;
   }
 
   // Tự động kích hoạt listener toàn cục ngay khi nạp file
@@ -2183,6 +2426,9 @@ window.ShopVietViews.home = (function () {
           if (typeof window.ShopVietViews.home.initDeviceViewMode === 'function') {
             window.ShopVietViews.home.initDeviceViewMode();
           }
+          if (typeof window.ShopVietViews.home.initU205RipplingTitle === 'function') {
+            window.ShopVietViews.home.initU205RipplingTitle();
+          }
         }
       });
     } else {
@@ -2193,6 +2439,9 @@ window.ShopVietViews.home = (function () {
           }
           if (typeof window.ShopVietViews.home.initDeviceViewMode === 'function') {
             window.ShopVietViews.home.initDeviceViewMode();
+          }
+          if (typeof window.ShopVietViews.home.initU205RipplingTitle === 'function') {
+            window.ShopVietViews.home.initU205RipplingTitle();
           }
         }
       }, 0);
