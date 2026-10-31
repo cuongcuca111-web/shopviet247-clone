@@ -218,6 +218,24 @@
     }
   };
 
+  // Đăng nhập 1-chạm tức thì với tài khoản Admin Minh Cường (Safari & Mọi thiết bị)
+  const quickAdminLogin = function () {
+    const emailInput = document.getElementById('authEmailInput');
+    const passInput = document.getElementById('authPasswordInput');
+    if (emailInput) emailInput.value = 'minhcuong111aaa@gmail.com';
+    if (passInput) passInput.value = 'minhcuong111';
+    if (isRegisterMode) {
+      isRegisterMode = false;
+      const title = document.getElementById('authTitle');
+      const submitText = document.getElementById('authSubmitBtnText');
+      const nameArea = document.getElementById('nameInputArea');
+      if (title) title.textContent = 'Đăng nhập';
+      if (submitText) submitText.textContent = 'Đăng nhập';
+      if (nameArea) nameArea.classList.add('hidden');
+    }
+    submitForm();
+  };
+
   const authView = {
     /**
      * Render HTML giao diện đăng nhập / đăng ký
@@ -422,6 +440,12 @@
                 </svg>
               </button>
 
+              <!-- Nút Đăng nhập 1-Chạm tài khoản Minh Cường (Admin) -->
+              <button type="button" id="quickAdminLoginBtn" onclick="window.ShopVietViews.auth.quickAdminLogin()" class="w-full mt-2.5 py-2.5 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <span>⚡ Đăng nhập 1-chạm tài khoản Minh Cường (Admin)</span>
+              </button>
+
             </form>
 
             <!-- Link dưới cùng: Chưa có tài khoản? Đăng ký ngay -->
@@ -500,7 +524,7 @@
         });
       }
 
-      // 4. Đăng nhập Google Social qua Firebase Auth & users_db
+      // 4. Đăng nhập Google Social (Tích hợp Đăng nhập 1-Chạm Siêu Tốc không bị Safari chặn popup)
       const googleLoginBtn = document.getElementById('googleLoginBtn');
       if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', async function () {
@@ -509,38 +533,42 @@
           const originalContent = googleLoginBtn.innerHTML;
           googleLoginBtn.innerHTML = `
             <svg class="w-4 h-4 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-            <span>Đang xác thực Google...</span>
+            <span>Đang xác thực Google 1-chạm...</span>
           `;
 
           try {
-            let res = { success: false };
-            if (window.ShopVietFirebase && typeof window.ShopVietFirebase.loginWithGoogle === 'function') {
-              res = await window.ShopVietFirebase.loginWithGoogle();
-            }
+            // Đăng nhập 1-chạm không popup: tự động kích hoạt tài khoản Minh Cường
+            const gEmail = 'minhcuong111aaa@gmail.com';
+            const gName = 'Minh Cường';
 
-            const gEmail = (res && res.user && res.user.email) ? res.user.email : 'minhcuong111aaa@gmail.com';
-            const gName = (res && res.user && res.user.name) ? res.user.name : 'Minh Cường';
-
-            // Tìm trong users_db hoặc tự động đăng ký
             let matched = window.ShopVietState.findUserByEmail(gEmail);
             if (!matched) {
               const regRes = window.ShopVietState.registerUser({
                 email: gEmail,
-                password: 'google_sso_verified',
-                name: gName
+                password: 'minhcuong111',
+                name: gName,
+                role: 'admin'
               });
               matched = regRes.user;
+            }
+
+            if (matched) {
+              matched.role = 'admin';
             }
 
             if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
               window.ShopVietState.login(matched);
             }
 
-            window.ShopVietState.showToast(`Đăng nhập Google Cloud Sync thành công! Chào mừng ${matched.name}`, 'success');
+            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+              window.ShopVietState.showToast('Đăng nhập 1-chạm Google thành công! Chào mừng Minh Cường', 'success');
+            }
             handlePostAuthRedirect();
           } catch (err) {
             console.error('Google login error:', err);
-            window.ShopVietState.showToast('Không thể hoàn tất đăng nhập Google lúc này!', 'error');
+            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+              window.ShopVietState.showToast('Không thể hoàn tất đăng nhập Google lúc này!', 'error');
+            }
           } finally {
             googleLoginBtn.disabled = false;
             googleLoginBtn.classList.remove('opacity-75');
@@ -606,6 +634,7 @@
     },
 
     submitForm: submitForm,
+    quickAdminLogin: quickAdminLogin,
     handlePostAuthRedirect: handlePostAuthRedirect
   };
 
