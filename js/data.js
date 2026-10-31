@@ -104,7 +104,33 @@
     // Danh sách Sản Phẩm Thật Duy Nhất (Chuẩn Nguồn Chân Lý Đồng Bộ Toàn Hệ Thống)
     products: [
       {
-        id: 'prod-002',
+        id: 'prod-6178',
+        name: '[6 Tháng]Gemini Argon 4 Pro + 5TB Drive',
+        category: 'cat_gemini',
+        tag: 'Gemini - Antigravity - Veo',
+        price: 69000,
+        oldPrice: 250000,
+        discount: '-72%',
+        stock: 100,
+        status: 'in_stock',
+        rating: 5,
+        reviewsCount: 1,
+        soldCount: 0,
+        badge: 'Bán chạy nhất',
+        badgeColor: 'bg-indigo-600 text-white',
+        autoDelivery: false,
+        warranty: '18 tháng (1 đổi 1)',
+        desc: 'Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...',
+        iconType: 'gemini',
+        imageUrl: '',
+        features: [
+          'Bản quyền kích hoạt nhanh chóng 24/7',
+          'Bảo hành 1 đổi 1 nhanh chóng',
+          'Hỗ trợ kỹ thuật qua Zalo 0868668809'
+        ]
+      },
+      {
+        id: 'prod-3749',
         name: '[3 Tháng]Gemini Argon 4 Pro + 5TB Drive',
         category: 'cat_gemini',
         tag: 'Gemini - Antigravity - Veo',
@@ -211,11 +237,13 @@
 
   // Tự động khôi phục danh sách sản phẩm đã được Admin tùy chỉnh từ LocalStorage (Đồng bộ đa nguồn)
   try {
-    const savedCustomProds = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
-    if (savedCustomProds) {
-      const parsed = JSON.parse(savedCustomProds);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        window.ShopVietData.products = parsed;
+    if (typeof localStorage !== 'undefined') {
+      const savedCustomProds = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
+      if (savedCustomProds) {
+        const parsed = JSON.parse(savedCustomProds);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          window.ShopVietData.products = parsed;
+        }
       }
     }
   } catch (err) {

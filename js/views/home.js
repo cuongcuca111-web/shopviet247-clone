@@ -717,6 +717,26 @@ window.ShopVietViews.home = (function () {
     },
 
     /**
+     * Render lại danh sách sản phẩm thời gian thực mà không làm giật trang hoặc nhảy vị trí cuộn
+     */
+    renderProducts: function () {
+      const currentView = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.currentView) || 'home';
+      if (currentView === 'home') {
+        const appMount = document.getElementById('appMount');
+        if (appMount) {
+          const currentScrollY = window.scrollY;
+          appMount.innerHTML = this.render();
+          window.scrollTo(0, currentScrollY);
+          if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+          }
+        }
+      } else if (window.ShopVietState && typeof window.ShopVietState.renderCurrentRoute === 'function') {
+        window.ShopVietState.renderCurrentRoute(true);
+      }
+    },
+
+    /**
      * Khởi tạo listener lắng nghe sự kiện shopviet_realtime_update từ window
      */
     initRealtimeListener: function () {
@@ -730,22 +750,14 @@ window.ShopVietViews.home = (function () {
         // 1. Kích hoạt hiệu ứng icon mây xoay tít & pill nháy sáng trên Header (#header-sync-btn)
         self.triggerHeaderLivePulse();
 
-        // 2. Hiển thị toast thông báo tinh tế hoặc notification badge nhỏ
-        const msg = (e && e.detail && e.detail.message) || '🔔 Admin vừa cập nhật dữ liệu cửa hàng thời gian thực!';
+        // 2. Hiển thị toast thông báo nổi bật
+        const msg = (e && e.detail && e.detail.message) || '🔔 Cửa hàng vừa cập nhật sản phẩm mới!';
         self.showRealtimeUpdateToast(msg);
 
         // 3. Nếu đang ở view home (hoặc view mặc định), cập nhật lại danh sách sản phẩm và áp dụng highlight viền sáng 1.5s
         const currentView = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.currentView) || 'home';
         if (currentView === 'home') {
-          const appMount = document.getElementById('appMount');
-          if (appMount) {
-            const currentScrollY = window.scrollY;
-            appMount.innerHTML = self.render();
-            window.scrollTo(0, currentScrollY);
-            if (window.lucide && typeof window.lucide.createIcons === 'function') {
-              window.lucide.createIcons();
-            }
-          }
+          self.renderProducts();
 
           // Kích hoạt hiệu ứng highlight viền sáng (ring glow transition 1.5s)
           setTimeout(function () {

@@ -3117,6 +3117,10 @@
         const jsonStr = JSON.stringify(window.ShopVietData.products);
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, jsonStr);
         localStorage.setItem('shopviet_custom_products', jsonStr);
+        localStorage.setItem('shopviet_admin_products', jsonStr);
+        if (window.ShopVietState && typeof window.ShopVietState.saveCustomProducts === 'function') {
+          window.ShopVietState.saveCustomProducts(window.ShopVietData.products);
+        }
       } catch (e) {
         console.warn('[Save Products LocalStorage Error]:', e);
       }
@@ -4261,7 +4265,7 @@
         recordBroadcast('master_publish', `Xuất bản toàn cầu (${prods.length} sản phẩm)`);
 
         // 5. Hiển thị Toast / Modal thành công rực rỡ
-        notify('🎉 XUẤT BẢN THÀNH CÔNG! Dữ liệu đã được phát sóng đến tất cả thiết bị trên toàn cầu!', 'success');
+        notify('🎉 Đã phát sóng cập nhật dữ liệu tới toàn bộ các thiết bị đang truy cập!', 'success');
 
         // Bắn CustomEvent shopviet_realtime_update để màn hình Home nhấp nháy phát sáng
         if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {

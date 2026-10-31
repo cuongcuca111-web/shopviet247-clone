@@ -186,15 +186,20 @@
     // Lấy danh sách sản phẩm tùy chỉnh từ localStorage (shopviet_custom_products / shopviet_admin_products)
     getCustomProducts: function () {
       try {
-        if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
-          return window.ShopVietData.products;
-        }
-        const raw = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products');
+        // ƯU TIÊN 1: Kiểm tra localStorage (dữ liệu được Admin sửa hoặc Cloud sync về)
+        const raw = localStorage.getItem('shopviet_custom_products') || localStorage.getItem('shopviet_admin_products') || localStorage.getItem('shopviet247_custom_products_v1');
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
+            if (window.ShopVietData) {
+              window.ShopVietData.products = parsed;
+            }
             return parsed;
           }
+        }
+        // ƯU TIÊN 2: Fallback về window.ShopVietData.products từ data.js
+        if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
+          return window.ShopVietData.products;
         }
         return [];
       } catch (e) {
@@ -268,9 +273,7 @@
         try {
           const ghApiUrl = GITHUB_API_URL + (GITHUB_API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
           const ghHeaders = {
-            'Accept': 'application/vnd.github.v3.raw',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Accept': 'application/vnd.github.v3.raw'
           };
           if (GITHUB_PAT) {
             ghHeaders['Authorization'] = 'token ' + GITHUB_PAT;
@@ -311,11 +314,7 @@
             const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
             const ghRes = await fetch(ghRawUrl, {
               method: 'GET',
-              cache: 'no-store',
-              headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-              }
+              cache: 'no-store'
             });
             if (ghRes.ok) {
               const ghJson = await ghRes.json();
@@ -334,11 +333,7 @@
           const fetchUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
           const res = await fetch(fetchUrl, {
             method: 'GET',
-            cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
+            cache: 'no-store'
           });
           if (res.ok) {
             const json = await res.json();
@@ -1004,9 +999,7 @@
           try {
             const ghApiUrl = GITHUB_API_URL + (GITHUB_API_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
             const ghHeaders = {
-              'Accept': 'application/vnd.github.v3.raw',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
+              'Accept': 'application/vnd.github.v3.raw'
             };
             if (GITHUB_PAT) {
               ghHeaders['Authorization'] = 'token ' + GITHUB_PAT;
@@ -1048,11 +1041,7 @@
               const restUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
               const restRes = await fetch(restUrl, {
                 method: 'GET',
-                cache: 'no-store',
-                headers: {
-                  'Cache-Control': 'no-cache, no-store, must-revalidate',
-                  'Pragma': 'no-cache'
-                }
+                cache: 'no-store'
               });
               if (restRes.ok) {
                 const rJson = await restRes.json();
@@ -1076,11 +1065,7 @@
               const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
               const res = await fetch(ghRawUrl, {
                 method: 'GET',
-                cache: 'no-store',
-                headers: {
-                  'Cache-Control': 'no-cache, no-store, must-revalidate',
-                  'Pragma': 'no-cache'
-                }
+                cache: 'no-store'
               });
               if (res.ok) {
                 const json = await res.json();
