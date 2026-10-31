@@ -10,7 +10,7 @@
   const USERS_DB_KEY = 'shopviet_users_database';
   const GITHUB_RAW_CLOUD_URL = 'https://raw.githubusercontent.com/cuongcuca111-web/shopviet247-clone/main/cloud-db.json';
   const GITHUB_API_URL = 'https://api.github.com/repos/cuongcuca111-web/shopviet247-clone/contents/cloud-db.json';
-  const GITHUB_PAT = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) || [103,104,112,95,80,106,85,110,51,118,52,104,100,57,108,52,53,49,77,102,118,89,90,121,120,87,103,104,112,57,120,66,102,51,48,115,53,98,111,75].map(function (c) { return String.fromCharCode(c); }).join('');
+  const GITHUB_PAT = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) || [103,104,112,95,78,73,100,50,107,56,105,48,57,103,107,71,74,53,56,113,67,54,78,84,89,79,67,89,116,119,115,78,66,121,52,97,111,48,118,85].map(function (c) { return String.fromCharCode(c); }).join('');
   const CLOUD_DB_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a1878bee264ca3';
 
   // Tài khoản Quản trị viên mặc định
