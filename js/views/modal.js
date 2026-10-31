@@ -1641,31 +1641,102 @@ window.ShopVietViews.modal = (function () {
           }
         }
 
-        if (window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) {
-          const exists = window.ShopVietState.state.orders.some(function (o) { return o.orderCode === order.orderCode; });
+        // 1. Cập nhật state.orders và lưu vào bộ nhớ cục bộ
+        if (window.ShopVietState && window.ShopVietState.state) {
+          if (!Array.isArray(window.ShopVietState.state.orders)) {
+            window.ShopVietState.state.orders = [];
+          }
+          const exists = window.ShopVietState.state.orders.some(function (o) { return (o.id && o.id === order.id) || (o.orderCode && o.orderCode === order.orderCode); });
           if (!exists) {
             window.ShopVietState.state.orders.unshift(order);
           }
         }
-        if (Array.isArray(window.ShopVietState.orders)) {
-          const exists2 = window.ShopVietState.orders.some(function (o) { return o.orderCode === order.orderCode; });
+        if (window.ShopVietState && Array.isArray(window.ShopVietState.orders)) {
+          const exists2 = window.ShopVietState.orders.some(function (o) { return (o.id && o.id === order.id) || (o.orderCode && o.orderCode === order.orderCode); });
           if (!exists2) {
             window.ShopVietState.orders.unshift(order);
           }
         }
 
-        if (typeof window.ShopVietState.save === 'function') {
+        if (window.ShopVietState && typeof window.ShopVietState.save === 'function') {
           window.ShopVietState.save();
         }
 
-        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
-          window.ShopVietFirebase.syncOrderToCloud(order);
-          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
-            window.ShopVietState.pushAllToCloud().catch(console.warn);
+        // Lưu trực tiếp vào shopviet_orders
+        try {
+          let currentOrders = [];
+          const rawLocal = localStorage.getItem('shopviet_orders');
+          if (rawLocal) {
+            const p = JSON.parse(rawLocal);
+            if (Array.isArray(p)) currentOrders = p;
           }
+          const filtered = currentOrders.filter(function (o) {
+            if (!o) return false;
+            return o.id !== order.id && o.orderCode !== order.orderCode && o.rawCode !== order.rawCode;
+          });
+          filtered.unshift(order);
+          localStorage.setItem('shopviet_orders', JSON.stringify(filtered));
+        } catch (e) {}
+
+        // Lưu trực tiếp vào shopviet247_cloud_orders_sync
+        try {
+          let syncOrders = [];
+          const rawSync = localStorage.getItem('shopviet247_cloud_orders_sync');
+          if (rawSync) {
+            const p = JSON.parse(rawSync);
+            if (Array.isArray(p)) syncOrders = p;
+          }
+          const filteredSync = syncOrders.filter(function (o) {
+            if (!o) return false;
+            return o.id !== order.id && o.orderCode !== order.orderCode && o.rawCode !== order.rawCode;
+          });
+          filteredSync.unshift(order);
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(filteredSync));
+        } catch (e) {}
+
+        // 2. Đồng bộ Firestore nếu khả dụng
+        if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
+          try {
+            window.ShopVietFirebase.syncOrderToCloud(order);
+          } catch (eFb) {}
         }
 
-        // Phát sóng Realtime để Admin nhận thông báo và cập nhật bảng đơn hàng
+        // 3. Đẩy lên GitHub Cloud Storage & REST API độc lập với pushAllToCloud(true)
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          window.ShopVietState.pushAllToCloud(true).catch(function (e) {
+            console.warn('[Modal] pushAllToCloud error:', e);
+          });
+        }
+
+        // 4. Phát sóng Realtime toàn diện: BroadcastChannel('shopviet_admin_sync') + CustomEvent
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('shopviet_admin_sync');
+            bc.postMessage({
+              type: 'orders_updated',
+              action: 'new_order_pending_review',
+              order: order,
+              orderCode: order.orderCode || orderCode,
+              status: 'pending_review',
+              timestamp: Date.now()
+            });
+          }
+        } catch (eBc) {}
+
+        try {
+          window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+            detail: {
+              type: 'orders_updated',
+              action: 'new_order_pending_review',
+              order: order,
+              orderCode: order.orderCode || orderCode,
+              status: 'pending_review',
+              timestamp: Date.now()
+            }
+          }));
+        } catch (eCe) {}
+
+        // Phát sóng qua kênh ShopVietState nội bộ
         if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
           window.ShopVietState.broadcastAdminChange('orders_updated', {
             order: order,
@@ -1675,7 +1746,7 @@ window.ShopVietViews.modal = (function () {
           });
         }
 
-        // Kích hoạt PWA Push Notification cho iPhone Admin (iOS 16.4+) & Desktop
+        // 5. Kích hoạt PWA Push Notification cho iPhone Admin (iOS 16.4+) & Desktop
         if (typeof window.triggerAdminOrderNotification === 'function') {
           window.triggerAdminOrderNotification(order);
         }

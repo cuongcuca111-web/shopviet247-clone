@@ -724,7 +724,60 @@
         const customProducts = this.getCustomProducts();
         const vouchers = this.getVouchers();
         const schedules = this.getSchedules();
-        const orders = this.getOrders();
+
+        // Hợp nhất đơn hàng toàn diện từ state.orders, localStorage('shopviet_orders') và localStorage('shopviet247_cloud_orders_sync')
+        let syncOrders = [];
+        try {
+          const syncRaw = localStorage.getItem('shopviet247_cloud_orders_sync');
+          if (syncRaw) {
+            const parsedSync = JSON.parse(syncRaw);
+            if (Array.isArray(parsedSync)) syncOrders = parsedSync;
+          }
+        } catch (e) {}
+
+        let localOrders = [];
+        try {
+          const localRaw = localStorage.getItem('shopviet_orders');
+          if (localRaw) {
+            const parsedLocal = JSON.parse(localRaw);
+            if (Array.isArray(parsedLocal)) localOrders = parsedLocal;
+          }
+        } catch (e) {}
+
+        const rawOrders = this.getOrders();
+        const orderMap = new Map();
+        [...syncOrders, ...localOrders, ...rawOrders].forEach(function (o) {
+          if (!o) return;
+          const key = o.id || o.orderCode || o.rawCode;
+          if (!key) return;
+          if (!orderMap.has(key)) {
+            orderMap.set(key, o);
+          } else {
+            const existing = orderMap.get(key);
+            orderMap.set(key, Object.assign({}, existing, o));
+          }
+        });
+
+        const selfState = this;
+        let orders = Array.from(orderMap.values()).filter(function (o) {
+          const k = o.id || o.orderCode;
+          return !selfState.isDeleted(k);
+        });
+
+        // Sắp xếp: Ưu tiên đơn 'pending_review' lên vị trí đầu tiên
+        orders.sort(function (a, b) {
+          if (a.status === 'pending_review' && b.status !== 'pending_review') return -1;
+          if (b.status === 'pending_review' && a.status !== 'pending_review') return 1;
+          const timeA = new Date(a.createdAt || a.submittedAt || 0).getTime();
+          const timeB = new Date(b.createdAt || b.submittedAt || 0).getTime();
+          return timeB - timeA;
+        });
+
+        this.state.orders = orders;
+        this.save();
+        try {
+          localStorage.setItem('shopviet_orders', JSON.stringify(orders));
+        } catch (e) {}
 
         const now = Date.now();
         const isoNow = new Date(now).toISOString();
@@ -756,54 +809,98 @@
           } catch (e) {}
         }
 
-        // 1. ĐẨY LÊN GITHUB CLOUD STORAGE (API CONTENTS PUT)
+        // 1. ĐẨY LÊN GITHUB CLOUD STORAGE (API CONTENTS PUT) VỚI ZERO-CACHE SHA & AUTO-RETRY 3 LẦN
         try {
-          // Lấy SHA mới nhất của file cloud-db.json nếu đã tồn tại
-          let sha = null;
-          try {
-            const shaRes = await fetch(GITHUB_API_URL, {
-              method: 'GET',
+          const maxRetries = 3;
+          let putSuccess = false;
+
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            // Lấy SHA mới nhất với Zero-Cache qua query param _t và header cache: 'no-store'
+            let sha = null;
+            try {
+              const ghGetUrl = GITHUB_API_URL + (GITHUB_API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+              const shaRes = await fetch(ghGetUrl, {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                  'Authorization': 'token ' + GITHUB_PAT,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'cache': 'no-store'
+                }
+              });
+              if (shaRes.ok) {
+                const fileData = await shaRes.json();
+                if (fileData && fileData.sha) {
+                  sha = fileData.sha;
+                }
+                // Hợp nhất đơn hàng 2 chiều từ Cloud: Không bao giờ làm mất đơn của máy khác
+                if (fileData && fileData.content) {
+                  try {
+                    const decodedRemote = decodeURIComponent(escape(window.atob(fileData.content.replace(/\s/g, ''))));
+                    const remoteData = JSON.parse(decodedRemote);
+                    if (remoteData && Array.isArray(remoteData.orders)) {
+                      remoteData.orders.forEach(function (ro) {
+                        if (!ro) return;
+                        const k = ro.id || ro.orderCode || ro.rawCode;
+                        if (k && !orderMap.has(k)) {
+                          orderMap.set(k, ro);
+                        } else if (k && orderMap.has(k)) {
+                          const cur = orderMap.get(k);
+                          // Nếu bản ghi trên Cloud đã completed mà local chưa completed thì giữ completed
+                          if (ro.status === 'completed' && cur.status !== 'completed') {
+                            orderMap.set(k, Object.assign({}, cur, ro));
+                          }
+                        }
+                      });
+                      dbData.orders = Array.from(orderMap.values()).sort(function (a, b) {
+                        if (a.status === 'pending_review' && b.status !== 'pending_review') return -1;
+                        if (b.status === 'pending_review' && a.status !== 'pending_review') return 1;
+                        const timeA = new Date(a.createdAt || a.submittedAt || 0).getTime();
+                        const timeB = new Date(b.createdAt || b.submittedAt || 0).getTime();
+                        return timeB - timeA;
+                      });
+                    }
+                  } catch (eDec) {}
+                }
+              }
+            } catch (eSha) {
+              console.warn('[ShopVietState] Lần ' + attempt + ' - Không thể lấy SHA GitHub file:', eSha);
+            }
+
+            // Chuẩn hóa Unicode UTF-8 sang Base64 chuẩn trình duyệt
+            const jsonContent = JSON.stringify(dbData, null, 2);
+            const base64Content = window.btoa(unescape(encodeURIComponent(jsonContent)));
+
+            const ghBody = {
+              message: 'Update cloud-db.json via Shopviet247 Cloud Sync [' + new Date().toISOString() + ']',
+              content: base64Content
+            };
+            if (sha) {
+              ghBody.sha = sha;
+            }
+
+            const ghPutRes = await fetch(GITHUB_API_URL, {
+              method: 'PUT',
               headers: {
                 'Authorization': 'token ' + GITHUB_PAT,
+                'Content-Type': 'application/json',
                 'Accept': 'application/vnd.github.v3+json'
-              }
+              },
+              body: JSON.stringify(ghBody)
             });
-            if (shaRes.ok) {
-              const fileData = await shaRes.json();
-              if (fileData && fileData.sha) {
-                sha = fileData.sha;
-              }
+
+            if (ghPutRes.ok) {
+              console.log('[ShopVietState] Đã lưu và đồng bộ lên GitHub Cloud Storage thành công (Lần ' + attempt + ')!');
+              putSuccess = true;
+              break;
+            } else if (ghPutRes.status === 409 && attempt < maxRetries) {
+              console.warn('[ShopVietState] GitHub PUT bị 409 Conflict (SHA cũ/cạnh tranh ghi). Tự động lấy SHA mới và thử lại lần ' + (attempt + 1) + '...');
+              await new Promise(function (resolve) { setTimeout(resolve, 350 * attempt); });
+              continue;
+            } else {
+              console.warn('[ShopVietState] GitHub Cloud Storage PUT status:', ghPutRes.status);
+              break;
             }
-          } catch (eSha) {
-            console.warn('[ShopVietState] Không thể lấy SHA GitHub file:', eSha);
-          }
-
-          // Chuẩn hóa Unicode UTF-8 sang Base64 chuẩn trình duyệt
-          const jsonContent = JSON.stringify(dbData, null, 2);
-          const base64Content = window.btoa(unescape(encodeURIComponent(jsonContent)));
-
-          const ghBody = {
-            message: 'Update cloud-db.json via Shopviet247 Cloud Sync [' + new Date().toISOString() + ']',
-            content: base64Content
-          };
-          if (sha) {
-            ghBody.sha = sha;
-          }
-
-          const ghPutRes = await fetch(GITHUB_API_URL, {
-            method: 'PUT',
-            headers: {
-              'Authorization': 'token ' + GITHUB_PAT,
-              'Content-Type': 'application/json',
-              'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify(ghBody)
-          });
-
-          if (ghPutRes.ok) {
-            console.log('[ShopVietState] Đã lưu và đồng bộ lên GitHub Cloud Storage thành công!');
-          } else {
-            console.warn('[ShopVietState] GitHub Cloud Storage PUT status:', ghPutRes.status);
           }
         } catch (errGh) {
           console.warn('[ShopVietState] Lỗi đẩy lên GitHub Cloud Storage:', errGh);
