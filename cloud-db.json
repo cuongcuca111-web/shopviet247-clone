@@ -41,8 +41,8 @@
       "category": "cat_gemini",
       "tag": "Gemini - Antigravity - Veo",
       "price": 89000,
-      "oldPrice": 250000,
-      "discount": "-64%",
+      "oldPrice": 149000,
+      "discount": "-40%",
       "stock": 98,
       "status": "in_stock",
       "rating": 5,
@@ -471,6 +471,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T13:23:36.811Z",
-  "version": 1793453016811
+  "updatedAt": "2026-10-31T13:23:46.056Z",
+  "version": 1793453026056
 }
