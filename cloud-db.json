@@ -48,7 +48,7 @@
       "rating": 5,
       "reviewsCount": 1,
       "soldCount": 0,
-      "badge": "Bán chạy nhất",
+      "badge": "",
       "badgeColor": "bg-indigo-600 text-white",
       "autoDelivery": false,
       "warranty": "18 tháng (1 đổi 1)",
@@ -190,6 +190,16 @@
       "startDate": "2026-10-29",
       "expireDate": "2026-11-29",
       "notes": "Khách VIP nâng cấp chính chủ"
+    },
+    {
+      "id": "SCH-002",
+      "customerEmail": "huy.dev99@gmail.com",
+      "customerName": "Nguyễn Huy",
+      "managerEmail": "slot2-cursor@shopviet.vip",
+      "serviceName": "Cursor Pro 1 Tháng Chính Chủ",
+      "startDate": "2026-10-25",
+      "expireDate": "2026-11-01",
+      "notes": "Sắp hết hạn cần nhắc gia hạn"
     }
   ],
   "orders": [
@@ -456,6 +466,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:49:43.295Z",
-  "version": 1793422183295
+  "updatedAt": "2026-10-31T04:50:18.689Z",
+  "version": 1793422218689
 }
