@@ -77,9 +77,9 @@
       "rating": 5,
       "reviewsCount": 342,
       "soldCount": 1420,
-      "badge": "Mới ra mắt",
-      "isBestSeller": false,
-      "badgeColor": "bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-purple-500/30",
+      "badge": "Bán chạy nhất",
+      "isBestSeller": true,
+      "badgeColor": "bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30",
       "autoDelivery": false,
       "warranty": "Bảo hành chính chủ",
       "desc": "Kích hoạt ngay bằng link mời Google One chính chủ. Sử dụng Gemini Advanced 1.5 Pro/Flash, tích hợp Antigravity 2.0 Agentic coding và tặng kèm 500 Credits Veo Video AI.",
@@ -440,6 +440,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T05:06:43.218Z",
-  "version": 1793423203218
+  "updatedAt": "2026-10-31T05:06:54.571Z",
+  "version": 1793423214571
 }
