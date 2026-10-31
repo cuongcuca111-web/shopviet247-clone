@@ -465,12 +465,12 @@ window.ShopVietViews.home = (function () {
                 </div>
 
                 <!-- H1 Lớn Đậm -->
-                <h1 id="heroTitleText" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight mt-4 tracking-tight">
-                  <span class="u267-sw u267-block"><span>Công cụ AI hạt dẻ cho học sinh, sinh viên — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">kích hoạt trong vài phút</span></span></span>
+                <h1 id="heroTitleText" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-snug pb-1 mt-4 tracking-tight">
+                  <span class="u267-sw u267-block pb-1.5"><span>Công cụ AI hạt dẻ cho học sinh, sinh viên — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">kích hoạt trong vài phút</span></span></span>
                 </h1>
 
                 <!-- Mô Tả Phụ -->
-                <p id="heroDescText" class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">
+                <p id="heroDescText" class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-5 leading-relaxed">
                   <span class="u267-sw u267-block"><span>AI Coding hạt dẻ, công cụ làm việc online dễ mua, giá rõ và theo dõi đơn ngay trên web.</span></span>
                 </p>
 
