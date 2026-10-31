@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * @param {string|null} activeId - 'navHome' | 'navProducts' | 'navBlog' | 'navSupport'
  */
 function setActiveNav(activeId) {
-  const navIds = ['navHome', 'navProducts', 'navBlog', 'navSupport'];
+  const navIds = ['navHome', 'navProducts', 'navBlog'];
   const activeClasses = ['bg-slate-900', 'text-white', 'shadow-sm', 'dark:bg-white', 'dark:text-slate-900'];
   const inactiveClasses = ['text-slate-600', 'dark:text-slate-300', 'hover:text-slate-900', 'dark:hover:text-white', 'hover:bg-slate-200/60', 'dark:hover:bg-slate-800/60'];
 
