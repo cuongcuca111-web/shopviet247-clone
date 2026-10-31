@@ -296,8 +296,8 @@ window.ShopVietViews.home = (function () {
         ${renderTopRightRibbon(prod)}
 
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
-        <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-          ${renderSafeProductImage(prod, 'w-full h-full object-cover rounded-2xl', 'w-full h-full p-3.5 flex items-center justify-center')}
+        <div class="relative z-10 w-24 h-24 sm:w-24 sm:h-24 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-4 sm:p-3.5'} shadow-xl shadow-indigo-500/20 ring-1 ring-white/15 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
+          ${renderSafeProductImage(prod, 'w-full h-full object-cover rounded-2xl', 'w-full h-full p-4 sm:p-3.5 flex items-center justify-center')}
         </div>
 
         <!-- Bottom brand label overlay (Đã bỏ chữ 1 tháng, nhãn thương hiệu mở rộng lấp trọn vẹn khoảng trống) -->

@@ -526,20 +526,20 @@ function updateHeaderAuthUI() {
     // ==================== TRẠNG THÁI 1: KHÁCH VÃNG LAI (CHƯA ĐĂNG NHẬP) ====================
     // Bộ đôi nút "Đăng nhập" & "Đăng ký" chuẩn SaaS cao cấp
     container.innerHTML = `
-      <div class="flex items-center gap-2">
-        <button id="headerLoginBtn" type="button" class="px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-200 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer active:scale-95 select-none flex items-center gap-1.5 shadow-2xs">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button id="headerLoginBtn" type="button" class="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-200 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer active:scale-95 select-none flex items-center gap-1.5 shadow-2xs">
           <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
           </svg>
-          <span>Đăng nhập</span>
+          <span class="hidden sm:inline">Đăng nhập</span>
         </button>
-        <button id="headerRegisterBtn" type="button" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold shadow-sm shadow-indigo-500/20 transition-all duration-200 cursor-pointer active:scale-95 select-none">
+        <button id="headerRegisterBtn" type="button" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold shadow-sm shadow-indigo-500/20 transition-all duration-200 cursor-pointer active:scale-95 select-none">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 8v6M22 11h-6"/>
           </svg>
-          <span>Đăng ký</span>
+          <span class="hidden sm:inline">Đăng ký</span>
         </button>
       </div>
     `;
@@ -567,19 +567,19 @@ function updateHeaderAuthUI() {
     const avatarChar = (user.avatar && user.avatar.length <= 2) ? user.avatar : displayName.charAt(0).toUpperCase();
 
     container.innerHTML = `
-      <div class="relative flex items-center gap-2">
+      <div class="relative flex items-center gap-1.5 sm:gap-2">
         <!-- Nút User Profile Badge (Click mở Dropdown) -->
-        <button id="headerUserMenuBtn" type="button" class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group shadow-2xs">
+        <button id="headerUserMenuBtn" type="button" class="flex items-center gap-1.5 sm:gap-2 p-1 sm:pl-1.5 sm:pr-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group shadow-2xs">
           <!-- Avatar tròn chữ cái đầu (VD: C hoặc VH) -->
-          <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs ring-2 ring-white/50 dark:ring-slate-800">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs ring-2 ring-white/50 dark:ring-slate-800 shrink-0">
             ${avatarChar}
           </div>
           <!-- Tên người dùng -->
-          <span class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[90px] sm:max-w-[130px] truncate select-none">
+          <span class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[90px] sm:max-w-[130px] truncate select-none hidden sm:inline">
             ${displayName}
           </span>
           <!-- Mũi tên Dropdown -->
-          <svg id="userMenuChevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg id="userMenuChevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200 shrink-0 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
           </svg>
         </button>
