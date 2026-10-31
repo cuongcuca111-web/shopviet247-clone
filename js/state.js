@@ -619,7 +619,7 @@
         if (hasChange || isManual) {
           this.notify('cloud_sync_completed', { timestamp: new Date().toISOString(), cloudTimestamp: cloudTimestamp || Date.now() });
           console.log('[ShopVietState] Đồng bộ toàn bộ dữ liệu từ Cloud thành công!');
-          this.renderCurrentRoute(true);
+          this.renderCurrentRoute(true, true);
         }
 
         if (isManual) {
@@ -637,12 +637,28 @@
       }
     },
 
-    // Cập nhật lại giao diện view hiện tại mà vẫn bảo toàn tọa độ cuộn
-    renderCurrentRoute: function (preserveScroll = true) {
+    // Cập nhật lại giao diện view hiện tại mà vẫn bảo toàn tọa độ cuộn và chống giật lag
+    renderCurrentRoute: function (preserveScroll = true, isBackground = false) {
       try {
         const currentView = (this.state && (this.state.currentView || this.state.currentRoute)) || 'home';
         const appMount = document.getElementById('appMount');
         const viewModule = window.ShopVietViews && window.ShopVietViews[currentView];
+
+        // Khi gọi ngầm trong startRealtimeDaemon hoặc syncAllFromCloud:
+        // TUYỆT ĐỐI CẤM gán appMount.innerHTML = viewModule.render() nếu trang đang hiển thị bình thường!
+        // Thay vào đó chỉ cập nhật dữ liệu ngầm và gọi các hàm cập nhật cục bộ như renderProducts()
+        if (isBackground && appMount && appMount.children && appMount.children.length > 0) {
+          if (currentView === 'home' && viewModule && typeof viewModule.renderProducts === 'function') {
+            viewModule.renderProducts();
+          } else if (currentView === 'dashboard' && viewModule && typeof viewModule.refreshOrders === 'function') {
+            viewModule.refreshOrders(false);
+          } else if (currentView === 'admin' && viewModule && typeof viewModule.refreshData === 'function') {
+            viewModule.refreshData();
+          }
+          this.notify('route_data_refreshed', { view: currentView });
+          return;
+        }
+
         if (appMount && viewModule && typeof viewModule.render === 'function') {
           const currentScrollY = preserveScroll ? window.scrollY : 0;
           appMount.innerHTML = viewModule.render();
@@ -982,7 +998,7 @@
       if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
         window.ShopVietViews.home.renderProducts();
       }
-      this.renderCurrentRoute(true);
+      this.renderCurrentRoute(true, true);
 
       // Bắn CustomEvent trên window
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
@@ -1080,7 +1096,7 @@
                     console.log('[ShopVietState] Firestore onSnapshot phát hiện cập nhật mới từ Cloud:', data);
                     self.setLastUpdatedAt(remoteTime);
                     self.syncAllFromCloud(false).then(function () {
-                      self.renderCurrentRoute(true);
+                      self.renderCurrentRoute(true, true);
                     });
                   }
                 }
@@ -1095,8 +1111,8 @@
       }
     },
 
-    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat Zero-Cache 2.0s)
-    startRealtimeDaemon: function (intervalMs = 2000) {
+    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat 7.0s chống giật lag)
+    startRealtimeDaemon: function (intervalMs = 7000) {
       if (this._realtimeDaemonRunning) return this;
       this._realtimeDaemonRunning = true;
       this.initBroadcastChannel();
@@ -1213,7 +1229,6 @@
             });
             await self.syncAllFromCloud(false);
             self.setLastUpdatedAt(cloudUpdatedAt);
-            self.renderCurrentRoute(true);
             if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
               try {
                 window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
@@ -1506,10 +1521,18 @@
       this.pushAllToCloud().catch(function () {});
     },
 
-    // Đăng ký listener khi state thay đổi
-    subscribe: function (fn) {
-      if (typeof fn === 'function') {
-        this.listeners.push(fn);
+    // Đăng ký listener khi state thay đổi (Hỗ trợ cả subscribe(fn) và subscribe(eventName, fn))
+    subscribe: function (eventOrFn, maybeFn) {
+      if (typeof eventOrFn === 'string' && typeof maybeFn === 'function') {
+        const targetEvent = eventOrFn;
+        const callback = maybeFn;
+        this.listeners.push(function (evt, payload) {
+          if (evt === targetEvent || targetEvent === '*') {
+            callback(payload, evt);
+          }
+        });
+      } else if (typeof eventOrFn === 'function') {
+        this.listeners.push(eventOrFn);
       }
     },
 

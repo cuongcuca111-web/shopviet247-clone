@@ -745,7 +745,14 @@
                 class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                 title="Bấm để tải lại đơn hàng mới nhất tức thì"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                <!-- Quantum Cloud Sync SVG độc bản -->
+                <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6" />
+                  <path d="M21.34 15.57a10 10 0 0 1-17.9-3.57" />
+                  <path d="M2.5 22v-6h6" />
+                  <path d="M2.66 8.43a10 10 0 0 1 17.9 3.57" />
+                  <circle cx="12" cy="12" r="2.2" fill="currentColor" class="text-indigo-500 dark:text-indigo-400" />
+                </svg>
                 <span>Làm mới đơn hàng</span>
               </button>
               <button 
@@ -755,7 +762,14 @@
                 class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'}"
                 title="Bật/Kiểm tra thông báo PWA trên màn hình khóa iPhone (iOS 16.4+) và Desktop"
               >
-                <span>🔔</span>
+                <!-- Cyber Notification Bell SVG độc bản -->
+                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  <path d="M2 8c.5-1.5 1.5-2.8 3-3.5" stroke-dasharray="2 2" stroke-width="1.8" />
+                  <path d="M22 8c-.5-1.5-1.5-2.8-3-3.5" stroke-dasharray="2 2" stroke-width="1.8" />
+                  <circle cx="12" cy="8" r="1.5" fill="currentColor" />
+                </svg>
                 <span id="adminPushNotifStatusText">${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Thông báo iPhone: Đang bật' : 'Bật Thông Báo iPhone'}</span>
               </button>
               <button 
@@ -765,7 +779,10 @@
                 class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
                 title="Bấm để kiểm tra iPhone nhận thông báo tức thì trên màn hình khóa"
               >
-                <span>⚡</span>
+                <!-- High-Voltage Cyber Lightning SVG độc bản -->
+                <svg class="w-3.5 h-3.5 shrink-0 fill-current" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" />
+                </svg>
                 <span>Thử nghiệm thông báo iPhone</span>
               </button>
             </div>
@@ -3398,7 +3415,10 @@
     resetDefaultProducts: function () {
       if (!confirm('Khôi phục toàn bộ danh sách sản phẩm về mẫu mặc định ban đầu?')) return;
       localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
-      location.reload();
+      if (window.ShopVietViews.admin && typeof window.ShopVietViews.admin.refreshData === 'function') {
+        window.ShopVietViews.admin.refreshData();
+      }
+      notify('Đã khôi phục danh sách sản phẩm mặc định thành công!', 'success');
     },
 
     // 14. Lọc bảng sản phẩm theo từ khóa

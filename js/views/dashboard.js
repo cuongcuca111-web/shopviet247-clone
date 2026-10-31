@@ -525,11 +525,33 @@
                 </div>
               </div>
 
-              <!-- Hướng dẫn sử dụng 1 đổi 1 -->
-              <div class="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 pt-1">
-                <div class="font-bold text-slate-800 dark:text-slate-200">Hướng dẫn sử dụng & Bảo hành:</div>
-                <div id="modalOrderGuide" class="bg-amber-50/70 dark:bg-amber-950/30 p-3 rounded-xl border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-xs whitespace-pre-line leading-relaxed">
-                  Đăng nhập chính thức tại trang chủ dịch vụ. Sản phẩm được bảo hành 1 đổi 1 trong suốt thời gian kích hoạt.
+              <!-- Bento Box Tinh Gọn: Lời nhắn & Bảo hành Micro-Card -->
+              <div class="space-y-1.5 pt-1">
+                <div id="modalOrderGuide" class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+                  <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                      <div class="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                      </div>
+                      <span class="text-xs">Lời nhắn từ Admin:</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Chính chủ
+                    </span>
+                  </div>
+                  <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium select-text py-0.5">
+                    Đăng nhập chính thức tại trang chủ dịch vụ. Sản phẩm được bảo hành 1 đổi 1 suốt thời gian sử dụng.
+                  </div>
+                  <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+                    <svg class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Bảo hành 1 đổi 1 suốt thời gian sử dụng • Hỗ trợ kỹ thuật 24/7</span>
+                  </div>
                 </div>
               </div>
 
@@ -891,12 +913,27 @@
             </p>
           </div>
 
-          <button type="button" onclick="window.ShopVietState.navigate('home', { scrollTo: '#productsSection' })" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer self-start sm:self-auto">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span>Đặt mua thêm</span>
-          </button>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <button 
+              type="button" 
+              id="dashboardRefreshOrdersBtn"
+              onclick="window.ShopVietViews.dashboard && window.ShopVietViews.dashboard.refreshOrders && window.ShopVietViews.dashboard.refreshOrders(true)" 
+              class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50/80 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/80 transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
+              title="Cập nhật trạng thái đơn hàng mới nhất tức thì"
+            >
+              <svg id="dashboardRefreshIcon" class="w-3.5 h-3.5 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              <span>Làm mới đơn</span>
+            </button>
+
+            <button type="button" onclick="window.ShopVietState.navigate('home', { scrollTo: '#productsSection' })" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Đặt mua thêm</span>
+            </button>
+          </div>
         </div>
 
         <!-- Thanh công cụ: Bộ lọc trạng thái & Ô Tìm kiếm -->
@@ -1777,50 +1814,44 @@
 
             const adminMsg = found.adminMessage || (origOrder && origOrder.adminMessage) || (delInfo && delInfo.adminMessage);
             if (modalOrderGuide) {
+              modalOrderGuide.className = 'bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 space-y-2 text-xs';
               if (adminMsg) {
                 modalOrderGuide.innerHTML = `
-                  <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-indigo-100 dark:border-indigo-900/40">
-                    <div class="flex items-center gap-2 font-bold text-indigo-800 dark:text-indigo-300">
-                      <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner relative border border-indigo-200/50 dark:border-indigo-800/50">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-200/60 dark:border-slate-800">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                      <div class="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                          <circle cx="9" cy="10" r="1" fill="currentColor"/>
-                          <circle cx="12" cy="10" r="1" fill="currentColor"/>
-                          <circle cx="15" cy="10" r="1" fill="currentColor"/>
                         </svg>
-                        <span class="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
                       </div>
-                      <span class="text-xs tracking-tight">Lời nhắn từ Admin Minh Cường:</span>
+                      <span class="text-xs">Lời nhắn từ Admin:</span>
                     </div>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                       Chính chủ
                     </span>
                   </div>
-                  <div class="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-indigo-100 dark:border-indigo-900/40 shadow-xs mb-2">
-                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium italic select-text">${adminMsg}</p>
+                  <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium select-text py-0.5">
+                    ${adminMsg}
                   </div>
-                  <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-amber-200/50 dark:border-amber-900/40">
-                    <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+                    <svg class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                       <path d="m9 12 2 2 4-4"/>
                     </svg>
-                    <span>Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</span>
+                    <span>Bảo hành 1 đổi 1 suốt thời gian sử dụng • Hỗ trợ kỹ thuật 24/7</span>
                   </div>`;
               } else {
                 modalOrderGuide.innerHTML = `
-                  <div class="space-y-2">
-                    <p class="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">${delInfo.guide || 'Sản phẩm được kích hoạt tự động. Bảo hành 1 đổi 1 trong suốt thời gian sử dụng.'}</p>
-                    <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-amber-200/50 dark:border-amber-900/40">
-                      <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <path d="m9 12 2 2 4-4"/>
-                      </svg>
-                      <span>Chính sách: Bảo hành 1 đổi 1 suốt thời gian sử dụng. Hỗ trợ kỹ thuật 24/7.</span>
-                    </div>
+                  <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium select-text py-0.5">
+                    ${delInfo.guide || 'Đăng nhập chính thức tại trang chủ dịch vụ. Sản phẩm được kích hoạt tự động theo thông tin trên.'}
+                  </div>
+                  <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+                    <svg class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Bảo hành 1 đổi 1 suốt thời gian sử dụng • Hỗ trợ kỹ thuật 24/7</span>
                   </div>`;
               }
             }
@@ -1970,10 +2001,144 @@
       if (activeTab === 'overview') {
         this.switchTab('overview');
       }
+    },
+
+    /**
+     * Làm mới danh sách đơn hàng tức thì (Nhiệm vụ 1)
+     */
+    refreshOrders: async function (isManual) {
+      const refreshBtn = document.getElementById('dashboardRefreshOrdersBtn');
+      const refreshIcon = document.getElementById('dashboardRefreshIcon');
+      if (refreshIcon) {
+        refreshIcon.classList.add('animate-spin');
+      }
+      if (refreshBtn) {
+        refreshBtn.disabled = true;
+      }
+
+      try {
+        if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+          await window.ShopVietState.syncAllFromCloud(isManual);
+        }
+      } catch (err) {
+        console.warn('[Dashboard] refreshOrders sync error:', err);
+      }
+
+      const user = getCurrentUser();
+      const userOrders = getUserOrders(user);
+      this.orders = userOrders;
+
+      // Re-render tab hiện tại một cách êm ái mà không reload trang
+      const mainArea = document.getElementById('dashboardMainArea');
+      if (mainArea && (activeTab === 'orders' || activeTab === 'overview')) {
+        mainArea.innerHTML = this.renderTabContent(activeTab, user, userOrders);
+        this.bindTabEvents(activeTab, user, userOrders);
+        this.bindModalEvents(user, userOrders);
+      }
+
+      setTimeout(() => {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        if (refreshBtn) refreshBtn.disabled = false;
+      }, 500);
+
+      if (isManual && window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        window.ShopVietState.showToast('Đã cập nhật trạng thái đơn hàng mới nhất!', 'success');
+      }
     }
   };
 
   // Gắn vào window.ShopVietViews.dashboard
   window.ShopVietViews.dashboard = dashboardView;
+
+  // Khởi tạo các bộ lắng nghe Realtime tức thì (0.2s) khắc phục độ trễ duyệt đơn Admin
+  (function initDashboardRealtimeListeners() {
+    let orderListenerAttached = false;
+
+    const setupDashboardRealtime = function () {
+      // 1. Lắng nghe storage event (khi shopviet_orders hoặc shopviet247_cloud_orders_sync thay đổi)
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'shopviet_orders' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_state_v1') {
+          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+            window.ShopVietViews.dashboard.refreshOrders(false);
+          }
+        }
+      });
+
+      // 2. Lắng nghe shopviet_realtime_update
+      window.addEventListener('shopviet_realtime_update', function (e) {
+        if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+          window.ShopVietViews.dashboard.refreshOrders(false);
+        }
+      });
+
+      // 3. Lắng nghe ShopVietState subscriptions
+      if (window.ShopVietState && typeof window.ShopVietState.subscribe === 'function') {
+        window.ShopVietState.subscribe('orders_updated', function () {
+          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+            window.ShopVietViews.dashboard.refreshOrders(false);
+          }
+        });
+        window.ShopVietState.subscribe('cloud_sync_completed', function () {
+          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+            window.ShopVietViews.dashboard.refreshOrders(false);
+          }
+        });
+      }
+
+      // 4. Lắng nghe Firestore Realtime onSnapshot collection 'orders' (Độ trễ 0.2s tức thì)
+      const attachFirestoreListener = function () {
+        if (orderListenerAttached) return;
+        try {
+          if (window.ShopVietFirebase && window.ShopVietFirebase.db && typeof window.ShopVietFirebase.db.collection === 'function') {
+            window.ShopVietFirebase.db.collection('orders').onSnapshot(function (snapshot) {
+              if (snapshot && !snapshot.empty) {
+                snapshot.docChanges().forEach(function (change) {
+                  const docData = change.doc.data();
+                  if (docData) {
+                    const rawCode = docData.orderCode || docData.id || change.doc.id;
+                    const cleanCode = String(rawCode).replace(/^#/, '');
+                    if (window.ShopVietState && window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) {
+                      const idx = window.ShopVietState.state.orders.findIndex(function (o) {
+                        const oCode = String(o.orderCode || o.id || '').replace(/^#/, '');
+                        return oCode === cleanCode;
+                      });
+                      if (idx > -1) {
+                        window.ShopVietState.state.orders[idx] = Object.assign({}, window.ShopVietState.state.orders[idx], docData);
+                      } else {
+                        window.ShopVietState.state.orders.unshift(docData);
+                      }
+                      if (typeof window.ShopVietState.save === 'function') {
+                        window.ShopVietState.save();
+                      }
+                    }
+                  }
+                });
+
+                if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+                  window.ShopVietViews.dashboard.refreshOrders(false);
+                }
+              }
+            }, function (err) {
+              console.warn('[Dashboard] Firestore onSnapshot error:', err.message);
+            });
+            orderListenerAttached = true;
+            console.log('[Dashboard] Đã kích hoạt Firestore Realtime onSnapshot cho đơn hàng (0.2s latency)!');
+          }
+        } catch (e) {
+          console.warn('[Dashboard] Firestore listener error:', e);
+        }
+      };
+
+      attachFirestoreListener();
+      setTimeout(attachFirestoreListener, 2000);
+      setTimeout(attachFirestoreListener, 4500);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupDashboardRealtime);
+    } else {
+      setupDashboardRealtime();
+    }
+  })();
 
 })();
