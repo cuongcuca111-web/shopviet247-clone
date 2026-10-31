@@ -1702,39 +1702,40 @@ window.ShopVietViews.modal = (function () {
           }
         }
 
-        // 4. Phát sóng Realtime toàn diện đa kênh: BroadcastChannel + LocalStorage Broadcast + CustomEvent
-        // 4.1 BroadcastChannel shopviet_admin_sync & shopviet_realtime_sync
+        // 4. Phát sóng Realtime toàn diện đa kênh: Omni-BroadcastChannel + LocalStorage Broadcast + CustomEvent
+        const universalModalMsg = {
+          type: 'new_order_pending_review',
+          action: 'new_order_pending_review',
+          order: order,
+          orderCode: order.orderCode || orderCode,
+          status: 'pending_review',
+          timestamp: Date.now(),
+          payload: {
+            order: order,
+            orderCode: order.orderCode || orderCode,
+            status: 'pending_review'
+          }
+        };
+
+        // 4.1 BroadcastChannel chùm 3 kênh
         try {
           if (typeof BroadcastChannel !== 'undefined') {
-            const bc1 = new BroadcastChannel('shopviet_admin_sync');
-            bc1.postMessage({
-              type: 'new_order_pending_review',
-              action: 'new_order_pending_review',
-              order: order,
-              orderCode: order.orderCode || orderCode,
-              status: 'pending_review',
-              timestamp: Date.now()
-            });
-            const bc2 = new BroadcastChannel('shopviet_realtime_sync');
-            bc2.postMessage({
-              type: 'new_order_pending_review',
-              action: 'new_order_pending_review',
-              order: order,
-              orderCode: order.orderCode || orderCode,
-              status: 'pending_review',
-              timestamp: Date.now()
+            ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+              try {
+                const bc = new BroadcastChannel(chName);
+                bc.postMessage(universalModalMsg);
+                setTimeout(() => { try { bc.close(); } catch(e){} }, 1000);
+              } catch (eBc) {}
             });
           }
         } catch (eBc) {}
 
         // 4.2 Storage event broadcast cho mọi tab cùng trình duyệt
         try {
-          localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
-            order: order,
-            orderCode: order.orderCode || orderCode,
-            status: 'pending_review',
-            timestamp: Date.now()
-          }));
+          const strModalMsg = JSON.stringify(universalModalMsg);
+          localStorage.setItem('shopviet_last_order_broadcast', strModalMsg);
+          localStorage.setItem('shopviet_realtime_broadcast_message', strModalMsg);
+          localStorage.setItem('shopviet_order_ping', JSON.stringify({ code: String(order.orderCode || orderCode || '').replace(/^#/, ''), time: Date.now() }));
         } catch (eSt) {}
 
         // 4.3 CustomEvent nội bộ tab

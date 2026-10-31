@@ -2143,28 +2143,26 @@
         }
       };
 
-      // 0. Lắng nghe BroadcastChannel liên lạc tức thì từ Admin Portal (0ms latency)
+      // 0. Lắng nghe Omni-BroadcastChannel liên lạc tức thì từ Admin Portal (0ms latency)
       if (typeof BroadcastChannel !== 'undefined') {
         try {
-          const bcAdmin = new BroadcastChannel('shopviet_admin_sync');
-          bcAdmin.onmessage = function (ev) {
-            if (ev && ev.data && (ev.data.type === 'order_completed' || ev.data.status === 'completed' || ev.data.action === 'order_approved')) {
-              handleOrderCompletedEvent(ev.data);
-            }
-          };
-          const bcRealtime = new BroadcastChannel('shopviet_realtime_sync');
-          bcRealtime.onmessage = function (ev) {
-            if (ev && ev.data && (ev.data.type === 'order_completed' || ev.data.status === 'completed' || ev.data.action === 'order_approved')) {
-              handleOrderCompletedEvent(ev.data);
-            }
-          };
+          ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+            try {
+              const bc = new BroadcastChannel(chName);
+              bc.onmessage = function (ev) {
+                if (ev && ev.data && (ev.data.type === 'order_completed' || ev.data.status === 'completed' || ev.data.action === 'order_approved')) {
+                  handleOrderCompletedEvent(ev.data);
+                }
+              };
+            } catch (eCh) {}
+          });
         } catch (eBc) {}
       }
 
-      // 1. Lắng nghe storage event (khi shopviet_orders, shopviet247_cloud_orders_sync, shopviet247_app_state_v1 thay đổi)
+      // 1. Lắng nghe storage event đa nguồn
       window.addEventListener('storage', function (e) {
-        if (e.key === 'shopviet_orders' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_app_state_v1' || e.key === 'shopviet_last_order_broadcast') {
-          if (e.key === 'shopviet_last_order_broadcast' && e.newValue) {
+        if (e.key === 'shopviet_orders' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_app_state_v1' || e.key === 'shopviet_last_order_broadcast' || e.key === 'shopviet_realtime_broadcast_message' || e.key === 'shopviet_order_ping') {
+          if ((e.key === 'shopviet_last_order_broadcast' || e.key === 'shopviet_realtime_broadcast_message') && e.newValue) {
             try {
               const bData = JSON.parse(e.newValue);
               if (bData && (bData.type === 'order_completed' || bData.status === 'completed' || bData.action === 'order_approved')) {

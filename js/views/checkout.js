@@ -1385,7 +1385,7 @@
         };
       }
 
-      // HÀM XỬ LÝ CHỜ DUYỆT (KHI KHÁCH BẤM "TÔI ĐÃ CHUYỂN KHOẢN")
+      // HÀM XỬ LÝ CHỜ DUYỆT (KHI KHÁCH BẤM "TÔI ĐÃ CHUYỂN KHOẢN") - CHUẨN OMNI-SIGNALING
       async function completePaymentWaitingReview() {
         clearPaymentCountdown();
 
@@ -1397,7 +1397,7 @@
         if (!order.userEmail) {
           order.userEmail = (currentUser.isLoggedIn && currentUser.email)
             ? currentUser.email.trim().toLowerCase()
-            : ((order.customer && order.customer.email) ? order.customer.email.trim().toLowerCase() : 'khachhang@gmail.com');
+            : ((order.customer && order.customer.email) ? order.customer.email.trim().toLowerCase() : 'cuongcuca111@gmail.com');
         }
         order.customer = order.customer || {};
         order.customer.email = order.userEmail;
@@ -1412,11 +1412,11 @@
           }
         }
 
+        const allOrders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [order];
+
         try {
-          if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
-            localStorage.setItem('shopviet_orders', JSON.stringify(window.ShopVietState.state.orders));
-            localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
-          }
+          localStorage.setItem('shopviet_orders', JSON.stringify(allOrders));
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(allOrders));
         } catch (e) {}
 
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
@@ -1427,18 +1427,48 @@
           try { await window.ShopVietState.pushAllToCloud(true); } catch (ePush) {}
         }
 
-        try {
-          if (typeof BroadcastChannel !== 'undefined') {
-            const bc1 = new BroadcastChannel('shopviet_admin_sync');
-            bc1.postMessage({ type: 'new_order_pending_review', action: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() });
-            const bc2 = new BroadcastChannel('shopviet_realtime_sync');
-            bc2.postMessage({ type: 'new_order_pending_review', action: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() });
+        const cleanCode = String(order.orderCode || order.id || order.rawCode || '').replace(/^#/, '').trim().toUpperCase();
+        const universalMsg = {
+          type: 'new_order_pending_review',
+          action: 'new_order_pending_review',
+          order: order,
+          orderCode: order.orderCode || order.id,
+          rawCode: cleanCode,
+          status: 'pending_review',
+          timestamp: Date.now(),
+          payload: {
+            orders: allOrders,
+            order: order,
+            orderCode: order.orderCode || order.id,
+            status: 'pending_review'
           }
-        } catch (eBc) {}
+        };
 
         try {
-          localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({ type: 'new_order_pending_review', order: order, orderCode: order.orderCode || order.id, status: 'pending_review', timestamp: Date.now() }));
+          if (typeof BroadcastChannel !== 'undefined') {
+            ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+              try {
+                const bc = new BroadcastChannel(chName);
+                bc.postMessage(universalMsg);
+                setTimeout(() => { try { bc.close(); } catch(e){} }, 1000);
+              } catch (eBc) {}
+            });
+          }
+        } catch (eBcs) {}
+
+        try {
+          const strMsg = JSON.stringify(universalMsg);
+          localStorage.setItem('shopviet_last_order_broadcast', strMsg);
+          localStorage.setItem('shopviet_realtime_broadcast_message', strMsg);
+          localStorage.setItem('shopviet_order_ping', JSON.stringify({ code: cleanCode, status: 'pending_review', time: Date.now() }));
         } catch (eSt) {}
+
+        if (typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('shopviet_realtime_update', { detail: universalMsg }));
+            window.dispatchEvent(new CustomEvent('orders_updated', { detail: universalMsg }));
+          } catch (eDev) {}
+        }
 
         if (typeof window.triggerAdminOrderNotification === 'function') {
           window.triggerAdminOrderNotification(order);

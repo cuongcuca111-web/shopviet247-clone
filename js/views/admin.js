@@ -706,12 +706,21 @@
       }
     } catch (e) {}
 
+    let broadcastOrders = [];
+    try {
+      const rawBcast = localStorage.getItem('shopviet_last_order_broadcast');
+      if (rawBcast) {
+        const bData = JSON.parse(rawBcast);
+        if (bData && bData.order) broadcastOrders.push(bData.order);
+      }
+    } catch (e) {}
+
     const cleanCode = function (k) {
       return String(k || '').replace(/^#/, '').trim().toUpperCase();
     };
 
     const orderMap = new Map();
-    [...syncOrders, ...localOrders, ...stateOrders].forEach(function (o) {
+    [...syncOrders, ...localOrders, ...stateOrders, ...broadcastOrders].forEach(function (o) {
       if (!o) return;
       const key = cleanCode(o.id || o.orderCode || o.rawCode || o.memo);
       if (!key) return;
@@ -719,7 +728,15 @@
         orderMap.set(key, o);
       } else {
         const prev = orderMap.get(key);
-        orderMap.set(key, Object.assign({}, prev, o));
+        let merged = Object.assign({}, prev, o);
+        if (prev.status === 'completed' || o.status === 'completed') {
+          merged.status = 'completed';
+          merged.statusText = 'Đã hoàn tất';
+        } else if (prev.status === 'pending_review' || o.status === 'pending_review') {
+          merged.status = 'pending_review';
+          merged.statusText = 'Chờ duyệt';
+        }
+        orderMap.set(key, merged);
       }
     });
 
@@ -897,12 +914,17 @@
     const productName = order.productName || (order.items && order.items[0] && order.items[0].name) || 'Antigravity + Gemini Pro';
     const amount = order.amount || order.total || order.price || 69000;
     const isCompleted = order.status === 'completed';
+    const isPendingReview = order.status === 'pending_review';
+
+    const rowClass = isPendingReview 
+      ? 'bg-amber-50/70 dark:bg-amber-950/25 border-l-4 border-amber-500 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 transition-all font-medium'
+      : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors';
 
     return `
-      <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+      <tr class="${rowClass}">
         <!-- MÃ ĐƠN -->
-        <td class="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-          ${code}
+        <td class="py-3 px-4 font-mono font-bold ${isPendingReview ? 'text-amber-600 dark:text-amber-400' : 'text-indigo-600 dark:text-indigo-400'}">
+          ${isPendingReview ? '<span class="inline-flex w-2 h-2 rounded-full bg-amber-500 animate-ping mr-1"></span>' : ''}<span>${code}</span>
         </td>
 
         <!-- NGÀY TẠO -->
@@ -3705,43 +3727,39 @@
               localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
             } catch (eLs) {}
             await window.ShopVietState.pushAllToCloud(true).catch(() => {});
-            try {
-              if (typeof BroadcastChannel !== 'undefined') {
-                const bc1 = new BroadcastChannel('shopviet_admin_sync');
-                bc1.postMessage({
-                  type: 'order_completed',
-                  action: 'order_approved',
-                  order: ord,
-                  orderCode: orderCode,
-                  deliveryLink: deliveryLink,
-                  licenseKey: ord.licenseKey,
-                  status: 'completed',
-                  timestamp: Date.now()
-                });
-                const bc2 = new BroadcastChannel('shopviet_realtime_sync');
-                bc2.postMessage({
-                  type: 'order_completed',
-                  action: 'order_approved',
-                  order: ord,
-                  orderCode: orderCode,
-                  deliveryLink: deliveryLink,
-                  licenseKey: ord.licenseKey,
-                  status: 'completed',
-                  timestamp: Date.now()
-                });
-              }
-            } catch (eBc) {}
-            try {
-              localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
-                type: 'order_completed',
-                action: 'order_approved',
+            const approvedMsg = {
+              type: 'order_completed',
+              action: 'order_approved',
+              order: ord,
+              orderCode: orderCode,
+              deliveryLink: deliveryLink,
+              licenseKey: ord.licenseKey,
+              status: 'completed',
+              timestamp: Date.now(),
+              payload: {
                 order: ord,
                 orderCode: orderCode,
                 deliveryLink: deliveryLink,
                 licenseKey: ord.licenseKey,
-                status: 'completed',
-                timestamp: Date.now()
-              }));
+                status: 'completed'
+              }
+            };
+            try {
+              if (typeof BroadcastChannel !== 'undefined') {
+                ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+                  try {
+                    const bc = new BroadcastChannel(chName);
+                    bc.postMessage(approvedMsg);
+                    setTimeout(() => { try { bc.close(); } catch(e){} }, 1000);
+                  } catch (eCh) {}
+                });
+              }
+            } catch (eBc) {}
+            try {
+              const approvedStr = JSON.stringify(approvedMsg);
+              localStorage.setItem('shopviet_last_order_broadcast', approvedStr);
+              localStorage.setItem('shopviet_realtime_broadcast_message', approvedStr);
+              localStorage.setItem('shopviet_order_ping', JSON.stringify({ code: String(orderCode || '').replace(/^#/, ''), status: 'completed', time: Date.now() }));
             } catch (eSt) {}
           }
         }
@@ -3949,45 +3967,42 @@
         await window.ShopVietState.pushAllToCloud(true).catch(console.warn);
       }
 
-      // Phát sóng toàn mạng BroadcastChannel
+      // Phát sóng toàn mạng Omni-BroadcastChannel
+      const approvedPayload = {
+        type: 'order_completed',
+        action: 'order_approved',
+        order: targetOrd,
+        orderCode: cleanCode,
+        deliveryLink: defaultLink,
+        licenseKey: defaultLink,
+        status: 'completed',
+        timestamp: Date.now(),
+        payload: {
+          order: targetOrd,
+          orderCode: cleanCode,
+          deliveryLink: defaultLink,
+          licenseKey: defaultLink,
+          status: 'completed'
+        }
+      };
+
       try {
         if (typeof BroadcastChannel !== 'undefined') {
-          const bc1 = new BroadcastChannel('shopviet_admin_sync');
-          bc1.postMessage({
-            type: 'order_completed',
-            action: 'order_approved',
-            order: targetOrd,
-            orderCode: cleanCode,
-            deliveryLink: defaultLink,
-            licenseKey: defaultLink,
-            status: 'completed',
-            timestamp: Date.now()
-          });
-          const bc2 = new BroadcastChannel('shopviet_realtime_sync');
-          bc2.postMessage({
-            type: 'order_completed',
-            action: 'order_approved',
-            order: targetOrd,
-            orderCode: cleanCode,
-            deliveryLink: defaultLink,
-            licenseKey: defaultLink,
-            status: 'completed',
-            timestamp: Date.now()
+          ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+            try {
+              const bc = new BroadcastChannel(chName);
+              bc.postMessage(approvedPayload);
+              setTimeout(() => { try { bc.close(); } catch(e){} }, 1000);
+            } catch (eCh) {}
           });
         }
       } catch (eBc) {}
 
       try {
-        localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
-          type: 'order_completed',
-          action: 'order_approved',
-          order: targetOrd,
-          orderCode: cleanCode,
-          deliveryLink: defaultLink,
-          licenseKey: defaultLink,
-          status: 'completed',
-          timestamp: Date.now()
-        }));
+        const approvedStr = JSON.stringify(approvedPayload);
+        localStorage.setItem('shopviet_last_order_broadcast', approvedStr);
+        localStorage.setItem('shopviet_realtime_broadcast_message', approvedStr);
+        localStorage.setItem('shopviet_order_ping', JSON.stringify({ code: cleanCode, status: 'completed', time: Date.now() }));
       } catch (eSt) {}
 
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
@@ -4093,43 +4108,39 @@
               localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
             } catch (eLs) {}
             await window.ShopVietState.pushAllToCloud(true).catch(() => {});
-            try {
-              if (typeof BroadcastChannel !== 'undefined') {
-                const bc1 = new BroadcastChannel('shopviet_admin_sync');
-                bc1.postMessage({
-                  type: 'order_completed',
-                  action: 'order_approved',
-                  order: ord,
-                  orderCode: orderCode,
-                  deliveryLink: deliveryLink,
-                  licenseKey: ord.licenseKey,
-                  status: 'completed',
-                  timestamp: Date.now()
-                });
-                const bc2 = new BroadcastChannel('shopviet_realtime_sync');
-                bc2.postMessage({
-                  type: 'order_completed',
-                  action: 'order_approved',
-                  order: ord,
-                  orderCode: orderCode,
-                  deliveryLink: deliveryLink,
-                  licenseKey: ord.licenseKey,
-                  status: 'completed',
-                  timestamp: Date.now()
-                });
-              }
-            } catch (eBc) {}
-            try {
-              localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
-                type: 'order_completed',
-                action: 'order_approved',
+            const approvedMsg = {
+              type: 'order_completed',
+              action: 'order_approved',
+              order: ord,
+              orderCode: orderCode,
+              deliveryLink: deliveryLink,
+              licenseKey: ord.licenseKey,
+              status: 'completed',
+              timestamp: Date.now(),
+              payload: {
                 order: ord,
                 orderCode: orderCode,
                 deliveryLink: deliveryLink,
                 licenseKey: ord.licenseKey,
-                status: 'completed',
-                timestamp: Date.now()
-              }));
+                status: 'completed'
+              }
+            };
+            try {
+              if (typeof BroadcastChannel !== 'undefined') {
+                ['shopviet_admin_sync', 'shopviet_realtime_sync', 'shopviet247_realtime_channel'].forEach(chName => {
+                  try {
+                    const bc = new BroadcastChannel(chName);
+                    bc.postMessage(approvedMsg);
+                    setTimeout(() => { try { bc.close(); } catch(e){} }, 1000);
+                  } catch (eCh) {}
+                });
+              }
+            } catch (eBc) {}
+            try {
+              const approvedStr = JSON.stringify(approvedMsg);
+              localStorage.setItem('shopviet_last_order_broadcast', approvedStr);
+              localStorage.setItem('shopviet_realtime_broadcast_message', approvedStr);
+              localStorage.setItem('shopviet_order_ping', JSON.stringify({ code: String(orderCode || '').replace(/^#/, ''), status: 'completed', time: Date.now() }));
             } catch (eSt) {}
           }
         }
@@ -5763,9 +5774,35 @@
               }
             });
 
-            // Lưu cache cloud orders
+            // Lưu cache cloud orders an toàn (Bi-directional merge, không ghi đè mất đơn pending cục bộ)
             try {
-              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(data.orders));
+              let currentSync = [];
+              const rawS = localStorage.getItem('shopviet247_cloud_orders_sync');
+              if (rawS) {
+                const p = JSON.parse(rawS);
+                if (Array.isArray(p)) currentSync = p;
+              }
+              const safeMap = new Map();
+              [...currentSync, ...data.orders].forEach(function (o) {
+                if (!o) return;
+                const k = String(o.id || o.orderCode || o.rawCode || o.memo || '').replace(/^#/, '').trim().toUpperCase();
+                if (!k) return;
+                if (!safeMap.has(k)) {
+                  safeMap.set(k, o);
+                } else {
+                  const prev = safeMap.get(k);
+                  let m = Object.assign({}, prev, o);
+                  if (prev.status === 'completed' || o.status === 'completed') {
+                    m.status = 'completed';
+                    m.statusText = 'Đã hoàn tất';
+                  } else if (prev.status === 'pending_review' || o.status === 'pending_review') {
+                    m.status = 'pending_review';
+                    m.statusText = 'Chờ duyệt';
+                  }
+                  safeMap.set(k, m);
+                }
+              });
+              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(Array.from(safeMap.values())));
             } catch (eLs) {}
 
             const tabContent = document.getElementById('adminTabContent');

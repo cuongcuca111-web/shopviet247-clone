@@ -1000,6 +1000,7 @@
 
             const ghPutRes = await fetch(GITHUB_API_URL, {
               method: 'PUT',
+              keepalive: true,
               headers: {
                 'Authorization': 'token ' + GITHUB_PAT,
                 'Content-Type': 'application/json',

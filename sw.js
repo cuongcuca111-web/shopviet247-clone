@@ -1,10 +1,10 @@
 /**
  * ShopSkill247 Progressive Web App - Service Worker
- * Version: shopskill247-pwa-v2.5
+ * Version: shopskill247-pwa-v2.6
  * Strategy: Network-First falling back to Cache (luôn ưu tiên dữ liệu mới, offline mở tức thì)
  */
 
-const CACHE_NAME = 'shopskill247-pwa-v2.5';
+const CACHE_NAME = 'shopskill247-pwa-v2.6';
 
 const CORE_STATIC_ASSETS = [
   './',
@@ -74,11 +74,14 @@ self.addEventListener('fetch', (event) => {
   // Bỏ qua chrome-extension, scheme không phải http/https
   if (!url.protocol.startsWith('http')) return;
 
-  // Bỏ qua các kết nối Firebase Firestore / Realtime polling / Google Auth
+  // Bỏ qua các kết nối Firebase Firestore / Realtime polling / Google Auth / Cloud DB
   if (
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('identitytoolkit.googleapis.com') ||
-    url.hostname.includes('securetoken.googleapis.com')
+    url.hostname.includes('securetoken.googleapis.com') ||
+    url.pathname.endsWith('cloud-db.json') ||
+    url.hostname.includes('raw.githubusercontent.com') ||
+    url.hostname.includes('api.github.com')
   ) {
     return;
   }
