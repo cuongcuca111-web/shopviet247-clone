@@ -107,28 +107,6 @@
       "createdAt": "2026-10-29T22:17:29+07:00"
     },
     {
-      "code": "DISCOUNT20K",
-      "type": "order_discount",
-      "value": 20000,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
-      "code": "VIP50K",
-      "type": "order_discount",
-      "value": 50000,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
       "code": "SV20P-PYGL",
       "type": "percent_discount",
       "percent": 20,
@@ -365,8 +343,10 @@
     "SCH-001",
     "SV20P-PEY6",
     "DJ2026771",
-    "#DJ20263LDY"
+    "#DJ20263LDY",
+    "VIP50K",
+    "DISCOUNT20K"
   ],
-  "updatedAt": "2026-10-31T06:08:51.888Z",
-  "version": 1793426931888
+  "updatedAt": "2026-10-31T06:09:12.855Z",
+  "version": 1793426952855
 }
