@@ -239,6 +239,241 @@
     }
   </style>
 
+  <!-- ==================== [ELEMENT] EXPANDING TOP-BAR SEARCH (LUCIAN #027) ==================== -->
+  <!-- Lucian UX/UI Prompt #027 · Expanding Top-Bar Search · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#027 -->
+  <style>
+    /* Utility Capsule Container */
+    .u027-capsule {
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Khi mở search: ẩn mượt mà toàn bộ các icon tiện ích khác trong capsule */
+    .u027-capsule.is-search-open #header-search-btn,
+    .u027-capsule.is-search-open #header-sync-btn,
+    .u027-capsule.is-search-open #headerThemeToggle,
+    .u027-capsule.is-search-open #u267Container,
+    .u027-capsule.is-search-open #adminPortalHeaderBtn {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: scale(0.92);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    /* Các nút trong capsule khi đóng search có transition mượt */
+    #header-search-btn,
+    #header-sync-btn,
+    #headerThemeToggle,
+    #u267Container,
+    #adminPortalHeaderBtn {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    /* Khung nhập liệu tìm kiếm mở rộng phủ kín Capsule */
+    .u027-field {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 0.5rem 0 0.75rem;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.25), 0 0 0 2px rgba(99, 102, 241, 0.12);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.97);
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dark .u027-field {
+      background: rgba(15, 23, 42, 0.98);
+      border-color: rgba(129, 140, 248, 0.45);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    .u027-capsule.is-search-open .u027-field {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    /* Mở rộng nhẹ trên mobile nếu capsule quá hẹp */
+    @media (max-width: 639px) {
+      .u027-capsule.is-search-open {
+        min-width: 220px;
+      }
+    }
+
+    /* Input text bên trong */
+    .u027-in {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #0f172a;
+      min-width: 0;
+    }
+
+    .dark .u027-in {
+      color: #f8fafc;
+    }
+
+    .u027-in::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .dark .u027-in::placeholder {
+      color: #64748b;
+    }
+
+    /* Nút Đóng [X] */
+    .u027-x {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.625rem;
+      height: 1.625rem;
+      border-radius: 0.5rem;
+      color: #64748b;
+      background: rgba(241, 245, 249, 0.9);
+      transition: all 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: none;
+      outline: none;
+    }
+
+    .u027-x:hover {
+      background: rgba(226, 232, 240, 1);
+      color: #0f172a;
+      transform: scale(1.05);
+    }
+
+    .dark .u027-x {
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .dark .u027-x:hover {
+      background: rgba(51, 65, 85, 1);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+
+    /* Popover Suggestions Menu (Lucian #027) */
+    .u027-pop {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 380px;
+      max-width: min(calc(100vw - 24px), 420px);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 40px -8px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(99, 102, 241, 0.08);
+      z-index: 100;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px) scale(0.97);
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dark .u027-pop {
+      background: rgba(15, 23, 42, 0.98);
+      border-color: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.15);
+    }
+
+    .u027-capsule.is-search-open .u027-pop {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Highlight mark */
+    .u027-pop mark {
+      background: transparent;
+      color: #4f46e5;
+      font-weight: 800;
+      text-decoration: underline;
+      text-decoration-color: rgba(99, 102, 241, 0.45);
+      text-underline-offset: 2px;
+    }
+
+    .dark .u027-pop mark {
+      color: #818cf8;
+      text-decoration-color: rgba(129, 140, 248, 0.55);
+    }
+
+    /* Recent Tag chips */
+    .u027-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.625rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      background: rgba(241, 245, 249, 0.9);
+      color: #475569;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .u027-chip:hover {
+      background: rgba(99, 102, 241, 0.1);
+      color: #4f46e5;
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .dark .u027-chip {
+      background: rgba(30, 41, 59, 0.8);
+      color: #cbd5e1;
+      border-color: rgba(51, 65, 85, 0.8);
+    }
+
+    .dark .u027-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    /* Suggested item rows */
+    .u027-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .u027-item:hover,
+    .u027-item.is-selected {
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateX(2px);
+    }
+
+    .dark .u027-item:hover,
+    .dark .u027-item.is-selected {
+      background: rgba(99, 102, 241, 0.18);
+    }
+  </style>
+
   <!-- ==================== [ELEMENT] FILTER-AND-REFLOW GALLERY (LUCIAN #292) ==================== -->
   <!-- Lucian UX/UI Prompt #292 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#292 -->
   <style>
@@ -1032,13 +1267,43 @@
 
       <!-- Cụm Phải (Gom Nhóm Khoa Học Khay Tiện Ích & Tài Khoản) -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- 1. Khay tiện ích bo tròn kính mờ (Utility Capsule) -->
-        <div class="flex items-center gap-0.5 sm:gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
-          <!-- Nút Tìm kiếm (#header-search-btn) -->
+        <!-- 1. Khay tiện ích bo tròn kính mờ (Utility Capsule) tích hợp Lucian #027 Expanding Search -->
+        <div class="u027-capsule relative flex items-center gap-0.5 sm:gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs" id="headerUtilityCapsule">
+          <!-- Expanding Top-Bar Search Input Field (Lucian #027) -->
+          <div class="u027-field" id="u027Field" role="search" aria-label="Tìm kiếm sản phẩm">
+            <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input 
+              type="text" 
+              id="u027Input" 
+              class="u027-in" 
+              placeholder="Tìm gói AI: Gemini, ChatGPT, Canva..." 
+              autocomplete="off"
+              spellcheck="false"
+              aria-autocomplete="list"
+              aria-controls="u027List"
+            />
+            <button 
+              type="button" 
+              id="u027CloseBtn" 
+              class="u027-x" 
+              title="Đóng tìm kiếm (Esc)"
+              aria-label="Đóng tìm kiếm"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Nút Tìm kiếm (#header-search-btn) (Lucian #027 Search Trigger) -->
           <button 
             id="header-search-btn" 
             type="button"
-            title="Tìm kiếm nhanh (Ctrl+K)" 
+            title="Tìm kiếm nhanh (Ctrl+K hoặc /)" 
             class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/80 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1517,7 +1782,464 @@
               <path d="m9 12 2 2 4-4"/>
             </svg>
           </button>
+
+          <!-- ==================== [ELEMENT] EXPANDING TOP-BAR SEARCH POPOVER (LUCIAN #027) ==================== -->
+          <!-- Dropdown Popover Gợi Ý Chuẩn Lucian #027 -->
+          <div id="u027Popover" class="u027-pop" role="region" aria-label="Gợi ý tìm kiếm">
+            <!-- Phần 1: Recent Searches Tags -->
+            <div class="p-3 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/60">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400 dark:text-slate-500">Tìm kiếm gần đây</span>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">ESC để đóng</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5" id="u027RecentContainer">
+                <button type="button" class="u027-chip" data-query="Gemini Argon 4">
+                  <svg class="w-3 h-3 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z"/></svg>
+                  <span>Gemini Argon 4</span>
+                </button>
+                <button type="button" class="u027-chip" data-query="ChatGPT Plus">
+                  <svg class="w-3 h-3 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/></svg>
+                  <span>ChatGPT Plus</span>
+                </button>
+                <button type="button" class="u027-chip" data-query="Canva Pro">
+                  <svg class="w-3 h-3 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                  <span>Canva Pro</span>
+                </button>
+                <button type="button" class="u027-chip" data-query="Cursor New">
+                  <svg class="w-3 h-3 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 4 7.07 17 2.51-7.39L21 11.07 4 4z"/></svg>
+                  <span>Cursor New</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Phần 2: Suggested List -->
+            <div class="p-2 max-h-[340px] overflow-y-auto" id="u027List" role="listbox">
+              <!-- Render động bằng JS Lucian #027 -->
+            </div>
+            
+            <!-- Phần 3: Footer hướng dẫn phím tắt -->
+            <div class="px-3 py-2 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <div class="flex items-center gap-2">
+                <span><kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-mono">↑↓</kbd> Chọn</span>
+                <span><kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-mono">↵</kbd> Xem</span>
+              </div>
+              <span class="font-medium text-indigo-600 dark:text-indigo-400">ShopSkill247 AI Hub</span>
+            </div>
+          </div>
         </div>
+
+        <!-- Lucian UX/UI Prompt #027 · Expanding Top-Bar Search Engine -->
+        <script>
+          (function () {
+            'use strict';
+
+            var capsule = document.getElementById('headerUtilityCapsule');
+            var triggerBtn = document.getElementById('header-search-btn');
+            var field = document.getElementById('u027Field');
+            var input = document.getElementById('u027Input');
+            var closeBtn = document.getElementById('u027CloseBtn');
+            var popover = document.getElementById('u027Popover');
+            var listEl = document.getElementById('u027List');
+            var recentContainer = document.getElementById('u027RecentContainer');
+
+            if (!capsule || !input) return;
+
+            var isOpen = false;
+            var selectedIndex = -1;
+            var currentMatches = [];
+
+            // Danh mục icon inline sắc nét tương thích cả khi ShopVietData chưa load
+            var BRAND_SVGS = {
+              gemini: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z" fill="#4285F4"/><path d="M19 3v4M17 5h4" stroke="#F4B400" stroke-width="2" stroke-linecap="round"/></svg>',
+              chatgpt: '<svg class="w-5 h-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(60 12 12)"/></svg>',
+              canva: '<svg class="w-5 h-5 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 2C6.5 2 2 6.5 2 12c0 3.5 2.5 6.5 6 6.5 1 0 1.5-.5 1.5-1.5 0-.5 0-1 .5-1.5.5-.5 1-.5 1.5-.5h1.5c4.5 0 8.5-3.5 8.5-8 0-4-3.5-7-9.5-7z"/></svg>',
+              cursor: '<svg class="w-5 h-5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07 4 4z"/><path d="m13.58 13.58 6.42 6.42"/></svg>',
+              capcut: '<svg class="w-5 h-5 text-pink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="3"/><path d="m10 9 5 3-5 3V9z"/></svg>',
+              claude: '<svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2-1.5 5L3 8.5l5 1.5 1.5 5 1.5-5 5-1.5-5-1.5-1.5-5z"/></svg>',
+              api: '<svg class="w-5 h-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
+            };
+
+            // Danh sách sản phẩm mẫu chuẩn ShopSkill247
+            var DEFAULT_PRODUCTS = [
+              {
+                id: 'prod-6178',
+                name: '[6 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+                badge: 'Bán chạy nhất',
+                badgeColor: 'bg-indigo-600 text-white',
+                tag: 'Gemini - Antigravity - Veo',
+                price: 69000,
+                oldPrice: 250000,
+                iconType: 'gemini'
+              },
+              {
+                id: 'prod-3749',
+                name: '[3 Tháng] Gemini Argon 4 Pro + 5TB Drive',
+                badge: '5TB Drive',
+                badgeColor: 'bg-amber-500 text-white',
+                tag: 'Gemini - Antigravity - Veo',
+                price: 49000,
+                oldPrice: 109000,
+                iconType: 'gemini'
+              },
+              {
+                id: 'prod-chatgpt',
+                name: 'ChatGPT Plus GPT-4o & O1 Pro Chính Chủ',
+                badge: 'OpenAI VIP',
+                badgeColor: 'bg-emerald-600 text-white',
+                tag: 'OpenAI',
+                price: 250000,
+                oldPrice: 490000,
+                iconType: 'chatgpt'
+              },
+              {
+                id: 'prod-canva',
+                name: 'Canva Pro Bản Quyền Vĩnh Viễn Mail Riêng',
+                badge: 'Design PRO',
+                badgeColor: 'bg-cyan-600 text-white',
+                tag: 'Canva',
+                price: 99000,
+                oldPrice: 350000,
+                iconType: 'canva'
+              },
+              {
+                id: 'prod-cursor',
+                name: 'Cursor New Pro 500 Fast Requests',
+                badge: 'Dev Tool',
+                badgeColor: 'bg-indigo-500 text-white',
+                tag: 'Cursor New',
+                price: 180000,
+                oldPrice: 490000,
+                iconType: 'cursor'
+              },
+              {
+                id: 'prod-capcut',
+                name: 'Capcut Pro PC & Mobile 1 Năm Toàn Bộ VIP',
+                badge: 'Video VIP',
+                badgeColor: 'bg-pink-600 text-white',
+                tag: 'Capcut',
+                price: 89000,
+                oldPrice: 290000,
+                iconType: 'capcut'
+              },
+              {
+                id: 'prod-claude',
+                name: 'Claude 3.5 Sonnet Coding API Token',
+                badge: 'Coding VIP',
+                badgeColor: 'bg-amber-600 text-white',
+                tag: 'API AI CODING',
+                price: 150000,
+                oldPrice: 390000,
+                iconType: 'claude'
+              }
+            ];
+
+            function getAllProducts() {
+              if (window.ShopVietData && Array.isArray(window.ShopVietData.products) && window.ShopVietData.products.length > 0) {
+                return window.ShopVietData.products;
+              }
+              return DEFAULT_PRODUCTS;
+            }
+
+            function formatVND(val) {
+              if (val == null || isNaN(val)) return '0đ';
+              return Number(val).toLocaleString('vi-VN') + 'đ';
+            }
+
+            function escapeHTML(str) {
+              return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            }
+
+            function removeVietnameseTones(str) {
+              return String(str || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLowerCase();
+            }
+
+            function highlightMatch(text, query) {
+              if (!query || !query.trim()) return escapeHTML(text);
+              var q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              var escaped = escapeHTML(text);
+              try {
+                var regex = new RegExp('(' + q + ')', 'gi');
+                return escaped.replace(regex, '<mark>$1</mark>');
+              } catch (e) {
+                return escaped;
+              }
+            }
+
+            function getProductIcon(prod) {
+              var iconType = (prod && prod.iconType) || 'gemini';
+              return BRAND_SVGS[iconType] || BRAND_SVGS.gemini;
+            }
+
+            function renderSuggestions(keyword) {
+              var all = getAllProducts();
+              var query = (keyword || '').trim();
+              var normalizedQ = removeVietnameseTones(query);
+
+              if (!query) {
+                currentMatches = all.slice(0, 6);
+              } else {
+                currentMatches = all.filter(function (p) {
+                  var nameT = removeVietnameseTones(p.name);
+                  var tagT = removeVietnameseTones(p.tag);
+                  var descT = removeVietnameseTones(p.desc);
+                  return nameT.indexOf(normalizedQ) !== -1 ||
+                         tagT.indexOf(normalizedQ) !== -1 ||
+                         descT.indexOf(normalizedQ) !== -1;
+                }).slice(0, 8);
+              }
+
+              selectedIndex = -1;
+
+              if (currentMatches.length === 0) {
+                listEl.innerHTML = [
+                  '<div class="py-8 text-center text-slate-400 dark:text-slate-500">',
+                  '  <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+                  '  <p class="text-xs font-medium">Không tìm thấy gói AI phù hợp với từ khóa</p>',
+                  '  <p class="text-[11px] text-slate-400 mt-1">Thử: "Gemini", "ChatGPT", "Canva", "Cursor"...</p>',
+                  '</div>'
+                ].join('');
+                return;
+              }
+
+              var html = [];
+              for (var i = 0; i < currentMatches.length; i++) {
+                var item = currentMatches[i];
+                var nameHighlighted = highlightMatch(item.name, query);
+                var badgeLabel = item.badge || item.tag || 'AI VIP';
+                var badgeColor = item.badgeColor || 'bg-indigo-600 text-white';
+
+                html.push(
+                  '<div class="u027-item group" data-index="' + i + '" data-id="' + item.id + '" role="option" aria-selected="false">',
+                  '  <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700/60 group-hover:scale-105 transition-transform">',
+                  '    ' + getProductIcon(item),
+                  '  </div>',
+                  '  <div class="flex-1 min-w-0">',
+                  '    <div class="flex items-center gap-1.5">',
+                  '      <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">' + nameHighlighted + '</p>',
+                  '    </div>',
+                  '    <div class="flex items-center gap-2 mt-0.5">',
+                  '      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md ' + badgeColor + ' shrink-0">' + escapeHTML(badgeLabel) + '</span>',
+                  '      <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">' + formatVND(item.price) + '</span>',
+                  item.oldPrice ? ('      <span class="text-[10px] text-slate-400 line-through">' + formatVND(item.oldPrice) + '</span>') : '',
+                  '    </div>',
+                  '  </div>',
+                  '  <div class="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors">',
+                  '    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>',
+                  '  </div>',
+                  '</div>'
+                );
+              }
+
+              listEl.innerHTML = html.join('');
+
+              // Gắn sự kiện click cho từng hàng
+              var rows = listEl.querySelectorAll('.u027-item');
+              for (var j = 0; j < rows.length; j++) {
+                (function (idx) {
+                  rows[idx].addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectProduct(currentMatches[idx]);
+                  });
+                })(j);
+              }
+            }
+
+            function updateSelectionVisual() {
+              var rows = listEl.querySelectorAll('.u027-item');
+              for (var i = 0; i < rows.length; i++) {
+                if (i === selectedIndex) {
+                  rows[i].classList.add('is-selected');
+                  rows[i].setAttribute('aria-selected', 'true');
+                  rows[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                  rows[i].classList.remove('is-selected');
+                  rows[i].setAttribute('aria-selected', 'false');
+                }
+              }
+            }
+
+            function selectProduct(prod) {
+              if (!prod) return;
+              closeSearch();
+
+              // 1. Kích hoạt Modal Mua Nhanh Clean SaaS nếu có
+              if (window.ShopVietViews && window.ShopVietViews.modal && typeof window.ShopVietViews.modal.open === 'function') {
+                window.ShopVietViews.modal.open(prod.id || prod);
+              }
+
+              // 2. Cuộn tới phần tử sản phẩm trên trang chủ nếu có
+              var card = document.getElementById('product-card-' + prod.id) ||
+                         document.querySelector('[data-product-id="' + prod.id + '"]') ||
+                         document.querySelector('[data-id="' + prod.id + '"]');
+              if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('ring-4', 'ring-indigo-500/50', 'scale-[1.02]');
+                setTimeout(function () {
+                  card.classList.remove('ring-4', 'ring-indigo-500/50', 'scale-[1.02]');
+                }, 2000);
+              } else {
+                var productsSec = document.getElementById('productsSection') || document.getElementById('products');
+                if (productsSec) {
+                  productsSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }
+
+              if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+                window.ShopVietState.showToast('Đang mở: ' + (prod.name || 'Gói AI'), 'info');
+              }
+            }
+
+            function openSearch() {
+              if (isOpen) return;
+              isOpen = true;
+              capsule.classList.add('is-search-open');
+              input.value = '';
+              renderSuggestions('');
+              setTimeout(function () {
+                input.focus();
+              }, 60);
+            }
+
+            function closeSearch() {
+              if (!isOpen) return;
+              isOpen = false;
+              capsule.classList.remove('is-search-open');
+              selectedIndex = -1;
+              input.blur();
+              if (triggerBtn) {
+                try { triggerBtn.focus(); } catch (e) {}
+              }
+            }
+
+            function toggleSearch() {
+              if (isOpen) {
+                closeSearch();
+              } else {
+                openSearch();
+              }
+            }
+
+            // Sự kiện nút Trigger Search (Kính lúp)
+            if (triggerBtn) {
+              triggerBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                openSearch();
+              }, true); // Bắt ở capture phase để ngăn modal cũ
+            }
+
+            // Sự kiện nút Close [X]
+            if (closeBtn) {
+              closeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeSearch();
+              });
+            }
+
+            // Sự kiện gõ text input
+            input.addEventListener('input', function () {
+              renderSuggestions(input.value);
+            });
+
+            // Sự kiện bàn phím trên input
+            input.addEventListener('keydown', function (e) {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentMatches.length > 0) {
+                  selectedIndex = (selectedIndex + 1) % currentMatches.length;
+                  updateSelectionVisual();
+                }
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentMatches.length > 0) {
+                  selectedIndex = (selectedIndex - 1 + currentMatches.length) % currentMatches.length;
+                  updateSelectionVisual();
+                }
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < currentMatches.length) {
+                  selectProduct(currentMatches[selectedIndex]);
+                } else if (currentMatches.length > 0) {
+                  selectProduct(currentMatches[0]);
+                }
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                closeSearch();
+              }
+            });
+
+            // Click vào các chip Recent
+            if (recentContainer) {
+              var chips = recentContainer.querySelectorAll('.u027-chip');
+              for (var c = 0; c < chips.length; c++) {
+                chips[c].addEventListener('click', function (e) {
+                  e.preventDefault();
+                  var query = this.getAttribute('data-query') || this.textContent.trim();
+                  input.value = query;
+                  renderSuggestions(query);
+                  input.focus();
+                });
+              }
+            }
+
+            // Click outside để đóng
+            document.addEventListener('click', function (e) {
+              if (isOpen && capsule && !capsule.contains(e.target)) {
+                closeSearch();
+              }
+            });
+
+            // Phím tắt toàn cục: Ctrl+K, Cmd+K, / và Escape
+            document.addEventListener('keydown', function (e) {
+              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSearch();
+                return;
+              }
+
+              if (e.key === '/' && !isOpen) {
+                var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+                var isEditable = e.target && (e.target.isContentEditable || tag === 'input' || tag === 'textarea' || tag === 'select');
+                if (!isEditable) {
+                  e.preventDefault();
+                  openSearch();
+                  return;
+                }
+              }
+
+              if (e.key === 'Escape' && isOpen) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeSearch();
+              }
+            }, true);
+
+            // Xuất API công khai
+            window.Lucian027 = {
+              open: openSearch,
+              close: closeSearch,
+              toggle: toggleSearch,
+              isOpen: function () { return isOpen; },
+              selectProduct: selectProduct,
+              refresh: function () { renderSuggestions(input ? input.value : ''); }
+            };
+          })();
+        </script>
 
         <!-- 2. Khối Tài Khoản & Action (Profile & Action Hub) -->
         <div class="flex items-center gap-1.5 sm:gap-2">
@@ -1704,18 +2426,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/firebase-config.js?v=20261031_search027_v26"></script>
 
-  <script src="js/data.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/state.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/home.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/modal.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/checkout.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/auth.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/dashboard.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/admin.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/views/blog.js?v=20261031_lang_dropdown_v25"></script>
-  <script src="js/app.js?v=20261031_lang_dropdown_v25"></script>
+  <script src="js/data.js?v=20261031_search027_v26"></script>
+  <script src="js/state.js?v=20261031_search027_v26"></script>
+  <script src="js/views/home.js?v=20261031_search027_v26"></script>
+  <script src="js/views/modal.js?v=20261031_search027_v26"></script>
+  <script src="js/views/checkout.js?v=20261031_search027_v26"></script>
+  <script src="js/views/auth.js?v=20261031_search027_v26"></script>
+  <script src="js/views/dashboard.js?v=20261031_search027_v26"></script>
+  <script src="js/views/admin.js?v=20261031_search027_v26"></script>
+  <script src="js/views/blog.js?v=20261031_search027_v26"></script>
+  <script src="js/app.js?v=20261031_search027_v26"></script>
 
   <!-- ==================== PWA SERVICE WORKER REGISTRATION ==================== -->
   <script>

@@ -356,9 +356,13 @@ function setupKeyboardShortcuts() {
 }
 
 /**
- * Mở hộp tìm kiếm nhanh
+ * Mở hộp tìm kiếm nhanh (Tích hợp Lucian #027 Expanding Top-Bar Search)
  */
 function triggerQuickSearch() {
+  if (window.Lucian027 && typeof window.Lucian027.open === 'function') {
+    window.Lucian027.open();
+    return;
+  }
   const modalMount = document.getElementById('modalMount');
   if (!modalMount) return;
 
