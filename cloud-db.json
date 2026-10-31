@@ -95,18 +95,6 @@
   ],
   "vouchers": [
     {
-      "code": "SV30P-XA8S",
-      "type": "percent_discount",
-      "percent": 30,
-      "singleUse": false,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "desc": "Giảm 30% tổng đơn hàng",
-      "createdAt": "2026-10-29T22:17:29+07:00"
-    },
-    {
       "code": "SV20P-PYGL",
       "type": "percent_discount",
       "percent": 20,
@@ -345,8 +333,9 @@
     "DJ2026771",
     "#DJ20263LDY",
     "VIP50K",
-    "DISCOUNT20K"
+    "DISCOUNT20K",
+    "SV30P-XA8S"
   ],
-  "updatedAt": "2026-10-31T06:09:12.855Z",
-  "version": 1793426952855
+  "updatedAt": "2026-10-31T06:09:16.282Z",
+  "version": 1793426956282
 }
