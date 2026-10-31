@@ -263,9 +263,9 @@
           <!-- Card Trắng Căn Giữa Màn Hình -->
           <div class="max-w-md mx-auto w-full bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-md transition-all duration-300">
             
-            <!-- Nhãn thương hiệu nhỏ: SHOPVIET247 cách điệu chữ hoa, tracking rộng -->
+            <!-- Nhãn thương hiệu nhỏ: SHOPSKILL247 cách điệu chữ hoa, tracking rộng -->
             <div class="text-[11px] font-black tracking-[0.25em] text-indigo-600 dark:text-indigo-400 uppercase select-none">
-              SHOPVIET247
+              SHOPSKILL247
             </div>
 
             <!-- Tiêu đề lớn H1 & Mô tả phụ -->
@@ -288,27 +288,6 @@
                 <span class="font-bold text-indigo-600 dark:text-indigo-400">Firebase Auth & Firestore</span>
               </div>
               <span class="text-[10px] bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-semibold">Online Cloud Sync</span>
-            </div>
-
-            <!-- Nút Đăng nhập Google Toàn Chiều Rộng (Đã loại bỏ Telegram) -->
-            <div class="mb-5">
-              <button type="button" id="googleLoginBtn" class="w-full flex items-center justify-center gap-2.5 py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-semibold text-sm transition shadow-2xs cursor-pointer active:scale-[0.99]">
-                <!-- Logo Google SVG Đa Sắc Chuẩn 4 Màu -->
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
-                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                </svg>
-                <span>Đăng nhập nhanh bằng Google</span>
-              </button>
-            </div>
-
-            <!-- Dòng phân cách: hoặc đăng nhập bằng email -->
-            <div class="text-xs text-slate-400 text-center relative my-5 before:absolute before:inset-0 before:top-1/2 before:border-t before:border-slate-200 dark:before:border-slate-800">
-              <span class="bg-white dark:bg-slate-900 px-3 relative z-10 text-slate-400 font-medium select-none">
-                ${isRegisterMode ? 'hoặc đăng ký bằng email' : 'hoặc đăng nhập bằng email'}
-              </span>
             </div>
 
             <!-- Form Nhập Liệu -->
@@ -524,58 +503,6 @@
         });
       }
 
-      // 4. Đăng nhập Google Social (Tích hợp Đăng nhập 1-Chạm Siêu Tốc không bị Safari chặn popup)
-      const googleLoginBtn = document.getElementById('googleLoginBtn');
-      if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', async function () {
-          googleLoginBtn.disabled = true;
-          googleLoginBtn.classList.add('opacity-75');
-          const originalContent = googleLoginBtn.innerHTML;
-          googleLoginBtn.innerHTML = `
-            <svg class="w-4 h-4 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-            <span>Đang xác thực Google 1-chạm...</span>
-          `;
-
-          try {
-            // Đăng nhập 1-chạm không popup: tự động kích hoạt tài khoản Minh Cường
-            const gEmail = 'minhcuong111aaa@gmail.com';
-            const gName = 'Minh Cường';
-
-            let matched = window.ShopVietState.findUserByEmail(gEmail);
-            if (!matched) {
-              const regRes = window.ShopVietState.registerUser({
-                email: gEmail,
-                password: 'minhcuong111',
-                name: gName,
-                role: 'admin'
-              });
-              matched = regRes.user;
-            }
-
-            if (matched) {
-              matched.role = 'admin';
-            }
-
-            if (window.ShopVietState && typeof window.ShopVietState.login === 'function') {
-              window.ShopVietState.login(matched);
-            }
-
-            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-              window.ShopVietState.showToast('Đăng nhập 1-chạm Google thành công! Chào mừng Minh Cường', 'success');
-            }
-            handlePostAuthRedirect();
-          } catch (err) {
-            console.error('Google login error:', err);
-            if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-              window.ShopVietState.showToast('Không thể hoàn tất đăng nhập Google lúc này!', 'error');
-            }
-          } finally {
-            googleLoginBtn.disabled = false;
-            googleLoginBtn.classList.remove('opacity-75');
-            googleLoginBtn.innerHTML = originalContent;
-          }
-        });
-      }
 
 
       // 6. Quên mật khẩu

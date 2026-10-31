@@ -1,12 +1,12 @@
 /**
- * SkillShop247 - Main Application Entrypoint
+ * ShopSkill247 - Main Application Entrypoint
  * Thiết lập các Event Listener, khởi tạo Header, phím tắt và Router
  */
 
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
-  console.log('[SkillShop247] Khởi tạo Shell ứng dụng SaaS Clean...');
+  console.log('[ShopSkill247] Khởi tạo Shell ứng dụng SaaS Clean...');
 
   // 1. Nạp trạng thái từ LocalStorage & Khởi động Theme
   const state = window.ShopVietState.load();
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  console.log('[SkillShop247] Ứng dụng đã sẵn sàng hoạt động!');
+  console.log('[ShopSkill247] Ứng dụng đã sẵn sàng hoạt động!');
 });
 
 /**
