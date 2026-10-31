@@ -344,12 +344,57 @@ window.ShopVietViews.home = (function () {
     }
   }
 
+  // ==================== SMART DEVICE DETECTION & ADAPTIVE VIEW MODE ====================
+  function detectDevice() {
+    var width = (typeof window !== 'undefined')
+      ? (window.innerWidth || (document.documentElement && document.documentElement.clientWidth) || (document.body && document.body.clientWidth) || 1200)
+      : 1200;
+    var userAgent = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : '';
+    var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+
+    if (width < 640 || (isMobileUA && width < 768)) {
+      return 'mobile';
+    } else if (width < 1024) {
+      return 'tablet';
+    } else {
+      return 'desktop';
+    }
+  }
+
+  function getEffectiveViewMode() {
+    var saved = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        saved = localStorage.getItem('shopskill_view_mode');
+      }
+    } catch (e) {}
+
+    if (saved === 'expanded' || saved === 'standard' || saved === 'compact') {
+      return saved;
+    }
+
+    // Nếu chưa chọn, tự động dùng kết quả nhận diện thiết bị làm mặc định!
+    var device = detectDevice();
+    if (device === 'mobile') return 'compact';
+    if (device === 'tablet') return 'standard';
+    return 'expanded';
+  }
+
   return {
     render: function (params) {
       params = params || {};
       const data = window.ShopVietData || { categories: [], products: [], filterTags: [] };
       const currentFilter = window.ShopVietState ? (window.ShopVietState.state.activeFilter || 'Tất cả') : 'Tất cả';
       const searchQuery = window.ShopVietState ? (window.ShopVietState.state.searchQuery || '') : '';
+
+      // Tự động nhận diện thiết bị & chế độ xem lưới sản phẩm
+      const currentViewMode = getEffectiveViewMode();
+      let gridColClasses = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
+      if (currentViewMode === 'standard') {
+        gridColClasses = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3';
+      } else if (currentViewMode === 'compact') {
+        gridColClasses = 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2';
+      }
 
       // Lấy danh sách sản phẩm thật (Ưu tiên từ getCustomProducts trong State, nếu không có fallback về ShopVietData)
       const allProducts = (window.ShopVietState && typeof window.ShopVietState.getCustomProducts === 'function' && window.ShopVietState.getCustomProducts().length > 0)
@@ -626,140 +671,81 @@ window.ShopVietViews.home = (function () {
 
           </section>
 
-          <!-- ==================== [ELEMENT] DRAG-TO-RESIZE RESPONSIVE PREVIEW (LUCIAN #257) ==================== -->
-          <!-- Lucian UX/UI Prompt #257 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#257 -->
-          <section id="responsiveSimulatorSection" class="relative overflow-hidden rounded-3xl p-6 sm:p-8 lg:p-10 border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl shadow-slate-200/50 dark:shadow-black/40">
-            <!-- Background Ambient Glow & Lighting -->
-            <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              
-              <!-- Left Column: Storytelling & Value Props (7 cols) -->
-              <div class="lg:col-span-7 space-y-5">
-                <!-- Badge -->
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold tracking-wide">
-                  <span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                  <span>LUCIAN #257 · RESPONSIVE SIMULATOR 60FPS</span>
-                </div>
-
-                <div class="space-y-2">
-                  <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Mô Phỏng Trải Nghiệm <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-transparent">Đa Nền Tảng</span>
-                  </h2>
-                  <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl">
-                    Kiểm nghiệm độ mượt mà của ShopSkill247 trên mọi kích thước màn hình. Chọn các chế độ Desktop (1280px), Tablet (768px), Mobile (390px) hoặc kéo thả thanh trượt bên phải để kích hoạt động cơ Container Queries tự thích ứng 60fps.
-                  </p>
-                </div>
-
-                <!-- 3 Feature Highlights Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80">
-                    <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs mb-2">
-                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    </div>
-                    <div class="text-xs font-bold text-slate-900 dark:text-white">Container Queries</div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">3 cột &rarr; 2 cột &rarr; 1 cột tự tái cấu trúc</div>
-                  </div>
-
-                  <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80">
-                    <div class="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-xs mb-2">
-                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                    </div>
-                    <div class="text-xs font-bold text-slate-900 dark:text-white">Adaptive Menu</div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Gập sang menu Hamburger khi &le; 200px</div>
-                  </div>
-
-                  <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80">
-                    <div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold text-xs mb-2">
-                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
-                    <div class="text-xs font-bold text-slate-900 dark:text-white">Thước Đo Breakpoint</div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Phát sáng flash nhấp nháy khi qua mốc</div>
-                  </div>
-                </div>
-
-                <!-- Guidance tip -->
-                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
-                  <svg class="w-4 h-4 text-indigo-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  <span>Phím tắt: Bấm phím mũi tên <strong>Trái / Phải</strong> trên thanh cầm để tinh chỉnh kích thước &plusmn;40px!</span>
-                </div>
-              </div>
-
-              <!-- Right Column: Interactive Lucian #257 Simulator (5 cols) -->
-              <div class="lg:col-span-5 flex justify-center items-center">
-                <!-- Wrapper Pedestal with Neon Ambient Border -->
-                <div class="relative p-2 sm:p-3 rounded-[36px] bg-gradient-to-b from-slate-200/60 via-slate-100/40 to-slate-200/30 dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-950/80 border border-white/60 dark:border-slate-700/60 shadow-2xl shadow-indigo-500/10">
-                  
-                  <!-- LUCIAN #257 ROOT COMPONENT -->
-                  <div class="ux u257" id="lucian257Simulator">
-                    <div class="u257-tb">
-                      <div class="u257-sg" role="group" aria-label="Device"></div>
-                      <span class="u257-px" aria-live="polite">1280px</span>
-                    </div>
-                    <div class="u257-ru" aria-hidden="true"></div>
-                    <div class="u257-st">
-                      <div class="u257-fr">
-                        <div class="u257-pg">
-                          <div class="u257-nv">
-                            <b><i></i>SkillShop</b>
-                            <span>Trang chủ</span>
-                            <span>Sản phẩm</span>
-                            <span>Blog</span>
-                            <em class="u257-hb" title="Menu"></em>
-                          </div>
-                          <div class="u257-hr">
-                            <h4>Nền tảng Kỹ năng & Công cụ AI đỉnh cao</h4>
-                            <span>Khám phá ngay</span>
-                          </div>
-                          <div class="u257-gd">
-                            <i title="Cursor Pro">
-                              <span class="u257-card-t">Cursor Pro</span>
-                              <span class="u257-card-p">69.000đ</span>
-                            </i>
-                            <i title="Gemini Advanced">
-                              <span class="u257-card-t">Gemini Adv</span>
-                              <span class="u257-card-p">89.000đ</span>
-                            </i>
-                            <i title="ChatGPT Plus">
-                              <span class="u257-card-t">ChatGPT+</span>
-                              <span class="u257-card-p">99.000đ</span>
-                            </i>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="u257-hd" role="slider" tabindex="0" aria-label="Preview width" aria-valuemin="320" aria-valuemax="1440"></span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-          </section>
-
           <!-- ==================== KHU VỰC "SẢN PHẨM HOT" (LUCIAN #292) ==================== -->
           <!-- Lucian UX/UI Prompt #292 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#292 -->
           <section id="productsSection" class="u292 space-y-6 pt-2">
             
             <!-- Header Khu Vực Sản Phẩm -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/70 dark:border-slate-800/80">
-              <div>
-                <div class="flex items-center gap-2">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-200/70 dark:border-slate-800/80">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2.5">
                   <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                     Sản phẩm nổi bật
                   </h2>
                   <span id="u292CountBadge" class="u292-n font-bold" aria-live="polite">
                     <span id="u292CountVal" class="u292-n-val">${matchingProducts.length}</span> sản phẩm sẵn có
                   </span>
+
+                  <!-- Smart View Mode Switcher (Bo tròn kính mờ sang trọng) -->
+                  <div id="shopskillViewModeSwitcher" class="inline-flex items-center p-1 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md shadow-xs ml-1" role="group" aria-label="Tùy chọn chế độ xem lưới sản phẩm">
+                    <button 
+                      type="button"
+                      data-view-mode="expanded"
+                      aria-pressed="${currentViewMode === 'expanded' ? 'true' : 'false'}"
+                      title="Chế độ xem Mở rộng (5 Cột) - Tối ưu cho màn hình lớn"
+                      onclick="ShopVietViews.home.setViewMode('expanded')"
+                      class="view-mode-btn ${currentViewMode === 'expanded' ? 'is-active px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200/80 dark:border-indigo-500/40 ring-1 ring-indigo-500/20' : 'px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'} flex items-center gap-1.5 transition-all duration-200 cursor-pointer"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                      <span class="inline">5 Cột</span>
+                      <svg class="btn-check-icon w-3 h-3 text-indigo-500 ${currentViewMode === 'expanded' ? '' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+
+                    <button 
+                      type="button"
+                      data-view-mode="standard"
+                      aria-pressed="${currentViewMode === 'standard' ? 'true' : 'false'}"
+                      title="Chế độ xem Tiêu chuẩn (3 Cột) - Cân đối, tập trung"
+                      onclick="ShopVietViews.home.setViewMode('standard')"
+                      class="view-mode-btn ${currentViewMode === 'standard' ? 'is-active px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200/80 dark:border-indigo-500/40 ring-1 ring-indigo-500/20' : 'px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'} flex items-center gap-1.5 transition-all duration-200 cursor-pointer"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      </svg>
+                      <span class="inline">3 Cột</span>
+                      <svg class="btn-check-icon w-3 h-3 text-indigo-500 ${currentViewMode === 'standard' ? '' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+
+                    <button 
+                      type="button"
+                      data-view-mode="compact"
+                      aria-pressed="${currentViewMode === 'compact' ? 'true' : 'false'}"
+                      title="Chế độ xem Gọn gàng (2 Cột) - Nhỏ gọn tối ưu cho điện thoại & lướt nhanh"
+                      onclick="ShopVietViews.home.setViewMode('compact')"
+                      class="view-mode-btn ${currentViewMode === 'compact' ? 'is-active px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200/80 dark:border-indigo-500/40 ring-1 ring-indigo-500/20' : 'px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'} flex items-center gap-1.5 transition-all duration-200 cursor-pointer"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      </svg>
+                      <span class="inline">2 Cột</span>
+                      <svg class="btn-check-icon w-3 h-3 text-indigo-500 ${currentViewMode === 'compact' ? '' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                  </div>
                 </div>
-                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                   ${searchQuery ? `Kết quả tìm kiếm cho từ khóa "<strong class="text-slate-800 dark:text-slate-200">${searchQuery}</strong>"` : 'Bản quyền công cụ AI hàng đầu, bảo hành 1 đổi 1 suốt chu kỳ'}
                 </p>
               </div>
 
               <!-- Filter Tags Pills (Secondary Selector) - Chuẩn Lucian UX/UI Prompt #292 -->
-              <div class="u292-fs" role="toolbar" aria-label="Bộ lọc danh mục sản phẩm">
+              <div class="u292-fs flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0" role="toolbar" aria-label="Bộ lọc danh mục sản phẩm">
                 ${(data.filterTags || []).map(tag => {
                   const isSelected = tag === currentFilter;
                   return `
@@ -778,8 +764,8 @@ window.ShopVietViews.home = (function () {
               </div>
             </div>
 
-            <!-- LƯỚI 5 CỘT TRÊN DESKTOP (LUCIAN #292 FILTER-AND-REFLOW GALLERY): grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 -->
-            <div id="productListGrid" class="u292-g grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- LƯỚI SẢN PHẨM ADAPTIVE VIEW MODE (LUCIAN #292 FILTER-AND-REFLOW GALLERY): ${gridColClasses} gap-4 -->
+            <div id="productListGrid" class="u292-g grid ${gridColClasses} gap-4 transition-all duration-300">
               ${searchProducts.map(prod => {
                 const isOutOfStock = prod.status === 'out_of_stock' || prod.stock <= 0;
                 const isMatch = isProductMatchingTag(prod, currentFilter);
@@ -1142,9 +1128,9 @@ window.ShopVietViews.home = (function () {
       // 1. Gắn listener lắng nghe sự kiện đồng bộ thời gian thực từ window
       this.initRealtimeListener();
 
-      // 2. Khởi tạo Mô phỏng Trải nghiệm Đa nền tảng (Lucian #257)
-      if (typeof this.initLucian257 === 'function') {
-        this.initLucian257();
+      // 2. Đồng bộ chế độ xem thiết bị thông minh (Smart Adaptive View Mode)
+      if (typeof this.initDeviceViewMode === 'function') {
+        this.initDeviceViewMode();
       }
 
       // 3. Nếu có cờ pending highlight (sau khi chuyển view về home)
@@ -1168,8 +1154,8 @@ window.ShopVietViews.home = (function () {
           if (window.lucide && typeof window.lucide.createIcons === 'function') {
             window.lucide.createIcons();
           }
-          if (typeof this.initLucian257 === 'function') {
-            this.initLucian257();
+          if (typeof this.initDeviceViewMode === 'function') {
+            this.initDeviceViewMode();
           }
         }
       } else if (window.ShopVietState && typeof window.ShopVietState.renderCurrentRoute === 'function') {
@@ -1326,131 +1312,130 @@ window.ShopVietViews.home = (function () {
     },
 
     /**
-     * Lucian UX/UI Prompt #257 · Drag-to-resize responsive preview engine
-     * MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#257
+     * Lucian UX/UI Prompt #257 responsive preview engine removed in favor of direct Adaptive Device View
      */
-    initLucian257: function () {
-      var root = document.getElementById('lucian257Simulator') || document.querySelector('.u257');
-      if (!root) return;
-      if (root._u257_init) return;
-      root._u257_init = true;
+    detectDevice: detectDevice,
+    getEffectiveViewMode: getEffectiveViewMode,
 
-      var sg = root.querySelector('.u257-sg'),
-          px = root.querySelector('.u257-px'),
-          ru = root.querySelector('.u257-ru'),
-          st = root.querySelector('.u257-st'),
-          fr = root.querySelector('.u257-fr'),
-          hd = root.querySelector('.u257-hd');
+    /**
+     * Đồng bộ chế độ xem thiết bị thông minh (Smart Adaptive View Mode)
+     */
+    initDeviceViewMode: function () {
+      var mode = getEffectiveViewMode();
+      this.setViewMode(mode, true);
+    },
 
-      if (!sg || !px || !ru || !st || !fr || !hd) return;
+    /**
+     * Bộ chuyển đổi chế độ xem (View Mode Switcher) mượt mà 60fps
+     * 1. expanded: Mở rộng (5 Cột)
+     * 2. standard: Tiêu chuẩn (3 Cột)
+     * 3. compact: Gọn gàng (2 Cột)
+     */
+    setViewMode: function (mode, skipToast) {
+      var validModes = ['expanded', 'standard', 'compact'];
+      if (!validModes.includes(mode)) mode = 'expanded';
 
-      var DV = [['Desktop', 1280], ['Tablet', 768], ['Mobile', 390]];
-      var IC = [
-        '<rect x="1.5" y="2.5" width="12" height="8" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 13.5h5M7.5 10.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
-        '<rect x="3" y="1.5" width="9" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 11.5h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
-        '<rect x="4.5" y="1.5" width="6" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.8 11.5h1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'
-      ];
-      var MIN = 320, MAX = 1440, W = 312 - 18, WMIN = 108, BP = [[640, 'sm'], [768, 'md'], [1024, 'lg'], [1280, 'xl']];
-      function toPx(v) { return WMIN + (v - MIN) / (MAX - MIN) * (W - WMIN); }
-      function toV(p) { return MIN + (p - WMIN) / (W - WMIN) * (MAX - MIN); }
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('shopskill_view_mode', mode);
+        }
+      } catch (e) {}
 
-      sg.innerHTML = '';
-      ru.innerHTML = '';
-
-      var B = DV.map(function (d, i) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'u257-dv';
-        b.setAttribute('aria-label', d[0] + ' (' + d[1] + 'px)');
-        b.setAttribute('title', d[0] + ' ' + d[1] + 'px');
-        b.innerHTML = '<svg viewBox="0 0 15 15" aria-hidden="true">' + IC[i] + '</svg>';
-        b.addEventListener('click', function () { set(d[1]); });
-        sg.appendChild(b);
-        return b;
-      });
-
-      var R = BP.map(function (b) {
-        var t = document.createElement('i');
-        t.style.left = toPx(b[0]) + 'px';
-        t.textContent = b[1];
-        ru.appendChild(t);
-        return t;
-      });
-
-      var v = 1280, zone = -1;
-      function zoneOf(x) {
-        var z = 0;
-        BP.forEach(function (b, i) { if (x >= b[0]) z = i + 1; });
-        return z;
+      if (typeof window !== 'undefined' && window.ShopVietState && window.ShopVietState.state) {
+        window.ShopVietState.state.viewMode = mode;
       }
 
-      function set(nv) {
-        v = Math.max(MIN, Math.min(MAX, Math.round(nv)));
-        var p = toPx(v);
-        fr.style.width = p + 'px';
-        hd.style.left = p + 'px';
-        px.textContent = v + 'px';
-        hd.setAttribute('aria-valuenow', v);
-        B.forEach(function (b, i) {
-          b.setAttribute('aria-pressed', DV[i][1] === v ? 'true' : 'false');
-        });
-        var z = zoneOf(v);
-        if (zone >= 0 && z !== zone) {
-          var t = R[Math.min(z, zone)];
-          if (t) {
-            t.classList.remove('is-flash');
-            void t.offsetWidth;
-            t.classList.add('is-flash');
+      var grid = document.getElementById('productListGrid');
+      if (grid) {
+        // FLIP Animation 60fps
+        var cards = Array.from(grid.querySelectorAll('[data-product-card="true"]'));
+        var firstPositions = new Map();
+        cards.forEach(function (card) {
+          if (!card.classList.contains('out') && card.style.display !== 'none') {
+            firstPositions.set(card, card.getBoundingClientRect());
           }
+        });
+
+        // Xóa các class grid-cols cũ
+        var colsToRemove = [
+          'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5', 'grid-cols-6',
+          'sm:grid-cols-1', 'sm:grid-cols-2', 'sm:grid-cols-3', 'sm:grid-cols-4', 'sm:grid-cols-5',
+          'md:grid-cols-1', 'md:grid-cols-2', 'md:grid-cols-3', 'md:grid-cols-4', 'md:grid-cols-5',
+          'lg:grid-cols-1', 'lg:grid-cols-2', 'lg:grid-cols-3', 'lg:grid-cols-4', 'lg:grid-cols-5'
+        ];
+        colsToRemove.forEach(function (cls) { grid.classList.remove(cls); });
+
+        // Áp dụng class grid-cols mới tương ứng
+        var newCols = [];
+        if (mode === 'expanded') {
+          newCols = ['grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-5'];
+        } else if (mode === 'standard') {
+          newCols = ['grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-3'];
+        } else if (mode === 'compact') {
+          newCols = ['grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-2', 'lg:grid-cols-2'];
         }
-        zone = z;
+        newCols.forEach(function (cls) { grid.classList.add(cls); });
+
+        // FLIP Animation 60fps: Invert & Play
+        if (firstPositions.size > 0 && typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(function () {
+            cards.forEach(function (card) {
+              if (!firstPositions.has(card)) return;
+              var first = firstPositions.get(card);
+              var last = card.getBoundingClientRect();
+              var dx = first.left - last.left;
+              var dy = first.top - last.top;
+
+              if (dx || dy) {
+                card.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+                card.style.transition = 'none';
+
+                requestAnimationFrame(function () {
+                  card.style.transition = 'transform 360ms cubic-bezier(.2, .8, .2, 1)';
+                  card.style.transform = '';
+                });
+              }
+            });
+          });
+        }
       }
 
-      var drag = null;
-      hd.addEventListener('pointerdown', function (e) {
-        var r = st.getBoundingClientRect();
-        drag = { k: (r.width > 0 ? st.offsetWidth / r.width : 1), left: r.left };
-        fr.classList.add('is-drag');
-        hd.classList.add('is-drag');
-        try { hd.setPointerCapture(e.pointerId); } catch (er) {}
-      });
-
-      hd.addEventListener('pointermove', function (e) {
-        if (!drag) return;
-        set(toV((e.clientX - drag.left) * drag.k));
-      });
-
-      function up() {
-        drag = null;
-        fr.classList.remove('is-drag');
-        hd.classList.remove('is-drag');
+      // Cập nhật trạng thái UI của 3 nút bấm
+      var switcher = document.getElementById('shopskillViewModeSwitcher');
+      if (switcher) {
+        var buttons = switcher.querySelectorAll('[data-view-mode]');
+        buttons.forEach(function (btn) {
+          var btnMode = btn.getAttribute('data-view-mode');
+          var isCurrent = btnMode === mode;
+          btn.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+          var checkIcon = btn.querySelector('.btn-check-icon');
+          if (isCurrent) {
+            btn.className = 'view-mode-btn is-active px-2.5 py-1 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200/80 dark:border-indigo-500/40 ring-1 ring-indigo-500/20 flex items-center gap-1.5 transition-all duration-200 cursor-pointer';
+            if (checkIcon) checkIcon.classList.remove('hidden');
+          } else {
+            btn.className = 'view-mode-btn px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-all duration-200 cursor-pointer';
+            if (checkIcon) checkIcon.classList.add('hidden');
+          }
+        });
       }
-      hd.addEventListener('pointerup', up);
-      hd.addEventListener('pointercancel', up);
 
-      hd.addEventListener('keydown', function (e) {
-        var d = e.key === 'ArrowRight' ? 40 : e.key === 'ArrowLeft' ? -40 : 0;
-        if (d) {
-          e.preventDefault();
-          set(v + d);
-        }
-      });
-
-      set(1280);
+      if (!skipToast && typeof window !== 'undefined' && window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+        var modeLabels = {
+          expanded: 'Mở rộng (5 Cột) 🖥️',
+          standard: 'Tiêu chuẩn (3 Cột) 📱',
+          compact: 'Gọn gàng (2 Cột) 📲'
+        };
+        window.ShopVietState.showToast('Đã chuyển sang chế độ xem: ' + (modeLabels[mode] || mode), 'info');
+      }
     },
     renderSafeProductImage: renderSafeProductImage
   };
 
-  // Expose helper and Lucian #257 to global views namespace
+  // Expose helper to global views namespace
   if (typeof window !== 'undefined') {
     window.ShopVietViews.renderSafeProductImage = renderSafeProductImage;
-    window.Lucian257 = {
-      init: function () {
-        if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.initLucian257 === 'function') {
-          window.ShopVietViews.home.initLucian257();
-        }
-      }
-    };
+    window.ShopVietViews.detectDevice = detectDevice;
+    window.ShopVietViews.getEffectiveViewMode = getEffectiveViewMode;
   }
 
   // Tự động kích hoạt listener toàn cục ngay khi nạp file
@@ -1461,8 +1446,8 @@ window.ShopVietViews.home = (function () {
           if (typeof window.ShopVietViews.home.initRealtimeListener === 'function') {
             window.ShopVietViews.home.initRealtimeListener();
           }
-          if (typeof window.ShopVietViews.home.initLucian257 === 'function') {
-            window.ShopVietViews.home.initLucian257();
+          if (typeof window.ShopVietViews.home.initDeviceViewMode === 'function') {
+            window.ShopVietViews.home.initDeviceViewMode();
           }
         }
       });
@@ -1472,8 +1457,8 @@ window.ShopVietViews.home = (function () {
           if (typeof window.ShopVietViews.home.initRealtimeListener === 'function') {
             window.ShopVietViews.home.initRealtimeListener();
           }
-          if (typeof window.ShopVietViews.home.initLucian257 === 'function') {
-            window.ShopVietViews.home.initLucian257();
+          if (typeof window.ShopVietViews.home.initDeviceViewMode === 'function') {
+            window.ShopVietViews.home.initDeviceViewMode();
           }
         }
       }, 0);
