@@ -410,17 +410,17 @@ window.ShopVietViews.home = (function () {
                 <!-- Badge Xanh Lá Nhạt -->
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50 font-medium text-xs">
                   <svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  <span>Tự động giao hàng sau khi thanh toán</span>
+                  <span id="heroBadgeText"><span class="u267-sw"><span>Tự động giao hàng sau khi thanh toán</span></span></span>
                 </div>
 
                 <!-- H1 Lớn Đậm -->
-                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight mt-4 tracking-tight">
-                  Công cụ AI hạt dẻ cho học sinh, sinh viên — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">kích hoạt trong vài phút</span>
+                <h1 id="heroTitleText" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight mt-4 tracking-tight">
+                  <span class="u267-sw u267-block"><span>Công cụ AI hạt dẻ cho học sinh, sinh viên — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">kích hoạt trong vài phút</span></span></span>
                 </h1>
 
                 <!-- Mô Tả Phụ -->
-                <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">
-                  AI Coding hạt dẻ, công cụ làm việc online dễ mua, giá rõ và theo dõi đơn ngay trên web.
+                <p id="heroDescText" class="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">
+                  <span class="u267-sw u267-block"><span>AI Coding hạt dẻ, công cụ làm việc online dễ mua, giá rõ và theo dõi đơn ngay trên web.</span></span>
                 </p>
 
                 <!-- Thanh Tìm Kiếm Tích Hợp -->

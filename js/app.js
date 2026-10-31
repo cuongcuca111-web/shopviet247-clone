@@ -158,10 +158,14 @@ function setupHeaderEvents() {
     });
   }
 
-  // Click Đổi ngôn ngữ
+  // Click Đổi ngôn ngữ (Tương thích Lucian UX/UI Prompt #267 Dropdown)
   if (langToggleBtn) {
     langToggleBtn.addEventListener('click', function (e) {
       e.preventDefault();
+      if (window.Lucian267 && typeof window.Lucian267.toggleDropdown === 'function') {
+        window.Lucian267.toggleDropdown();
+        return;
+      }
       window.ShopVietState.toggleLang();
     });
   }

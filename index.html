@@ -138,6 +138,93 @@
       }
     }
   </style>
+
+  <!-- ==================== [ELEMENT] LANGUAGE SWITCH WITH TEXT SWAP (LUCIAN #267) ==================== -->
+  <!-- Lucian UX/UI Prompt #267 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#267 -->
+  <style>
+    /* Lucian UX/UI Prompt #267 · Scoped Language Switch & Text-Swap Styles */
+    .u267 {
+      position: relative;
+      display: inline-block;
+    }
+    .u267-gb {
+      user-select: none;
+    }
+    .u267.is-open .u267-chev {
+      transform: rotate(180deg);
+    }
+    .u267-dd {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+    .dark .u267-dd {
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+    .u267-op {
+      transition: all 0.18s ease;
+    }
+    .u267-op.is-on {
+      background: rgba(99, 102, 241, 0.08);
+      color: #4f46e5;
+    }
+    .dark .u267-op.is-on {
+      background: rgba(99, 102, 241, 0.18);
+      color: #a5b4fc;
+    }
+    .u267-op.is-on .u267-chk {
+      display: block !important;
+    }
+    .u267-op:not(.is-on) .u267-chk {
+      display: none !important;
+    }
+
+    /* Lucian #267 Text-Swap Engine */
+    .u267-sw {
+      display: inline-block;
+      vertical-align: top;
+      overflow: hidden;
+      transition: width .35s cubic-bezier(.3,1.3,.5,1);
+    }
+    .u267-sw > span {
+      display: block;
+      white-space: nowrap;
+    }
+    .u267-sw.u267-block {
+      display: block;
+      width: 100% !important;
+      transition: none;
+    }
+    .u267-sw.u267-block > span {
+      white-space: normal;
+    }
+    .u267-sw.is-go > span {
+      animation: u267-out .26s ease-in forwards;
+    }
+    .u267-sw.is-in > span {
+      animation: u267-in .38s cubic-bezier(.2,.9,.3,1.2);
+    }
+    @keyframes u267-out {
+      to { transform: translateY(-100%); opacity: 0; }
+    }
+    @keyframes u267-in {
+      from { transform: translateY(100%); opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .u267-sw.is-go > span,
+      .u267-sw.is-in > span {
+        animation: none !important;
+      }
+      .u267-sw {
+        transition: none !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -483,20 +570,20 @@
             <span class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">ShopSkill<span class="text-indigo-600 dark:text-indigo-400">247</span></span>
             <span class="px-1.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase rounded-md bg-gradient-to-r from-violet-500/15 via-indigo-500/15 to-cyan-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 dark:border-indigo-400/30 shadow-2xs">AI STORE</span>
           </div>
-          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide">Kỹ Năng & Bản Quyền Tự Động 24/7</span>
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide"><span id="brandTagline" class="u267-sw"><span>Kỹ Năng & Bản Quyền Tự Động 24/7</span></span></span>
         </div>
       </a>
 
       <!-- Cụm Giữa (Thanh Điều Hướng Floating Nav Pill 60fps) -->
       <nav id="floatingPillNav" class="hidden md:flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full border border-slate-200/80 dark:border-slate-800/80 shadow-xs my-auto shrink-0">
         <button id="navHome" data-view="home" class="nav-btn nav-pill-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-300 ease-out cursor-pointer bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900 whitespace-nowrap shrink-0">
-          Trang chủ
+          <span class="u267-sw"><span>Trang chủ</span></span>
         </button>
         <button id="navProducts" data-view="products" data-scroll="products" class="nav-btn nav-pill-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-300 ease-out cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0">
-          Sản phẩm
+          <span class="u267-sw"><span>Sản phẩm</span></span>
         </button>
         <button id="navBlog" data-view="blog" class="nav-btn nav-pill-btn rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition-all duration-300 ease-out cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0">
-          Blog
+          <span class="u267-sw"><span>Blog</span></span>
         </button>
       </nav>
 
@@ -535,7 +622,7 @@
               <polyline points="13 13 10 16 7 13"/>
               <line x1="10" y1="9" x2="10" y2="16"/>
             </svg>
-            <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-200 whitespace-nowrap hidden sm:inline">Đồng bộ</span>
+            <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-200 whitespace-nowrap hidden sm:inline"><span class="u267-sw"><span>Đồng bộ</span></span></span>
           </button>
 
           <!-- Nút Đổi Giao Diện Sáng/Tối (#headerThemeToggle) - Chuẩn Lucian UX/UI Prompt #219 -->
@@ -560,20 +647,420 @@
             </svg>
           </button>
 
-          <!-- Nút Ngôn ngữ (#header-lang-btn) -->
-          <button 
-            id="header-lang-btn" 
-            type="button" 
-            title="Đổi ngôn ngữ" 
-            class="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-white/80 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer"
-          >
-            <!-- Cờ Việt Nam bo tròn nhỏ xinh 🇻🇳 VI -->
-            <svg class="w-4 h-3 rounded-xs shadow-xs" viewBox="0 0 30 20" fill="none">
-              <rect width="30" height="20" fill="#DA251D" />
-              <polygon points="15,4 16.5,8.8 21.5,8.8 17.5,11.8 19,16.5 15,13.5 11,16.5 12.5,11.8 8.5,8.8 13.5,8.8" fill="#FFFF00" />
-            </svg>
-            <span id="langText" class="text-[11px] font-bold">VI</span>
-          </button>
+          <!-- ==================== [ELEMENT] LANGUAGE SWITCH WITH TEXT SWAP (LUCIAN #267) ==================== -->
+          <!-- Lucian UX/UI Prompt #267 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#267 -->
+          <div class="u267 relative inline-block text-left" id="u267Container">
+            <button 
+              id="header-lang-btn" 
+              type="button" 
+              class="u267-gb hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-white/80 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/40 select-none shadow-2xs"
+              aria-haspopup="listbox" 
+              aria-expanded="false" 
+              aria-label="Chọn ngôn ngữ"
+              title="Chuyển đổi ngôn ngữ (Lucian #267 Language Switch)"
+            >
+              <!-- Icon Quả địa cầu SVG Lucian #267 -->
+              <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                <path d="M2 12h20"/>
+              </svg>
+              <!-- Cờ quốc gia tương ứng (Render bằng SVG sắc nét) -->
+              <span id="u267ActiveFlag" class="u267-flag inline-flex items-center shrink-0">
+                <svg class="w-4 h-3 rounded-xs shadow-2xs" viewBox="0 0 30 20" fill="none" aria-hidden="true">
+                  <rect width="30" height="20" fill="#DA251D"/>
+                  <polygon points="15,4 16.5,8.8 21.5,8.8 17.5,11.8 19,16.5 15,13.5 11,16.5 12.5,11.8 8.5,8.8 13.5,8.8" fill="#FFFF00"/>
+                </svg>
+              </span>
+              <!-- Mã ngôn ngữ VI/EN -->
+              <span id="langText" class="u267-cd text-[11px] font-bold tracking-wider">VI</span>
+              <!-- Mũi tên xổ xuống chevron -->
+              <svg class="u267-chev w-3 h-3 text-slate-400 transition-transform duration-200 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu Deep Glassmorphism (Lucian #267) -->
+            <div 
+              id="u267Dropdown" 
+              class="u267-dd hidden absolute right-0 top-full mt-2 w-44 p-1.5 rounded-2xl shadow-xl z-50 transition-all duration-200 select-none"
+              role="listbox" 
+              aria-label="Danh sách ngôn ngữ"
+            >
+              <!-- Tùy chọn 1: Tiếng Việt (Mặc định) -->
+              <button 
+                type="button" 
+                id="u267OptVI"
+                class="u267-op w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer is-on" 
+                data-code="VI" 
+                data-lang="vi"
+                role="option" 
+                aria-selected="true"
+              >
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-3 rounded-xs shadow-2xs shrink-0" viewBox="0 0 30 20" fill="none" aria-hidden="true">
+                    <rect width="30" height="20" fill="#DA251D" />
+                    <polygon points="15,4 16.5,8.8 21.5,8.8 17.5,11.8 19,16.5 15,13.5 11,16.5 12.5,11.8 8.5,8.8 13.5,8.8" fill="#FFFF00" />
+                  </svg>
+                  <span>Tiếng Việt</span>
+                </div>
+                <svg class="u267-chk w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+
+              <!-- Tùy chọn 2: English -->
+              <button 
+                type="button" 
+                id="u267OptEN"
+                class="u267-op w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer" 
+                data-code="EN" 
+                data-lang="en"
+                role="option" 
+                aria-selected="false"
+              >
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-3 rounded-xs shadow-2xs shrink-0" viewBox="0 0 30 20" fill="none" aria-hidden="true">
+                    <rect width="30" height="20" fill="#B22234"/>
+                    <rect y="1.54" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect y="4.62" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect y="7.69" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect y="10.77" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect y="13.85" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect y="16.92" width="30" height="1.54" fill="#FFFFFF"/>
+                    <rect width="12" height="10.77" fill="#3C3B6E"/>
+                    <circle cx="2.5" cy="2.5" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="6" cy="2.5" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="9.5" cy="2.5" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="4.25" cy="5.4" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="7.75" cy="5.4" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="2.5" cy="8.3" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="6" cy="8.3" r="0.8" fill="#FFFFFF"/>
+                    <circle cx="9.5" cy="8.3" r="0.8" fill="#FFFFFF"/>
+                  </svg>
+                  <span>English</span>
+                </div>
+                <svg class="u267-chk w-4 h-4 text-emerald-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <script>
+            /**
+             * Lucian UX/UI Prompt #267 · Language Switch with Text Swap Engine
+             * MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#267
+             */
+            (function () {
+              var container = document.getElementById('u267Container');
+              if (!container) return;
+              var triggerBtn = document.getElementById('header-lang-btn');
+              var dropdown = document.getElementById('u267Dropdown');
+              var flagEl = document.getElementById('u267ActiveFlag');
+              var langTextEl = document.getElementById('langText');
+              var optVI = document.getElementById('u267OptVI');
+              var optEN = document.getElementById('u267OptEN');
+
+              var FLAG_VI = '<svg class="w-4 h-3 rounded-xs shadow-2xs" viewBox="0 0 30 20" fill="none" aria-hidden="true"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.5,8.8 21.5,8.8 17.5,11.8 19,16.5 15,13.5 11,16.5 12.5,11.8 8.5,8.8 13.5,8.8" fill="#FFFF00"/></svg>';
+
+              var FLAG_EN = '<svg class="w-4 h-3 rounded-xs shadow-2xs" viewBox="0 0 30 20" fill="none" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><rect y="1.54" width="30" height="1.54" fill="#FFFFFF"/><rect y="4.62" width="30" height="1.54" fill="#FFFFFF"/><rect y="7.69" width="30" height="1.54" fill="#FFFFFF"/><rect y="10.77" width="30" height="1.54" fill="#FFFFFF"/><rect y="13.85" width="30" height="1.54" fill="#FFFFFF"/><rect y="16.92" width="30" height="1.54" fill="#FFFFFF"/><rect width="12" height="10.77" fill="#3C3B6E"/><circle cx="2.5" cy="2.5" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="2.5" r="0.8" fill="#FFFFFF"/><circle cx="9.5" cy="2.5" r="0.8" fill="#FFFFFF"/><circle cx="4.25" cy="5.4" r="0.8" fill="#FFFFFF"/><circle cx="7.75" cy="5.4" r="0.8" fill="#FFFFFF"/><circle cx="2.5" cy="8.3" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="8.3" r="0.8" fill="#FFFFFF"/><circle cx="9.5" cy="8.3" r="0.8" fill="#FFFFFF"/></svg>';
+
+              var I18N_DICT = {
+                VI: {
+                  navHome: 'Trang chủ',
+                  navProducts: 'Sản phẩm',
+                  navBlog: 'Blog',
+                  sync: 'Đồng bộ',
+                  register: 'Đăng ký',
+                  login: 'Đăng nhập',
+                  tagline: 'Kỹ Năng & Bản Quyền Tự Động 24/7',
+                  heroBadge: 'Tự động giao hàng sau khi thanh toán',
+                  heroTitle: 'Công cụ AI hạt dẻ cho học sinh, sinh viên — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">kích hoạt trong vài phút</span>',
+                  heroDesc: 'AI Coding hạt dẻ, công cụ làm việc online dễ mua, giá rõ và theo dõi đơn ngay trên web.'
+                },
+                EN: {
+                  navHome: 'Home',
+                  navProducts: 'Products',
+                  navBlog: 'Blog',
+                  sync: 'Sync',
+                  register: 'Register',
+                  login: 'Sign In',
+                  tagline: 'Skills & Licenses Automated 24/7',
+                  heroBadge: 'Instant automated delivery upon payment',
+                  heroTitle: 'Affordable AI tools for students & devs — <span class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 bg-clip-text text-transparent">activated in minutes</span>',
+                  heroDesc: 'Affordable AI coding tools, verified accounts, transparent pricing & real-time tracking.'
+                }
+              };
+
+              var currentLang = 'VI';
+
+              function isOpen() {
+                return container.classList.contains('is-open');
+              }
+
+              function openDropdown() {
+                container.classList.add('is-open');
+                if (dropdown) dropdown.classList.remove('hidden');
+                if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'true');
+              }
+
+              function closeDropdown() {
+                container.classList.remove('is-open');
+                if (dropdown) dropdown.classList.add('hidden');
+                if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'false');
+              }
+
+              function toggleDropdown() {
+                if (isOpen()) {
+                  closeDropdown();
+                } else {
+                  openDropdown();
+                }
+              }
+
+              function ensureHeroWrappers() {
+                var h1 = document.querySelector('#appMount h1');
+                if (h1 && !h1.querySelector('.u267-sw')) {
+                  h1.id = 'heroTitleText';
+                  h1.innerHTML = '<span class="u267-sw u267-block"><span>' + h1.innerHTML + '</span></span>';
+                }
+                var p = document.querySelector('#appMount h1 + p');
+                if (p && !p.querySelector('.u267-sw')) {
+                  p.id = 'heroDescText';
+                  p.innerHTML = '<span class="u267-sw u267-block"><span>' + p.innerHTML + '</span></span>';
+                }
+                var badge = document.querySelector('#appMount section .rounded-full span');
+                if (badge && !badge.querySelector('.u267-sw')) {
+                  badge.id = 'heroBadgeText';
+                  badge.innerHTML = '<span class="u267-sw"><span>' + badge.innerHTML + '</span></span>';
+                }
+              }
+
+              function swapText(wrapper, newText, isHtml) {
+                if (!wrapper) return;
+                var inner = wrapper.querySelector(':scope > span');
+                if (!inner) {
+                  wrapper.innerHTML = '<span>' + wrapper.innerHTML + '</span>';
+                  inner = wrapper.querySelector(':scope > span');
+                }
+
+                var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (prefersReduced) {
+                  if (isHtml) {
+                    inner.innerHTML = newText;
+                  } else {
+                    inner.textContent = newText;
+                  }
+                  return;
+                }
+
+                var startWidth = wrapper.getBoundingClientRect().width;
+                if (!wrapper.classList.contains('u267-block')) {
+                  wrapper.style.width = startWidth + 'px';
+                }
+
+                wrapper.classList.remove('is-in');
+                wrapper.classList.add('is-go');
+
+                setTimeout(function () {
+                  if (isHtml) {
+                    inner.innerHTML = newText;
+                  } else {
+                    inner.textContent = newText;
+                  }
+
+                  if (!wrapper.classList.contains('u267-block')) {
+                    wrapper.style.width = 'auto';
+                    var targetWidth = wrapper.getBoundingClientRect().width;
+                    wrapper.style.width = startWidth + 'px';
+                    void wrapper.offsetWidth;
+                    wrapper.style.width = targetWidth + 'px';
+                  }
+
+                  wrapper.classList.remove('is-go');
+                  wrapper.classList.add('is-in');
+
+                  setTimeout(function () {
+                    wrapper.classList.remove('is-in');
+                    if (!wrapper.classList.contains('u267-block')) {
+                      wrapper.style.width = '';
+                    }
+                  }, 380);
+                }, 260);
+              }
+
+              function applyLanguage(langCode, isInitial) {
+                var dict = I18N_DICT[langCode] || I18N_DICT.VI;
+                ensureHeroWrappers();
+
+                var items = [
+                  { el: document.querySelector('#navHome .u267-sw'), text: dict.navHome },
+                  { el: document.querySelector('#navProducts .u267-sw'), text: dict.navProducts },
+                  { el: document.querySelector('#navBlog .u267-sw'), text: dict.navBlog },
+                  { el: document.querySelector('#header-sync-btn .u267-sw'), text: dict.sync },
+                  { el: document.querySelector('#headerRegisterBtn .u267-sw'), text: dict.register },
+                  { el: document.querySelector('#headerLoginBtn .u267-sw'), text: dict.login },
+                  { el: document.querySelector('#brandTagline'), text: dict.tagline },
+                  { el: document.querySelector('#heroBadgeText .u267-sw'), text: dict.heroBadge },
+                  { el: document.querySelector('#heroTitleText .u267-sw'), text: dict.heroTitle, isHtml: true },
+                  { el: document.querySelector('#heroDescText .u267-sw'), text: dict.heroDesc }
+                ];
+
+                if (isInitial) {
+                  items.forEach(function (item) {
+                    if (!item.el) return;
+                    var span = item.el.querySelector(':scope > span') || item.el;
+                    if (item.isHtml) {
+                      span.innerHTML = item.text;
+                    } else {
+                      span.textContent = item.text;
+                    }
+                  });
+                  return;
+                }
+
+                var n = 0;
+                items.forEach(function (item) {
+                  if (!item.el) return;
+                  var delay = n * 45;
+                  n++;
+                  setTimeout(function () {
+                    swapText(item.el, item.text, item.isHtml);
+                  }, delay);
+                });
+              }
+
+              function setLanguage(code, isInitial) {
+                code = (code || 'VI').toUpperCase();
+                if (code !== 'VI' && code !== 'EN') code = 'VI';
+                currentLang = code;
+
+                // Update trigger button flag & text
+                if (flagEl) flagEl.innerHTML = code === 'VI' ? FLAG_VI : FLAG_EN;
+                if (langTextEl) langTextEl.textContent = code;
+
+                // Update options checked state
+                if (optVI) {
+                  if (code === 'VI') {
+                    optVI.classList.add('is-on');
+                    optVI.setAttribute('aria-selected', 'true');
+                  } else {
+                    optVI.classList.remove('is-on');
+                    optVI.setAttribute('aria-selected', 'false');
+                  }
+                }
+                if (optEN) {
+                  if (code === 'EN') {
+                    optEN.classList.add('is-on');
+                    optEN.setAttribute('aria-selected', 'true');
+                  } else {
+                    optEN.classList.remove('is-on');
+                    optEN.setAttribute('aria-selected', 'false');
+                  }
+                }
+
+                // Save to localStorage
+                try {
+                  localStorage.setItem('shopskill_lang', code);
+                } catch (e) {}
+
+                // Sync with ShopVietState
+                if (window.ShopVietState) {
+                  if (window.ShopVietState.state) {
+                    window.ShopVietState.state.lang = code;
+                  }
+                  if (typeof window.ShopVietState.save === 'function') {
+                    window.ShopVietState.save();
+                  }
+                  if (!isInitial && typeof window.ShopVietState.showToast === 'function') {
+                    window.ShopVietState.showToast(code === 'VI' ? 'Đã chuyển sang Tiếng Việt 🇻🇳' : 'Switched to English 🇺🇸', 'info');
+                  }
+                  if (typeof window.ShopVietState.notify === 'function') {
+                    window.ShopVietState.notify('lang_change', code);
+                  }
+                }
+
+                applyLanguage(code, isInitial);
+              }
+
+              // Event listener on trigger button
+              if (triggerBtn) {
+                triggerBtn.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  toggleDropdown();
+                }, true); // Use capture phase so app.js click doesn't preempt
+              }
+
+              // Option clicks
+              if (optVI) {
+                optVI.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeDropdown();
+                  if (currentLang !== 'VI') {
+                    setLanguage('VI', false);
+                  }
+                });
+              }
+
+              if (optEN) {
+                optEN.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeDropdown();
+                  if (currentLang !== 'EN') {
+                    setLanguage('EN', false);
+                  }
+                });
+              }
+
+              // Click outside
+              document.addEventListener('click', function (e) {
+                if (!container.contains(e.target)) {
+                  closeDropdown();
+                }
+              });
+
+              // Escape key
+              document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && isOpen()) {
+                  closeDropdown();
+                  if (triggerBtn) triggerBtn.focus();
+                }
+              });
+
+              // Initial load from localStorage or ShopVietState
+              var savedLang = 'VI';
+              try {
+                savedLang = localStorage.getItem('shopskill_lang') || 
+                  (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.lang) || 
+                  'VI';
+              } catch (e) {}
+
+              // Apply initial language
+              setLanguage(savedLang, true);
+
+              // Watch for SPA view renders to ensure Hero texts match current lang
+              document.addEventListener('DOMContentLoaded', function () {
+                setLanguage(currentLang, true);
+              });
+
+              // Expose to window
+              window.Lucian267 = {
+                setLanguage: setLanguage,
+                setLang: setLanguage,
+                toggleDropdown: toggleDropdown,
+                openDropdown: openDropdown,
+                closeDropdown: closeDropdown,
+                getLanguage: function () { return currentLang; },
+                getLang: function () { return currentLang; },
+                reapply: function () { applyLanguage(currentLang, true); }
+              };
+            })();
+          </script>
 
           <!-- Secret Admin Portal Button (Ctrl+Shift+A) - Mặc định ẩn, chỉ hiển thị cho minhcuong111aaa@gmail.com -->
           <button 
@@ -605,7 +1092,7 @@
                 <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 20a6 6 0 0 1 12 0v1H3v-1Z"/>
                 </svg>
-                <span>Đăng ký</span>
+                <span class="u267-sw"><span>Đăng ký</span></span>
               </button>
 
               <!-- Nút Đăng nhập (Guest State) -->
@@ -619,7 +1106,7 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
                 </svg>
-                <span>Đăng nhập</span>
+                <span class="u267-sw"><span>Đăng nhập</span></span>
               </button>
             </div>
           </div>
@@ -733,17 +1220,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_preloader_v12"></script>
+  <script src="js/firebase-config.js?v=20261031_i18n_v13"></script>
 
-  <script src="js/data.js?v=20261031_preloader_v12"></script>
-  <script src="js/state.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/home.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/modal.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/checkout.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/auth.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/dashboard.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/admin.js?v=20261031_preloader_v12"></script>
-  <script src="js/views/blog.js?v=20261031_preloader_v12"></script>
-  <script src="js/app.js?v=20261031_preloader_v12"></script>
+  <script src="js/data.js?v=20261031_i18n_v13"></script>
+  <script src="js/state.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/home.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/modal.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/checkout.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/auth.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/dashboard.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/admin.js?v=20261031_i18n_v13"></script>
+  <script src="js/views/blog.js?v=20261031_i18n_v13"></script>
+  <script src="js/app.js?v=20261031_i18n_v13"></script>
 </body>
 </html>
