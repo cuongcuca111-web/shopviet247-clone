@@ -285,14 +285,20 @@
               </p>
             </div>
 
-            <!-- Firebase Cloud Sync Status Badge -->
-            <div class="mb-5 flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-slate-600 dark:text-slate-300 font-medium">Hạ tầng:</span>
-                <span class="font-bold text-indigo-600 dark:text-indigo-400">Firebase Auth & Firestore</span>
+            <!-- Firebase Cloud Sync Status Micro-Capsule (Chống vỡ dòng trên iPhone) -->
+            <div class="mb-5 flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-[11px] sm:text-xs shadow-2xs">
+              <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap min-w-0">
+                <span class="relative flex h-2 w-2 shrink-0">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-slate-500 dark:text-slate-400 font-medium shrink-0">Hạ tầng:</span>
+                <span class="font-bold text-indigo-600 dark:text-indigo-400">Firebase & Firestore</span>
               </div>
-              <span class="text-[10px] bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-semibold">Online Cloud Sync</span>
+              <span class="shrink-0 whitespace-nowrap text-[10px] bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold border border-emerald-200/60 dark:border-emerald-800/60 flex items-center gap-1">
+                <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>Online Sync</span>
+              </span>
             </div>
 
             <!-- Form Nhập Liệu -->

@@ -8,6 +8,21 @@ window.ShopVietViews = window.ShopVietViews || {};
 window.ShopVietViews.home = (function () {
   'use strict';
 
+  // Bộ chuẩn hóa mã Voucher / Coupon tương thích toàn diện iOS Smart Punctuation & Unicode
+  function normalizeVoucherCode(str) {
+    if (!str) return '';
+    return String(str)
+      // Chuyển toàn bộ các biến thể dấu gạch ngang của iOS/Unicode về chuẩn '-'
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+      // Xóa ký tự khoảng trắng vô hình và khoảng cách đặc biệt
+      .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+      // Cắt sạch khoảng trắng 2 đầu
+      .trim()
+      // Viết HOA toàn bộ
+      .toUpperCase();
+  }
+  window.ShopVietNormalizeVoucher = normalizeVoucherCode;
+
   // Helper render an toàn ảnh đại diện sản phẩm (chống vỡ thẻ, chống tràn mã onerror và tương thích 100% SVG/WebP/PNG)
   function renderSafeProductImage(prod, imgClass, fallbackClass) {
     imgClass = imgClass || 'w-full h-full object-cover rounded-2xl';
@@ -717,6 +732,11 @@ window.ShopVietViews.home = (function () {
                 type="text" 
                 id="expanderCouponInput" 
                 placeholder="Nhập mã voucher (VD: GIAM10K)..." 
+                autocapitalize="characters" 
+                autocomplete="off" 
+                autocorrect="off" 
+                spellcheck="false"
+                oninput="this.value = window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(this.value) : this.value.toUpperCase();"
                 class="flex-1 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700/80 font-mono text-xs uppercase font-bold text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <button 
@@ -822,7 +842,7 @@ window.ShopVietViews.home = (function () {
       var btn = document.getElementById('expanderApplyCouponBtn');
       if (!input) return;
 
-      var rawCode = input.value.trim().toUpperCase();
+      var rawCode = normalizeVoucherCode(input.value);
       if (!rawCode) {
         if (msgEl) {
           msgEl.className = 'text-[11px] font-medium text-amber-400 block';
@@ -836,7 +856,7 @@ window.ShopVietViews.home = (function () {
         : [];
 
       var v = vouchers.find(function (item) {
-        return item && item.code && item.code.trim().toUpperCase() === rawCode;
+        return item && item.code && normalizeVoucherCode(item.code) === rawCode;
       });
 
       if (!v) {
@@ -848,8 +868,11 @@ window.ShopVietViews.home = (function () {
           'SHOPVIET': { code: 'SHOPVIET', type: 'order_discount', value: 20000, isUsed: false, desc: 'Giảm 20.000đ cho đơn đầu' },
           'ANTIGRAVITY': { code: 'ANTIGRAVITY', type: 'percent_discount', percent: 20, isUsed: false, desc: 'Giảm 20% công cụ coding AI' }
         };
-        if (staticVouchers[rawCode]) {
-          v = staticVouchers[rawCode];
+        for (var k in staticVouchers) {
+          if (normalizeVoucherCode(k) === rawCode) {
+            v = staticVouchers[k];
+            break;
+          }
         }
       }
 
@@ -1534,13 +1557,13 @@ window.ShopVietViews.home = (function () {
                     </div>
 
                     <!-- Bottom Price & CTA Button -->
-                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      <div class="flex flex-col min-w-0">
-                        <span class="text-xs sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-1.5 sm:gap-2">
+                      <div class="flex flex-col shrink-0">
+                        <span class="text-[13px] sm:text-base font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap">
                           ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.price) : `${prod.price.toLocaleString('vi-VN')} đ`}
                         </span>
                         ${prod.oldPrice ? `
-                          <span class="text-[10px] sm:text-[11px] text-slate-400 line-through truncate -mt-0.5">
+                          <span class="text-[10px] sm:text-[11px] text-slate-400 line-through whitespace-nowrap -mt-0.5">
                             ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.oldPrice) : `${prod.oldPrice.toLocaleString('vi-VN')} đ`}
                           </span>
                         ` : ''}
@@ -1550,16 +1573,16 @@ window.ShopVietViews.home = (function () {
                         <button 
                           disabled 
                           onclick="event.stopPropagation()" 
-                          class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-full cursor-not-allowed shrink-0"
+                          class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-[11px] sm:text-xs font-semibold px-2 sm:px-3.5 py-1.5 rounded-full cursor-not-allowed shrink-0"
                         >
                           Hết hàng
                         </button>
                       ` : `
                         <button 
                           onclick="event.stopPropagation(); ShopVietViews.home.handleBuyNowClick(event, '${prod.id}', this)" 
-                          class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-[11px] sm:text-xs font-semibold px-2 sm:px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1 sm:gap-1.5 shrink-0 cursor-pointer"
                         >
-                          <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                          <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                           <span>Mua ngay</span>
                         </button>
                       `}

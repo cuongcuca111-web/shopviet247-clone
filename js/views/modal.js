@@ -8,6 +8,21 @@ window.ShopVietViews = window.ShopVietViews || {};
 window.ShopVietViews.modal = (function () {
   'use strict';
 
+  // Bộ chuẩn hóa mã Voucher / Coupon tương thích toàn diện iOS Smart Punctuation & Unicode
+  const normalizeVoucherCode = (typeof window !== 'undefined' && window.ShopVietNormalizeVoucher)
+    ? window.ShopVietNormalizeVoucher
+    : function (str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+          .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+          .trim()
+          .toUpperCase();
+      };
+  if (typeof window !== 'undefined' && !window.ShopVietNormalizeVoucher) {
+    window.ShopVietNormalizeVoucher = normalizeVoucherCode;
+  }
+
   let currentProduct = null;
   let currentQty = 1;
   let appliedVoucher = null; // Voucher đang áp dụng trong Modal Mua Nhanh
@@ -356,7 +371,12 @@ window.ShopVietViews.modal = (function () {
                   <div class="flex items-center gap-2">
                     <input 
                       type="text" 
-                      id="quickBuyVoucherInput" 
+                      id="quickBuyVoucherInput"
+                      autocapitalize="characters"
+                      autocomplete="off"
+                      autocorrect="off"
+                      spellcheck="false"
+                      oninput="this.value = window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(this.value) : this.value.toUpperCase();" 
                       placeholder="" 
                       class="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 font-mono text-xs uppercase font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       onkeydown="if(event.key==='Enter'){event.preventDefault();ShopVietViews.modal.applyVoucherInQuickBuy();}"
@@ -512,7 +532,7 @@ window.ShopVietViews.modal = (function () {
       const input = document.getElementById('quickBuyVoucherInput');
       const msgEl = document.getElementById('quickBuyVoucherMsg');
       const btn = document.getElementById('quickBuyVoucherBtn');
-      const rawCode = input ? input.value.trim().toUpperCase() : '';
+      const rawCode = input ? normalizeVoucherCode(input.value) : '';
 
       if (!rawCode) {
         if (msgEl) {
@@ -605,7 +625,7 @@ window.ShopVietViews.modal = (function () {
         : [];
 
       let v = vouchers.find(function (item) {
-        return item && item.code && item.code.trim().toUpperCase() === rawCode;
+        return item && item.code && normalizeVoucherCode(item.code) === rawCode;
       });
 
       // Kiểm tra danh sách mã tĩnh bổ sung nếu không tìm thấy trong vouchers
@@ -1318,7 +1338,7 @@ window.ShopVietViews.modal = (function () {
     applyCoupon: async function (orderCode) {
       const input = document.getElementById('quickpay-coupon-input');
       const msgEl = document.getElementById('quickpay-coupon-message');
-      const rawCode = input ? input.value.trim().toUpperCase() : '';
+      const rawCode = input ? normalizeVoucherCode(input.value) : '';
 
       if (!rawCode) {
         if (msgEl) {
@@ -1387,7 +1407,7 @@ window.ShopVietViews.modal = (function () {
         : [];
 
       let v = vouchers.find(function (item) {
-        return item && item.code && item.code.trim().toUpperCase() === rawCode;
+        return item && item.code && normalizeVoucherCode(item.code) === rawCode;
       });
 
       if (!v) {

@@ -2059,13 +2059,13 @@
 
     // Áp dụng và đánh dấu mã voucher đã sử dụng cho đơn hàng hoặc nạp ví
     applyVoucher: function (code, userEmail, orderCode) {
-      const clean = (code || '').trim().toUpperCase();
+      const clean = window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(code) : (code || '').trim().toUpperCase();
       if (!clean) {
         return { success: false, message: 'Vui lòng cung cấp mã voucher!' };
       }
       const list = this.getVouchers();
       const idx = list.findIndex(function (v) {
-        return v.code && v.code.toUpperCase() === clean;
+        return v.code && (window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(v.code) : v.code.toUpperCase()) === clean;
       });
 
       if (idx === -1) {
@@ -2093,7 +2093,7 @@
 
     // Áp dụng mã giảm giá
     applyDiscount: function (code) {
-      const clean = (code || '').trim().toUpperCase();
+      const clean = window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(code) : (code || '').trim().toUpperCase();
       if (!clean) {
         this.state.discountCode = { code: '', percent: 0, amount: 0 };
         this.save();
@@ -2104,7 +2104,7 @@
       // 1. Tra cứu trong kho mã Voucher động từ Admin
       const dynamicVouchers = this.getVouchers ? this.getVouchers() : [];
       const foundVoucher = dynamicVouchers.find(function (v) {
-        return v.code && v.code.toUpperCase() === clean;
+        return v.code && (window.ShopVietNormalizeVoucher ? window.ShopVietNormalizeVoucher(v.code) : v.code.toUpperCase()) === clean;
       });
 
       if (foundVoucher) {

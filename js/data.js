@@ -6,6 +6,21 @@
 (function () {
   'use strict';
 
+  // Bộ chuẩn hóa mã Voucher / Coupon tương thích toàn diện iOS Smart Punctuation & Unicode
+  function normalizeVoucherCode(str) {
+    if (!str) return '';
+    return String(str)
+      // Chuyển toàn bộ các biến thể dấu gạch ngang của iOS/Unicode về chuẩn '-'
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+      // Xóa ký tự khoảng trắng vô hình và khoảng cách đặc biệt
+      .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+      // Cắt sạch khoảng trắng 2 đầu
+      .trim()
+      // Viết HOA toàn bộ
+      .toUpperCase();
+  }
+  window.ShopVietNormalizeVoucher = normalizeVoucherCode;
+
   // SVG Helper Icons for Product Brands (100% SVG độc bản, chuẩn nét 2px, bo góc, tương thích Light/Dark mode)
   const BRAND_ICONS = {
     cursor: `<svg class="w-8 h-8 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07 4 4z"/><path d="m13.58 13.58 6.42 6.42"/></svg>`,
