@@ -122,7 +122,7 @@
       "isBestSeller": true,
       "badgeColor": "bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30",
       "autoDelivery": false,
-      "warranty": "Bảo hành chính chủ",
+      "warranty": "",
       "desc": "Kích hoạt ngay bằng link mời Google One chính chủ. Sử dụng Gemini Advanced 1.5 Pro/Flash, tích hợp Antigravity 2.0 Agentic coding và tặng kèm 500 Credits Veo Video AI.",
       "instructions": "Sau khi thanh toán thành công, hệ thống gửi ngay Link kích hoạt vào màn hình và email. Click link để nhận tài khoản ngay lập tức!",
       "iconType": "gemini",
@@ -471,6 +471,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T13:22:39.591Z",
-  "version": 1793452959591
+  "updatedAt": "2026-10-31T13:22:43.149Z",
+  "version": 1793452963149
 }
