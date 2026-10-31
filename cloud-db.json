@@ -144,21 +144,6 @@
   "schedules": [],
   "orders": [
     {
-      "id": "DJ2026771",
-      "date": "2026-03-25 09:15:10",
-      "productId": "prod-002",
-      "productName": "Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email Cá Nhân",
-      "price": 120000,
-      "quantity": 1,
-      "total": 120000,
-      "status": "completed",
-      "statusText": "Đã hoàn tất",
-      "paymentMethod": "VietQR (Techcombank)",
-      "deliveryType": "Email mời Cursor Team",
-      "licenseKey": "CURSOR-PRO-TEAM: Đã gán gói Pro thành công cho email: huy.nguyen@example.com",
-      "userEmail": "minhcuong111aaa@gmail.com"
-    },
-    {
       "id": "#DJ20263LDY",
       "orderCode": "#DJ20263LDY",
       "memo": "FMF642SP",
@@ -409,8 +394,9 @@
   "deletedIds": [
     "SCH-002",
     "SCH-001",
-    "SV20P-PEY6"
+    "SV20P-PEY6",
+    "DJ2026771"
   ],
-  "updatedAt": "2026-10-31T06:08:33.316Z",
-  "version": 1793426913316
+  "updatedAt": "2026-10-31T06:08:46.592Z",
+  "version": 1793426926592
 }
