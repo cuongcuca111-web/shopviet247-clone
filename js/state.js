@@ -590,7 +590,7 @@
     },
 
     // Đẩy toàn bộ cơ sở dữ liệu hiện tại (Users, Products, Vouchers, Schedules, Orders) lên GitHub Cloud Storage & Fallback REST API
-    pushAllToCloud: async function (silent = false) {
+    pushAllToCloud: async function (silent = false, skipBroadcast = false) {
       try {
         const users = this.getUsersDB();
         const customProducts = this.getCustomProducts();
@@ -697,6 +697,20 @@
           console.log('[ShopVietState] Đã đồng bộ dự phòng lên Cloud REST API!');
         } catch (errRest) {
           console.warn('[ShopVietState] Fallback REST PUT error:', errRest);
+        }
+
+        // 2.5 LẬP TỨC PHÁT SÓNG TÍN HIỆU ĐỒNG BỘ REALTIME TỚI TẤT CẢ CLIENTS & TABS
+        if (!skipBroadcast) {
+          try {
+            this.broadcastAdminChange('products_updated', {
+              products: customProducts,
+              count: customProducts.length,
+              updatedAt: now,
+              timestamp: isoNow
+            }, true);
+          } catch (eBcast) {
+            console.warn('[ShopVietState] broadcastAdminChange from pushAllToCloud error:', eBcast);
+          }
         }
 
         // 3. THÔNG BÁO TOAST THÀNH CÔNG CHO NGƯỜI DÙNG
@@ -862,7 +876,7 @@
     },
 
     // Phát tín hiệu thay đổi từ Admin tới mọi tab, mọi thiết bị
-    broadcastAdminChange: function (changeType, payload) {
+    broadcastAdminChange: function (changeType, payload, skipCloudPush = false) {
       try {
         const now = Date.now();
         this.setLastUpdatedAt(now);
@@ -916,10 +930,12 @@
           } catch (e) {}
         }
 
-        // 4. Gọi pushAllToCloud() để đẩy lên GitHub Cloud Storage & REST API
-        this.pushAllToCloud(true).catch(function (err) {
-          console.warn('[ShopVietState] pushAllToCloud in broadcastAdminChange error:', err);
-        });
+        // 4. Gọi pushAllToCloud() để đẩy lên GitHub Cloud Storage & REST API nếu chưa được đẩy
+        if (!skipCloudPush) {
+          this.pushAllToCloud(true, true).catch(function (err) {
+            console.warn('[ShopVietState] pushAllToCloud in broadcastAdminChange error:', err);
+          });
+        }
 
         console.log('[ShopVietState] broadcastAdminChange đã gửi tín hiệu:', changeType, messageData);
         return true;
@@ -962,8 +978,8 @@
       }
     },
 
-    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat Zero-Cache 2.5s)
-    startRealtimeDaemon: function (intervalMs = 2500) {
+    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat Zero-Cache 2.0s)
+    startRealtimeDaemon: function (intervalMs = 2000) {
       if (this._realtimeDaemonRunning) return this;
       this._realtimeDaemonRunning = true;
       this.initBroadcastChannel();
@@ -1094,7 +1110,11 @@
             if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
               try {
                 window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
-                  detail: { type: 'cloud_heartbeat_sync', updatedAt: cloudUpdatedAt }
+                  detail: {
+                    type: 'cloud_heartbeat_sync',
+                    updatedAt: cloudUpdatedAt,
+                    message: '🔔 Cửa hàng vừa cập nhật sản phẩm mới!'
+                  }
                 }));
               } catch (e) {}
             }
@@ -1449,7 +1469,7 @@
       this.load();
       this.initBroadcastChannel();
       this.setupFirestoreRealtimeListener();
-      this.startRealtimeDaemon(2500);
+      this.startRealtimeDaemon(2000);
       this.syncAllFromCloud().catch(function () {});
 
       // Auto-Sync on Focus & Tab Visibility Change (Đồng bộ tức thì khi chuyển tab / mở lại màn hình)
@@ -1490,7 +1510,7 @@
         if (!this._isInitialized) {
           this.initBroadcastChannel();
           this.setupFirestoreRealtimeListener();
-          this.startRealtimeDaemon(2500);
+          this.startRealtimeDaemon(2000);
         }
 
         // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền

@@ -378,6 +378,27 @@
                 <span class="hidden md:inline">Test Ping Realtime</span>
               </button>
 
+              <!-- NÚT MASTER: XUẤT BẢN & ĐỒNG BỘ TOÀN CẦU TỨC THÌ -->
+              <button 
+                type="button" 
+                id="adminMasterPublishBtn"
+                onclick="window.ShopVietViews.admin.masterPublish()" 
+                title="Xuất bản dữ liệu lên GitHub Cloud Storage và phát sóng tức thì đến tất cả thiết bị trên toàn cầu"
+                class="px-4 py-2 sm:px-5 sm:py-2 rounded-[14px] bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 border border-white/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <span class="relative flex h-2.5 w-2.5 shrink-0">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                </span>
+                <svg id="adminMasterPublishIcon" class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                  <path d="M12 9V4s3.03.55 4 2c1.08 1.62 0 5 0 5"/>
+                </svg>
+                <span id="adminMasterPublishText">🚀 XUẤT BẢN &amp; ĐỒNG BỘ TOÀN CẦU TỨC THÌ</span>
+              </button>
+
               <!-- Nút Đồng Bộ Đám Mây Đa Thiết Bị -->
               <button 
                 type="button" 
@@ -1880,6 +1901,25 @@
 
             <!-- Nút Hành Động Phát Sóng Nổi Bật -->
             <div class="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
+              <!-- NÚT MASTER PHỤ TRONG TRẠM REALTIME HUB -->
+              <button 
+                type="button" 
+                onclick="window.ShopVietViews.admin.masterPublish()" 
+                class="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white font-black text-xs sm:text-sm tracking-wide shadow-xl shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span class="relative flex h-2.5 w-2.5 shrink-0">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                </span>
+                <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                  <path d="M12 9V4s3.03.55 4 2c1.08 1.62 0 5 0 5"/>
+                </svg>
+                <span>🚀 XUẤT BẢN &amp; ĐỒNG BỘ TOÀN CẦU TỨC THÌ</span>
+              </button>
+
               <button 
                 type="button" 
                 onclick="window.ShopVietViews.admin.broadcastTestPing()" 
@@ -4172,6 +4212,82 @@
       if (currentActiveTab === 'realtime') {
         const tabContent = document.getElementById('adminTabContent');
         if (tabContent) tabContent.innerHTML = renderTabRealtime();
+      }
+    },
+
+    // 25. MASTER ACTION: XUẤT BẢN & ĐỒNG BỘ TOÀN CẦU TỨC THÌ
+    masterPublish: async function () {
+      const btn = document.getElementById('adminMasterPublishBtn');
+      const icon = document.getElementById('adminMasterPublishIcon');
+      const text = document.getElementById('adminMasterPublishText');
+
+      if (btn) btn.disabled = true;
+      if (text) text.textContent = 'Đang xuất bản lên Cloud...';
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const now = Date.now();
+        const isoNow = new Date(now).toISOString();
+
+        // 1. Lấy toàn bộ sản phẩm hiện tại, cập nhật updatedAt
+        const prods = (window.ShopVietData && window.ShopVietData.products) || [];
+        if (window.ShopVietState) {
+          window.ShopVietState.setLastUpdatedAt(now);
+          if (typeof window.ShopVietState.saveCustomProducts === 'function') {
+            window.ShopVietState.saveCustomProducts(prods);
+          }
+        }
+
+        // 2. Đẩy toàn bộ dữ liệu trực tiếp lên GitHub Cloud Storage & Fallback REST
+        let pushSuccess = false;
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          pushSuccess = await window.ShopVietState.pushAllToCloud(false);
+        }
+
+        // 3. Phát sóng realtime tín hiệu master_publish tới tất cả thiết bị
+        if (window.ShopVietState && typeof window.ShopVietState.broadcastAdminChange === 'function') {
+          window.ShopVietState.broadcastAdminChange('master_publish', {
+            action: 'master_publish',
+            products: prods,
+            count: prods.length,
+            timestamp: now,
+            updatedAt: now,
+            isoTimestamp: isoNow,
+            source: 'admin_master_publish'
+          }, true);
+        }
+
+        // 4. Ghi nhận nhật ký phát sóng trong Admin Portal
+        recordBroadcast('master_publish', `Xuất bản toàn cầu (${prods.length} sản phẩm)`);
+
+        // 5. Hiển thị Toast / Modal thành công rực rỡ
+        notify('🎉 XUẤT BẢN THÀNH CÔNG! Dữ liệu đã được phát sóng đến tất cả thiết bị trên toàn cầu!', 'success');
+
+        // Bắn CustomEvent shopviet_realtime_update để màn hình Home nhấp nháy phát sáng
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+              detail: {
+                type: 'master_publish',
+                message: '🔔 Cửa hàng vừa cập nhật sản phẩm mới!',
+                updatedAt: now
+              }
+            }));
+          } catch (eEvt) {}
+        }
+
+        // Cập nhật lại tab realtime nếu đang mở
+        if (currentActiveTab === 'realtime') {
+          const tabContent = document.getElementById('adminTabContent');
+          if (tabContent) tabContent.innerHTML = renderTabRealtime();
+        }
+      } catch (err) {
+        console.warn('[Admin Master Publish Error]:', err);
+        notify('Lỗi xuất bản lên Đám Mây: ' + (err.message || 'Vui lòng kiểm tra kết nối mạng!'), 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (text) text.textContent = '🚀 XUẤT BẢN & ĐỒNG BỘ TOÀN CẦU TỨC THÌ';
+        if (icon) icon.classList.remove('animate-spin');
       }
     },
 

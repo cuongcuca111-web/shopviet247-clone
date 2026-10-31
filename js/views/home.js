@@ -8,6 +8,38 @@ window.ShopVietViews = window.ShopVietViews || {};
 window.ShopVietViews.home = (function () {
   'use strict';
 
+  // Helper render an toàn ảnh đại diện sản phẩm (chống vỡ thẻ, chống tràn mã onerror và tương thích 100% SVG/WebP/PNG)
+  function renderSafeProductImage(prod, imgClass, fallbackClass) {
+    imgClass = imgClass || 'w-full h-full object-cover rounded-2xl';
+    fallbackClass = fallbackClass || 'w-full h-full p-3.5 flex items-center justify-center';
+    if (!prod) return '';
+    const iconSvg = (window.ShopVietData && typeof window.ShopVietData.getBrandIcon === 'function')
+      ? window.ShopVietData.getBrandIcon(prod.iconType)
+      : '';
+
+    let rawUrl = (prod.imageUrl || '').trim();
+    if (!rawUrl) {
+      return `<div class="${fallbackClass}">${iconSvg}</div>`;
+    }
+
+    // Nếu imageUrl bắt đầu trực tiếp bằng khối thẻ <svg
+    if (rawUrl.startsWith('<svg') || rawUrl.startsWith('<?xml')) {
+      return `<div class="${fallbackClass} overflow-hidden">${rawUrl}</div>`;
+    }
+
+    // Chuyển đổi an toàn dấu ngoặc kép và ký tự đặc biệt trong URL
+    let safeSrc = rawUrl;
+    if (safeSrc.startsWith('data:image/svg+xml;utf8,') || safeSrc.startsWith('data:image/svg+xml,')) {
+      const prefix = safeSrc.startsWith('data:image/svg+xml;utf8,') ? 'data:image/svg+xml;utf8,' : 'data:image/svg+xml,';
+      const svgBody = safeSrc.substring(prefix.length);
+      safeSrc = prefix + svgBody.replace(/"/g, '%22').replace(/#/g, '%23');
+    } else {
+      safeSrc = safeSrc.replace(/"/g, '&quot;');
+    }
+
+    return `<img src="${safeSrc}" alt="" class="${imgClass}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" /><div style="display:none;" class="${fallbackClass}">${iconSvg}</div>`;
+  }
+
   // Helper render thumbnail với gradient & SVG sắc nét
   function renderThumbnail(prod) {
     const brandGradients = {
@@ -89,9 +121,7 @@ window.ShopVietViews.home = (function () {
 
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
         <div class="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3.5'} shadow-xl group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-          ${prod.imageUrl 
-            ? `<img src="${prod.imageUrl}" alt="${prod.name}" class="w-full h-full object-cover rounded-2xl" onerror="this.onerror=null; this.classList.add('hidden'); if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');" /><div class="hidden w-full h-full p-3.5 flex items-center justify-center">${window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : ''}</div>`
-            : (window.ShopVietData ? window.ShopVietData.getBrandIcon(prod.iconType) : '')}
+          ${renderSafeProductImage(prod, 'w-full h-full object-cover rounded-2xl', 'w-full h-full p-3.5 flex items-center justify-center')}
         </div>
 
         <!-- Bottom brand label overlay (Đã bỏ chữ 1 tháng, nhãn thương hiệu mở rộng lấp trọn vẹn khoảng trống) -->
@@ -840,8 +870,14 @@ window.ShopVietViews.home = (function () {
      */
     triggerRealtimeUpdate: function (detail) {
       window.dispatchEvent(new CustomEvent('shopviet_realtime_update', { detail: detail || {} }));
-    }
+    },
+    renderSafeProductImage: renderSafeProductImage
   };
+
+  // Expose helper to global views namespace
+  if (typeof window !== 'undefined') {
+    window.ShopVietViews.renderSafeProductImage = renderSafeProductImage;
+  }
 
   // Tự động kích hoạt listener toàn cục ngay khi nạp file
   if (typeof window !== 'undefined') {

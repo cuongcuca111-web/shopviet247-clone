@@ -26,6 +26,39 @@ window.ShopVietViews.modal = (function () {
     return Number(amount).toLocaleString('vi-VN');
   }
 
+  // Helper render an toàn ảnh đại diện sản phẩm (chống vỡ thẻ, chống tràn mã onerror và tương thích 100% SVG/WebP/PNG)
+  function renderSafeProductImage(prod, imgClass, fallbackClass) {
+    if (window.ShopVietViews && typeof window.ShopVietViews.renderSafeProductImage === 'function') {
+      return window.ShopVietViews.renderSafeProductImage(prod, imgClass, fallbackClass);
+    }
+    imgClass = imgClass || 'w-full h-full object-cover rounded-2xl';
+    fallbackClass = fallbackClass || 'relative z-10 w-10 h-10 flex items-center justify-center';
+    if (!prod) return '';
+    const iconSvg = (window.ShopVietData && typeof window.ShopVietData.getBrandIcon === 'function')
+      ? window.ShopVietData.getBrandIcon(prod.iconType)
+      : '';
+
+    let rawUrl = (prod.imageUrl || '').trim();
+    if (!rawUrl) {
+      return `<div class="${fallbackClass}">${iconSvg}</div>`;
+    }
+
+    if (rawUrl.startsWith('<svg') || rawUrl.startsWith('<?xml')) {
+      return `<div class="${fallbackClass} overflow-hidden">${rawUrl}</div>`;
+    }
+
+    let safeSrc = rawUrl;
+    if (safeSrc.startsWith('data:image/svg+xml;utf8,') || safeSrc.startsWith('data:image/svg+xml,')) {
+      const prefix = safeSrc.startsWith('data:image/svg+xml;utf8,') ? 'data:image/svg+xml;utf8,' : 'data:image/svg+xml,';
+      const svgBody = safeSrc.substring(prefix.length);
+      safeSrc = prefix + svgBody.replace(/"/g, '%22').replace(/#/g, '%23');
+    } else {
+      safeSrc = safeSrc.replace(/"/g, '&quot;');
+    }
+
+    return `<img src="${safeSrc}" alt="" class="${imgClass}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" /><div style="display:none;" class="${fallbackClass}">${iconSvg}</div>`;
+  }
+
   // Helper nạp động cấu hình VietQR từ Portal Admin (Mặc định: Sacombank 100071864927 LE BUI MINH CUONG)
   function getActiveVietQRConfig() {
     if (window.ShopVietState && typeof window.ShopVietState.getVietQRConfig === 'function') {
@@ -182,11 +215,7 @@ window.ShopVietViews.modal = (function () {
               <div class="flex items-start gap-3.5 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
                 <!-- Square Thumbnail Chuẩn Sang Trọng Như Card Ảnh 4 (Nền trắng/dark, bo góc 2xl, đổ bóng tinh tế) -->
                 <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center ${currentProduct.imageUrl ? 'p-0' : 'p-2.5'} shrink-0 overflow-hidden relative group">
-                  ${currentProduct.imageUrl 
-                    ? `<img src="${currentProduct.imageUrl}" alt="${currentProduct.name}" class="w-full h-full object-cover rounded-2xl" onerror="this.onerror=null; this.classList.add('hidden'); if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');" /><div class="hidden relative z-10 w-10 h-10 flex items-center justify-center">${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}</div>`
-                    : `<div class="relative z-10 w-10 h-10 flex items-center justify-center">
-                        ${window.ShopVietData ? window.ShopVietData.getBrandIcon(currentProduct.iconType) : ''}
-                      </div>`}
+                  ${renderSafeProductImage(currentProduct, 'w-full h-full object-cover rounded-2xl', 'relative z-10 w-10 h-10 flex items-center justify-center')}
                 </div>
 
                 <!-- Title, Badges & Price -->
