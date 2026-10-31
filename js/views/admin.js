@@ -4975,10 +4975,18 @@
 
     const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
                         (window.ShopVietState && window.ShopVietState.currentUser);
-    const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+    const adminEmails = ['cuongcuca111@gmail.com', 'minhcuong111aaa@gmail.com', 'minhcuong111@gmail.com'];
+    const isAdmin = Boolean(currentUser && (adminEmails.includes(currentUser.email) || currentUser.role === 'admin')) || Boolean(
+      (window.location.hash && window.location.hash.includes('admin')) ||
+      (window.ShopVietViews && window.ShopVietViews.admin && window.ShopVietViews.admin.isOpen) ||
+      document.getElementById('adminPortalModal') ||
+      (document.getElementById('adminMount') && document.getElementById('adminMount').children.length > 0) ||
+      (typeof isAuthenticated === 'function' && isAuthenticated()) ||
+      Boolean(sessionIntervalTimer)
+    );
 
     if (!isAdmin) {
-      console.log('[PWA-Admin-Notify] Bỏ qua xin quyền vì tài khoản hiện tại không phải là Admin (minhcuong111aaa@gmail.com).');
+      console.log('[PWA-Admin-Notify] Bỏ qua xin quyền vì tài khoản hiện tại không phải là Admin.');
       return false;
     }
 
@@ -5044,13 +5052,21 @@
   window.triggerAdminOrderNotification = async function (order, isTest = false) {
     if (!order) return;
 
-    // 1. Kiểm tra quyền: Chỉ tài khoản admin (minhcuong111aaa@gmail.com) mới nhận thông báo (trừ khi test trực tiếp)
+    // 1. Kiểm tra quyền: Chỉ tài khoản admin (cuongcuca111@gmail.com, minhcuong111aaa@gmail.com...) mới nhận thông báo (trừ khi test trực tiếp)
     const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
                         (window.ShopVietState && window.ShopVietState.currentUser);
-    const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+    const adminEmails = ['cuongcuca111@gmail.com', 'minhcuong111aaa@gmail.com', 'minhcuong111@gmail.com'];
+    const isAdmin = Boolean(currentUser && (adminEmails.includes(currentUser.email) || currentUser.role === 'admin')) || Boolean(
+      (window.location.hash && window.location.hash.includes('admin')) ||
+      (window.ShopVietViews && window.ShopVietViews.admin && window.ShopVietViews.admin.isOpen) ||
+      document.getElementById('adminPortalModal') ||
+      (document.getElementById('adminMount') && document.getElementById('adminMount').children.length > 0) ||
+      (typeof isAuthenticated === 'function' && isAuthenticated()) ||
+      Boolean(sessionIntervalTimer)
+    );
 
     if (!isAdmin && !isTest) {
-      console.log('[PWA-Admin-Notify] Bỏ qua vì tài khoản hiện tại không phải là Admin (minhcuong111aaa@gmail.com).');
+      console.log('[PWA-Admin-Notify] Bỏ qua vì tài khoản hiện tại không phải là Admin.');
       return;
     }
 
@@ -5247,7 +5263,8 @@
       // Cho phép chạy kiểm tra thông báo nếu Admin Portal đang mở hoặc session timer đang chạy hoặc user là admin
       const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
                           (window.ShopVietState && window.ShopVietState.currentUser);
-      const isUserAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+      const adminEmails = ['cuongcuca111@gmail.com', 'minhcuong111aaa@gmail.com', 'minhcuong111@gmail.com'];
+      const isUserAdmin = Boolean(currentUser && (adminEmails.includes(currentUser.email) || currentUser.role === 'admin'));
       const isAdminPortalActive = Boolean(
         (window.location.hash && window.location.hash.includes('admin')) ||
         (window.ShopVietViews && window.ShopVietViews.admin && window.ShopVietViews.admin.isOpen) ||
@@ -5355,6 +5372,23 @@
         if (tabContent && currentActiveTab === 'orders') {
           tabContent.innerHTML = renderTabOrders();
         }
+      }
+    });
+
+    // 6. Lắng nghe visibilitychange và focus (iOS Safari đánh thức khi mở app)
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        checkPendingReviewOrders();
+        if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+          window.ShopVietState.syncAllFromCloud(false);
+        }
+      }
+    });
+
+    window.addEventListener('focus', function () {
+      checkPendingReviewOrders();
+      if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+        window.ShopVietState.syncAllFromCloud(false);
       }
     });
   })();

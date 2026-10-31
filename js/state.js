@@ -572,40 +572,52 @@
         // 5. Đồng bộ Orders (Đơn hàng)
         if (Array.isArray(data.orders) && data.orders.length > 0) {
           const self = this;
+          const cleanCode = function (k) {
+            return String(k || '').replace(/^#/, '').trim().toUpperCase();
+          };
           const localOrders = this.getOrders().filter(function (lo) {
-            const orderId = lo.id || lo.orderCode;
-            return !self.isDeleted(orderId) && !self.isDeleted(lo.id) && !self.isDeleted(lo.orderCode);
+            const orderId = lo.id || lo.orderCode || lo.rawCode;
+            const cId = cleanCode(orderId);
+            return !self.isDeleted(orderId) && !self.isDeleted(cId) && !self.isDeleted(lo.id) && !self.isDeleted(lo.orderCode);
           });
           const mergedOrders = [...localOrders];
           let ordersChanged = false;
           data.orders.forEach(function (co) {
             if (!co) return;
-            const orderId = co.id || co.orderCode;
-            if (!orderId) return;
-            if (self.isDeleted(orderId) || self.isDeleted(co.id) || self.isDeleted(co.orderCode)) return;
+            const cCode = cleanCode(co.id || co.orderCode || co.rawCode);
+            if (!cCode) return;
+            if (self.isDeleted(co.id) || self.isDeleted(co.orderCode) || self.isDeleted(cCode)) return;
             const idx = mergedOrders.findIndex(function (lo) {
-              return (lo.id && lo.id === orderId) || (lo.orderCode && lo.orderCode === orderId);
+              const lCode = cleanCode(lo.id || lo.orderCode || lo.rawCode);
+              return lCode && lCode === cCode;
             });
             if (idx === -1) {
               mergedOrders.unshift(co);
               ordersChanged = true;
             } else {
-              if (co.status && co.status !== mergedOrders[idx].status) {
+              const currentStatus = mergedOrders[idx].status;
+              const cloudStatus = co.status;
+              if (cloudStatus === 'completed' || (cloudStatus && cloudStatus !== currentStatus)) {
+                mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co);
+                ordersChanged = true;
+              } else if (co.customDeliveryLink || co.deliveryInfo || co.adminMessage) {
                 mergedOrders[idx] = Object.assign({}, mergedOrders[idx], co);
                 ordersChanged = true;
               }
             }
           });
-          if (ordersChanged) {
+          if (ordersChanged || isManual) {
             const cleanFinalOrders = mergedOrders.filter(function (o) {
               if (!o) return false;
-              const oid = o.id || o.orderCode;
-              return !self.isDeleted(oid) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
+              const oid = o.id || o.orderCode || o.rawCode;
+              const cOid = cleanCode(oid);
+              return !self.isDeleted(oid) && !self.isDeleted(cOid) && !self.isDeleted(o.id) && !self.isDeleted(o.orderCode);
             });
             this.state.orders = cleanFinalOrders;
             this.save();
             try {
               localStorage.setItem('shopviet_orders', JSON.stringify(cleanFinalOrders));
+              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(cleanFinalOrders));
             } catch (e) {}
             hasChange = true;
           }
@@ -746,22 +758,40 @@
 
         const rawOrders = this.getOrders();
         const orderMap = new Map();
+        const cleanCode = function (k) {
+          return String(k || '').replace(/^#/, '').trim().toUpperCase();
+        };
+
         [...syncOrders, ...localOrders, ...rawOrders].forEach(function (o) {
           if (!o) return;
-          const key = o.id || o.orderCode || o.rawCode;
+          const rawKey = o.id || o.orderCode || o.rawCode;
+          const key = cleanCode(rawKey);
           if (!key) return;
           if (!orderMap.has(key)) {
             orderMap.set(key, o);
           } else {
             const existing = orderMap.get(key);
-            orderMap.set(key, Object.assign({}, existing, o));
+            let merged = Object.assign({}, existing, o);
+            // Nếu một trong hai có status === 'completed', trạng thái cuối cùng BẮT BUỘC là 'completed'
+            if (existing.status === 'completed' || o.status === 'completed') {
+              merged.status = 'completed';
+              merged.statusText = 'Đã hoàn tất';
+              // Bảo toàn link và tin nhắn admin đã phê duyệt
+              merged.customDeliveryLink = existing.customDeliveryLink || o.customDeliveryLink || '';
+              merged.adminMessage = existing.adminMessage || o.adminMessage || '';
+              merged.licenseKey = existing.licenseKey || o.licenseKey || '';
+              merged.deliveryInfo = existing.deliveryInfo || o.deliveryInfo || null;
+              merged.approvedAt = existing.approvedAt || o.approvedAt || '';
+            }
+            orderMap.set(key, merged);
           }
         });
 
         const selfState = this;
         let orders = Array.from(orderMap.values()).filter(function (o) {
-          const k = o.id || o.orderCode;
-          return !selfState.isDeleted(k);
+          const k = o.id || o.orderCode || o.rawCode;
+          const cK = cleanCode(k);
+          return !selfState.isDeleted(k) && !selfState.isDeleted(cK);
         });
 
         // Sắp xếp: Ưu tiên đơn 'pending_review' lên vị trí đầu tiên
@@ -777,6 +807,7 @@
         this.save();
         try {
           localStorage.setItem('shopviet_orders', JSON.stringify(orders));
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(orders));
         } catch (e) {}
 
         const now = Date.now();

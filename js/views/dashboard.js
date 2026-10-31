@@ -121,11 +121,26 @@
     let allOrders = [];
     if (window.ShopVietState && typeof window.ShopVietState.getUserOrders === 'function') {
       allOrders = window.ShopVietState.getUserOrders(userEmail);
-    } else if (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
+    }
+    if ((!allOrders || allOrders.length === 0) && window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) {
       allOrders = window.ShopVietState.state.orders.filter(function (ord) {
         const ordEmail = (ord.userEmail || (ord.customer && ord.customer.email) || '').trim().toLowerCase();
         return ordEmail === userEmail;
       });
+    }
+    if (!allOrders || allOrders.length === 0) {
+      try {
+        const syncRaw = localStorage.getItem('shopviet247_cloud_orders_sync') || localStorage.getItem('shopviet_orders');
+        if (syncRaw) {
+          const parsed = JSON.parse(syncRaw);
+          if (Array.isArray(parsed)) {
+            allOrders = parsed.filter(function (ord) {
+              const ordEmail = (ord.userEmail || (ord.customer && ord.customer.email) || '').trim().toLowerCase();
+              return ordEmail === userEmail;
+            });
+          }
+        }
+      } catch (e) {}
     }
 
     return allOrders.map(function (ord, idx) {
@@ -135,13 +150,17 @@
       const date = ord.createdAtFormatted ? (ord.createdAtFormatted.includes(' ') ? ord.createdAtFormatted.split(' ')[1] : ord.createdAtFormatted) : (ord.date ? (ord.date.includes(' ') ? ord.date.split(' ')[0] : ord.date) : '28/10/2026');
       const total = ord.amount || ord.total || ord.price || 0;
       const status = ord.status || 'completed';
-      const statusText = status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' || status === 'pending_payment' ? 'Chờ thanh toán' : 'Hoàn tất');
+      const statusText = status === 'completed' ? 'Hoàn tất' : (status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' || status === 'pending_payment' ? 'Chờ thanh toán' : (ord.statusText || 'Hoàn tất')));
+      const customDeliveryLink = ord.customDeliveryLink || (ord.deliveryInfo && (ord.deliveryInfo.customDeliveryLink || ord.deliveryInfo.licenseKey)) || ord.licenseKey || '';
+      const adminMessage = ord.adminMessage || (ord.deliveryInfo && (ord.deliveryInfo.adminMessage || ord.deliveryInfo.guide)) || '';
+      const licenseKey = ord.licenseKey || (ord.deliveryInfo && ord.deliveryInfo.licenseKey) || customDeliveryLink;
+
       const deliveryInfo = ord.deliveryInfo || {
         account: ord.userEmail || user.email,
-        licenseKey: ord.licenseKey || `KEY-${id.replace('#', '')}-AI-PRO-2026`,
+        licenseKey: licenseKey || `KEY-${id.replace('#', '')}-AI-PRO-2026`,
         note: ord.deliveryType || 'Kích hoạt tự động qua email hoặc link mời bản quyền.',
         warranty: 'Bảo hành 1 đổi 1 suốt thời gian sử dụng',
-        guide: 'Đăng nhập vào dịch vụ chính thức và bắt đầu sử dụng. Cần trợ giúp vui lòng liên hệ CSKH 24/7.'
+        guide: adminMessage || 'Đăng nhập vào dịch vụ chính thức và bắt đầu sử dụng. Cần trợ giúp vui lòng liên hệ CSKH 24/7.'
       };
 
       return {
@@ -155,9 +174,9 @@
         statusText: statusText,
         userEmail: ord.userEmail || user.email,
         deliveryInfo: deliveryInfo,
-        customDeliveryLink: ord.customDeliveryLink || (ord.deliveryInfo && ord.deliveryInfo.customDeliveryLink) || '',
-        adminMessage: ord.adminMessage || (ord.deliveryInfo && ord.deliveryInfo.adminMessage) || '',
-        licenseKey: ord.licenseKey || (ord.deliveryInfo && ord.deliveryInfo.licenseKey) || ''
+        customDeliveryLink: customDeliveryLink,
+        adminMessage: adminMessage,
+        licenseKey: licenseKey
       };
     });
   }
