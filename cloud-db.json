@@ -12,14 +12,15 @@
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "usr_cuongcuca111",
-      "name": "Minh Cường",
+      "id": "usr_mvthhfw77ikb",
       "email": "cuongcuca111@gmail.com",
-      "phone": "0868668809",
-      "role": "admin",
       "password": "minhcuong111",
+      "name": "Minh Cường",
+      "phone": "",
       "balance": 250000,
-      "createdAt": "2026-03-20T10:00:00.000Z"
+      "role": "user",
+      "avatar": "M",
+      "createdAt": "2026-10-29T11:52:28.855Z"
     },
     {
       "id": "usr_mvtibr4c22o7",
@@ -165,8 +166,8 @@
     {
       "id": "ORD-TEST-999",
       "orderCode": "ORD-TEST-999",
-      "status": "rejected",
-      "statusText": "Đã từ chối",
+      "status": "completed",
+      "statusText": "Đã hoàn tất",
       "stockDeducted": false,
       "items": [
         {
@@ -177,7 +178,16 @@
       ],
       "amount": 138000,
       "rejectedAt": "2026-10-31T11:25:00.773Z",
-      "userEmail": "minhcuong111aaa@gmail.com"
+      "userEmail": "minhcuong111aaa@gmail.com",
+      "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopskill247-vip",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại ShopSkill247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "https://one.google.com/inv/gemini-pro-shopskill247-vip",
+      "approvedAt": "2026-10-31T11:36:07.749Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "https://one.google.com/inv/gemini-pro-shopskill247-vip",
+        "guide": "Cảm ơn bạn đã mua hàng tại ShopSkill247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
     },
     {
       "id": "#DJ2026THN2",
@@ -384,10 +394,10 @@
       "id": "DJ2026889",
       "date": "2026-03-28 14:20:35",
       "productId": "prod-001",
-      "productName": "[1 Tháng] Gemini Argon 4 Pro + 5TB Drive",
-      "price": 19000,
+      "productName": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
+      "price": 69000,
       "quantity": 1,
-      "total": 19000,
+      "total": 69000,
       "status": "completed",
       "statusText": "Đã hoàn tất",
       "paymentMethod": "VietQR (MB Bank - Tự động)",
@@ -407,6 +417,6 @@
     "SV30P-XA8S",
     "SV20P-PYGL"
   ],
-  "updatedAt": "2026-10-31T11:34:55.645Z",
-  "version": 1793446495645
+  "updatedAt": "2026-10-31T11:36:07.750Z",
+  "version": 1793446567750
 }
