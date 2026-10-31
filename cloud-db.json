@@ -134,18 +134,6 @@
       "createdAt": "2026-10-31T04:46:40.452Z"
     },
     {
-      "code": "SV20P-PEY6",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-10-29T16:17:13.606Z"
-    },
-    {
       "code": "SV30P-XA8S",
       "type": "percent_discount",
       "percent": 30,
@@ -466,6 +454,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:54:46.467Z",
-  "version": 1793422486467
+  "updatedAt": "2026-10-31T04:55:40.459Z",
+  "version": 1793422540459
 }
