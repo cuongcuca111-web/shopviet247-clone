@@ -42,7 +42,7 @@
       "price": 69000,
       "oldPrice": 250000,
       "discount": "-72%",
-      "stock": 99,
+      "stock": 98,
       "status": "in_stock",
       "rating": 5,
       "reviewsCount": 1,
@@ -461,6 +461,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T13:02:57.234Z",
-  "version": 1793451777234
+  "updatedAt": "2026-10-31T13:03:06.666Z",
+  "version": 1793451786666
 }
