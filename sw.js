@@ -1,10 +1,10 @@
 /**
  * ShopSkill247 Progressive Web App - Service Worker
- * Version: shopskill247-pwa-v1.4
+ * Version: shopskill247-pwa-v1.5
  * Strategy: Network-First falling back to Cache (luôn ưu tiên dữ liệu mới, offline mở tức thì)
  */
 
-const CACHE_NAME = 'shopskill247-pwa-v1.4';
+const CACHE_NAME = 'shopskill247-pwa-v1.5';
 
 const CORE_STATIC_ASSETS = [
   './',

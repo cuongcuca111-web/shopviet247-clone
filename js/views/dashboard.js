@@ -34,7 +34,7 @@
   // Dữ liệu đơn hàng mẫu mặc định cho tài khoản Admin Minh Cường
   const DEFAULT_INITIAL_ORDERS = [
     {
-      id: 'SV-98421',
+      id: '#DJ20268421',
       productId: 'prod-chatgpt',
       productName: 'ChatGPT Plus 1 Tháng (Chính chủ)',
       date: '28/10/2026',
@@ -52,7 +52,7 @@
       }
     },
     {
-      id: 'SV-96102',
+      id: '#DJ20266102',
       productId: 'prod-cursor',
       productName: 'Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email',
       date: '15/10/2026',
@@ -70,7 +70,7 @@
       }
     },
     {
-      id: 'SV-95210',
+      id: '#DJ20265210',
       productId: 'prod-canva',
       productName: 'Canva Pro Nâng Cấp Email Chính Chủ 1 Năm',
       date: '10/10/2026',
@@ -129,15 +129,16 @@
     }
 
     return allOrders.map(function (ord, idx) {
-      const id = ord.id ? (ord.id.startsWith('SV-') ? ord.id : 'SV-' + ord.id.replace(/[^0-9]/g, '')) : `SV-984${idx + 21}`;
+      const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.id || `DJ2026${idx + 100}`;
+      const id = rawCode.startsWith('#') ? rawCode : '#' + rawCode;
       const productName = ord.productName || (ord.product ? ord.product.name : (ord.items && ord.items[0] ? ord.items[0].name : 'Gói dịch vụ AI Pro'));
       const date = ord.createdAtFormatted ? (ord.createdAtFormatted.includes(' ') ? ord.createdAtFormatted.split(' ')[1] : ord.createdAtFormatted) : (ord.date ? (ord.date.includes(' ') ? ord.date.split(' ')[0] : ord.date) : '28/10/2026');
       const total = ord.amount || ord.total || ord.price || 0;
       const status = ord.status || 'completed';
-      const statusText = status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' ? 'Chờ thanh toán' : 'Hoàn tất');
+      const statusText = status === 'pending_review' ? 'Chờ duyệt' : (status === 'pending' || status === 'pending_payment' ? 'Chờ thanh toán' : 'Hoàn tất');
       const deliveryInfo = ord.deliveryInfo || {
         account: ord.userEmail || user.email,
-        licenseKey: ord.licenseKey || `SV-KEY-${id}-AI-PRO-2026`,
+        licenseKey: ord.licenseKey || `KEY-${id.replace('#', '')}-AI-PRO-2026`,
         note: ord.deliveryType || 'Kích hoạt tự động qua email hoặc link mời bản quyền.',
         warranty: 'Bảo hành 1 đổi 1 suốt thời gian sử dụng',
         guide: 'Đăng nhập vào dịch vụ chính thức và bắt đầu sử dụng. Cần trợ giúp vui lòng liên hệ CSKH 24/7.'
@@ -195,7 +196,7 @@
         {
           id: 'TX-892102',
           type: 'payment',
-          typeName: 'Thanh toán đơn hàng SV-98421',
+          typeName: 'Thanh toán đơn hàng #DJ20268421',
           amount: -499000,
           amountFormatted: '-499.000đ',
           balanceAfter: 1000,
@@ -459,7 +460,7 @@
               
               <div class="flex items-start justify-between">
                 <div>
-                  <span class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400" id="modalOrderId">SV-98421</span>
+                  <span class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400" id="modalOrderId">#DJ20268421</span>
                   <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-0.5" id="modalOrderProduct">
                     ChatGPT Plus 1 Tháng
                   </h3>
@@ -821,8 +822,18 @@
                       </td>
                       <td class="py-3.5 px-4 whitespace-nowrap">
                         ${order.status === 'pending_review' ? `
-                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">⏳ Chờ duyệt</span>
-                        ` : order.status === 'pending' ? `
+                          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 backdrop-blur-xs shadow-xs">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            <svg class="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 2"/>
+                              <polyline points="12 6 12 12 15 14" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span class="tracking-wide">Chờ duyệt</span>
+                          </span>
+                        ` : (order.status === 'pending' || order.status === 'pending_payment') ? `
                           <span class="bg-amber-50 text-amber-600 border border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             <span>Chờ thanh toán</span>
@@ -970,8 +981,18 @@
                       </td>
                       <td class="py-3.5 px-4 whitespace-nowrap">
                         ${order.status === 'pending_review' ? `
-                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">⏳ Chờ duyệt</span>
-                        ` : order.status === 'pending' ? `
+                          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 backdrop-blur-xs shadow-xs">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            <svg class="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 2"/>
+                              <polyline points="12 6 12 12 15 14" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span class="tracking-wide">Chờ duyệt</span>
+                          </span>
+                        ` : (order.status === 'pending' || order.status === 'pending_payment') ? `
                           <span class="bg-amber-50 text-amber-600 border border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/60 text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             <span>Chờ thanh toán</span>

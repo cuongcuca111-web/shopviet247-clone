@@ -1564,6 +1564,7 @@ window.ShopVietViews.modal = (function () {
 
       if (order) {
         order.status = 'pending_review';
+        order.statusText = 'Chờ duyệt';
         order.submittedAt = new Date().toISOString();
         const userEmail = (window.ShopVietState.state && window.ShopVietState.state.user && window.ShopVietState.state.user.email) || 'Khách vãng lai';
         order.userEmail = userEmail;
@@ -1659,6 +1660,9 @@ window.ShopVietViews.modal = (function () {
 
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
           window.ShopVietFirebase.syncOrderToCloud(order);
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(console.warn);
+          }
         }
 
         // Phát sóng Realtime để Admin nhận thông báo và cập nhật bảng đơn hàng
@@ -1765,6 +1769,9 @@ window.ShopVietViews.modal = (function () {
         }
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
           window.ShopVietFirebase.syncOrderToCloud(order);
+          if (typeof window.ShopVietState.pushAllToCloud === 'function') {
+            window.ShopVietState.pushAllToCloud().catch(console.warn);
+          }
         }
       }
 

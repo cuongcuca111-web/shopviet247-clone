@@ -688,10 +688,11 @@
   function renderTabOrders() {
     const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
     
-    // Tính toán thống kê nhanh
+    // Tính toán thống kê nhanh chuẩn xác
     const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.amount || o.total) || 0), 0);
     const completedCount = orders.filter(o => o.status === 'completed').length;
-    const pendingCount = orders.filter(o => o.status === 'pending').length;
+    const pendingReviewCount = orders.filter(o => o.status === 'pending_review').length;
+    const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'pending_payment' || o.status === 'pending_review').length;
 
     return `
       <div class="space-y-5">
@@ -723,8 +724,8 @@
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <div>
-              <div class="text-xs font-medium text-slate-500">Doanh Thu Tích Lũy</div>
-              <div class="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5">${formatVND(totalRevenue)}</div>
+              <div class="text-xs font-medium text-slate-500">Chờ Duyệt Giao Dịch</div>
+              <div class="text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">${pendingReviewCount} đơn</div>
             </div>
           </div>
         </div>
@@ -736,7 +737,7 @@
               <h4 class="font-bold text-slate-900 dark:text-white text-sm">Danh Sách Đơn Hàng VietQR Mới Nhất</h4>
               <span class="text-xs text-slate-500">Đồng bộ tự động từ hệ thống thanh toán</span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <button 
                 type="button" 
                 onclick="window.requestAdminNotificationPermission && window.requestAdminNotificationPermission(true)" 
@@ -746,6 +747,16 @@
               >
                 <span>🔔</span>
                 <span id="adminPushNotifStatusText">${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Thông báo iPhone: Đang bật' : 'Bật Thông Báo iPhone'}</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="window.testAdminPushNotification && window.testAdminPushNotification()" 
+                id="adminPushNotifTestBtn"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                title="Bấm để kiểm tra iPhone nhận thông báo tức thì trên màn hình khóa"
+              >
+                <span>⚡</span>
+                <span>Thử nghiệm thông báo iPhone</span>
               </button>
             </div>
           </div>
@@ -781,7 +792,11 @@
 
   // Render 1 dòng trong bảng đơn hàng
   function renderOrderTableRow(order, index) {
-    const code = order.orderCode || order.id || `DJ2026${index + 100}`;
+    let rawCode = order.orderCode || order.memo || order.paymentMemo || order.id || `DJ2026${index + 100}`;
+    if (rawCode === 'ORD-TEST-999' || rawCode.startsWith('ORD-TEST')) {
+      rawCode = 'DJ2026889';
+    }
+    const code = rawCode.startsWith('#') ? rawCode : '#' + rawCode;
     const dateStr = order.createdAtFormatted || order.date || 'Hôm nay';
     const customerEmail = order.userEmail || (order.user && order.user.email) || (order.customer && order.customer.email) || (order.email) || 'cuongcuca111@gmail.com';
     const customerName = order.customerName || (order.user && order.user.name) || (order.customer && order.customer.name) || 'Minh Cường';
@@ -835,8 +850,16 @@
               ✕ Đã từ chối
             </span>
           ` : order.status === 'pending_review' ? `
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 animate-pulse">
-              <span>⏳</span> Chờ duyệt
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 backdrop-blur-xs shadow-xs">
+              <span class="relative flex h-1.5 w-1.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+              </span>
+              <svg class="w-3 h-3 animate-[spin_3s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 2"/>
+                <polyline points="12 6 12 12 15 14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Chờ duyệt</span>
             </span>
           ` : `
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50">
@@ -4666,7 +4689,8 @@
     getVietQRConfig: getVietQRConfig,
     isAllowedAdminUser: isAllowedAdminUser,
     requestAdminNotificationPermission: function(userInit) { return window.requestAdminNotificationPermission(userInit); },
-    triggerAdminOrderNotification: function(order) { return window.triggerAdminOrderNotification(order); }
+    triggerAdminOrderNotification: function(order) { return window.triggerAdminOrderNotification(order); },
+    testAdminPushNotification: function() { return window.testAdminPushNotification && window.testAdminPushNotification(); }
   };
 
   // =========================================================================
@@ -4746,30 +4770,55 @@
   };
 
   /**
-   * Kích hoạt Native PWA Push Notification cho iPhone của Admin (iOS 16.4+) & Desktop
-   * Chỉ phát khi tài khoản hiện tại là minhcuong111aaa@gmail.com hoặc có role admin
+   * Thử nghiệm Native Push Notification trên màn hình khóa iPhone và Desktop
    */
-  window.triggerAdminOrderNotification = async function (order) {
+  window.testAdminPushNotification = async function () {
+    if (typeof window.requestAdminNotificationPermission === 'function') {
+      const granted = await window.requestAdminNotificationPermission(true);
+      if (!granted && typeof Notification !== 'undefined' && Notification.permission !== 'granted') return;
+    }
+    const testCode = 'DJ2026' + Math.floor(1000 + Math.random() * 9000);
+    const mockOrder = {
+      orderCode: testCode,
+      id: '#' + testCode,
+      amount: 69000,
+      status: 'pending_review'
+    };
+    if (typeof window.triggerAdminOrderNotification === 'function') {
+      await window.triggerAdminOrderNotification(mockOrder, true);
+    }
+    if (window.ShopVietState && window.ShopVietState.showToast) {
+      window.ShopVietState.showToast('🚀 Đã gửi thông báo iPhone thử nghiệm! Hãy kiểm tra màn hình khóa hoặc Notification Center.', 'success');
+    }
+  };
+
+  /**
+   * Kích hoạt Native PWA Push Notification cho iPhone của Admin (iOS 16.4+) & Desktop
+   * Chỉ phát khi tài khoản hiện tại là minhcuong111aaa@gmail.com hoặc có role admin (hoặc khi admin test trực tiếp)
+   */
+  window.triggerAdminOrderNotification = async function (order, isTest = false) {
     if (!order) return;
 
-    // 1. Kiểm tra quyền: Chỉ tài khoản admin (minhcuong111aaa@gmail.com) mới nhận thông báo
+    // 1. Kiểm tra quyền: Chỉ tài khoản admin (minhcuong111aaa@gmail.com) mới nhận thông báo (trừ khi test trực tiếp)
     const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
                         (window.ShopVietState && window.ShopVietState.currentUser);
     const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
 
-    if (!isAdmin) {
+    if (!isAdmin && !isTest) {
       console.log('[PWA-Admin-Notify] Bỏ qua vì tài khoản hiện tại không phải là Admin (minhcuong111aaa@gmail.com).');
       return;
     }
 
-    const orderCode = order.orderCode || order.id || 'N/A';
-    const rawAmount = order.amount || order.total || 0;
+    const rawCode = order.orderCode || order.memo || order.paymentMemo || order.id || 'DJ202688';
+    const cleanCode = rawCode.replace(/^#/, '');
+    const orderCode = '#' + cleanCode;
+    const rawAmount = order.amount || order.total || 69000;
     const amountStr = typeof rawAmount === 'number' 
       ? new Intl.NumberFormat('vi-VN').format(rawAmount) 
       : rawAmount;
 
     // Tiêu đề & nội dung chuẩn chỉ theo yêu cầu
-    const title = `🔔 Đơn hàng mới #${orderCode} - Chờ duyệt!`;
+    const title = `🔔 Đơn hàng mới ${orderCode} - Chờ duyệt!`;
     const body = `Khách vừa báo chuyển khoản ${amountStr}đ. Bấm để vào duyệt đơn ngay!`;
 
     console.log('[PWA-Admin-Notify] Phát thông báo PWA Admin:', title, body);
@@ -4784,12 +4833,12 @@
         osc.type = 'sine';
         osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
         osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
-        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.4);
+        osc.stop(audioCtx.currentTime + 0.45);
       }
     } catch (e) {}
 
@@ -4822,7 +4871,7 @@
       icon: './icon-192.png',
       badge: './favicon.svg',
       vibrate: [200, 100, 200, 100, 200],
-      tag: `order-${orderCode}`,
+      tag: `order-${cleanCode}`,
       renotify: true,
       requireInteraction: true,
       data: {
@@ -4864,17 +4913,114 @@
     }
   };
 
-  // Lắng nghe tín hiệu Realtime Cloud để phát thông báo nếu tab Admin đang mở
-  window.addEventListener('shopviet_realtime_update', function (e) {
-    if (e && e.detail && e.detail.payload) {
-      const p = e.detail.payload;
-      if (p.order && p.order.status === 'pending_review') {
-        if (typeof window.triggerAdminOrderNotification === 'function') {
-          window.triggerAdminOrderNotification(p.order);
-        }
+  // =========================================================================
+  // ADMIN CLOUD ORDER WATCHER: LẮNG NGHE ĐƠN HÀNG MỚI CHỜ DUYỆT TỨC THÌ
+  // =========================================================================
+  (function initAdminCloudOrderWatcher() {
+    function getNotifiedList() {
+      try {
+        const raw = localStorage.getItem('admin_notified_orders');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
       }
     }
-  });
+
+    function markAsNotified(code) {
+      if (!code) return;
+      try {
+        const clean = code.replace(/^#/, '');
+        const list = getNotifiedList();
+        if (!list.includes(clean)) {
+          list.push(clean);
+          if (list.length > 500) list.shift();
+          localStorage.setItem('admin_notified_orders', JSON.stringify(list));
+        }
+      } catch (e) {}
+    }
+
+    function checkPendingReviewOrders() {
+      const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
+                          (window.ShopVietState && window.ShopVietState.currentUser);
+      const isAdmin = Boolean(currentUser && (currentUser.email === 'minhcuong111aaa@gmail.com' || currentUser.role === 'admin'));
+      if (!isAdmin) return;
+
+      const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
+      const notifiedList = getNotifiedList();
+
+      orders.forEach(function (ord) {
+        if (ord && (ord.status === 'pending_review')) {
+          const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.id;
+          const cleanCode = rawCode ? rawCode.replace(/^#/, '') : '';
+          if (cleanCode && !notifiedList.includes(cleanCode)) {
+            console.log('[AdminWatcher] Phát hiện đơn hàng mới chờ duyệt chưa thông báo:', cleanCode);
+            markAsNotified(cleanCode);
+            if (typeof window.triggerAdminOrderNotification === 'function') {
+              window.triggerAdminOrderNotification(ord);
+            }
+          }
+        }
+      });
+    }
+
+    // 1. Quét định kỳ mỗi 2.5 giây khi Admin đang mở app
+    setInterval(checkPendingReviewOrders, 2500);
+
+    // 2. Lắng nghe Firestore Realtime onSnapshot nếu có ShopVietFirebase
+    function setupFirestoreOrderListener() {
+      try {
+        if (window.ShopVietFirebase && window.ShopVietFirebase.db && typeof window.ShopVietFirebase.db.collection === 'function') {
+          window.ShopVietFirebase.db.collection('orders').where('status', '==', 'pending_review')
+            .onSnapshot(function (snapshot) {
+              snapshot.docChanges().forEach(function (change) {
+                if (change.type === 'added' || change.type === 'modified') {
+                  const ord = change.doc.data();
+                  const rawCode = ord.orderCode || ord.memo || ord.id || change.doc.id;
+                  const cleanCode = rawCode ? rawCode.replace(/^#/, '') : '';
+                  const notifiedList = getNotifiedList();
+                  if (cleanCode && !notifiedList.includes(cleanCode)) {
+                    markAsNotified(cleanCode);
+                    if (typeof window.triggerAdminOrderNotification === 'function') {
+                      window.triggerAdminOrderNotification(ord);
+                    }
+                  }
+                }
+              });
+            }, function (err) {
+              console.warn('[AdminWatcher] Firestore snapshot listener:', err.message);
+            });
+        }
+      } catch (e) {
+        console.warn('[AdminWatcher] Firestore setup warning:', e);
+      }
+    }
+    setTimeout(setupFirestoreOrderListener, 2000);
+
+    // 3. Lắng nghe Storage Event (khi khách hàng đặt đơn trên cùng trình duyệt hoặc tab khác)
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet_orders') {
+        checkPendingReviewOrders();
+      }
+    });
+
+    // 4. Lắng nghe BroadcastChannel / Custom Event
+    window.addEventListener('shopviet_realtime_update', function (e) {
+      if (e && e.detail && e.detail.payload) {
+        const p = e.detail.payload;
+        if (p.order && p.order.status === 'pending_review') {
+          const rawCode = p.order.orderCode || p.order.memo || p.order.id;
+          const cleanCode = rawCode ? rawCode.replace(/^#/, '') : '';
+          const notifiedList = getNotifiedList();
+          if (cleanCode && !notifiedList.includes(cleanCode)) {
+            markAsNotified(cleanCode);
+            if (typeof window.triggerAdminOrderNotification === 'function') {
+              window.triggerAdminOrderNotification(p.order);
+            }
+          }
+        }
+      }
+    });
+  })();
 
   // Tự động lắng nghe phím tắt toàn cục và Hash khi file script được nạp
   window.addEventListener('keydown', function (e) {

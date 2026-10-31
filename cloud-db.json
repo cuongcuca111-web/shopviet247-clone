@@ -171,8 +171,10 @@
   "schedules": [],
   "orders": [
     {
-      "id": "ORD-TEST-999",
-      "orderCode": "ORD-TEST-999",
+      "id": "#DJ2026889",
+      "orderCode": "#DJ2026889",
+      "rawCode": "DJ2026889",
+      "memo": "DJ2026889",
       "status": "completed",
       "statusText": "Đã hoàn tất",
       "stockDeducted": false,
@@ -184,7 +186,6 @@
         }
       ],
       "amount": 138000,
-      "rejectedAt": "2026-10-31T11:25:00.773Z",
       "userEmail": "minhcuong111aaa@gmail.com",
       "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopskill247-vip",
       "adminMessage": "Cảm ơn bạn đã mua hàng tại ShopSkill247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
