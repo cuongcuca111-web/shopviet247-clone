@@ -35,6 +35,33 @@
   ],
   "products": [
     {
+      "id": "prod-0272",
+      "name": "ggg",
+      "category": "cat_cursor",
+      "tag": "Gemini - Antigravity - Veo",
+      "price": 69000,
+      "oldPrice": 250000,
+      "discount": "-72%",
+      "stock": 100,
+      "status": "in_stock",
+      "rating": 5,
+      "reviewsCount": 1,
+      "soldCount": 0,
+      "badge": "Flash Sale",
+      "badgeColor": "bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 text-white shadow-pink-500/30",
+      "isBestSeller": false,
+      "autoDelivery": false,
+      "warranty": "18 tháng (1 đổi 1)",
+      "desc": "Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...",
+      "iconType": "gemini",
+      "imageUrl": "",
+      "features": [
+        "Bản quyền kích hoạt nhanh chóng 24/7",
+        "Bảo hành 1 đổi 1 nhanh chóng",
+        "Hỗ trợ kỹ thuật qua Zalo 0868668809"
+      ]
+    },
+    {
       "id": "prod-002",
       "name": "[3 Tháng]Gemini Argon 4 Pro + 5TB Drive",
       "category": "cat_gemini",
@@ -336,6 +363,6 @@
     "DISCOUNT20K",
     "SV30P-XA8S"
   ],
-  "updatedAt": "2026-10-31T06:29:36.929Z",
-  "version": 1793428176929
+  "updatedAt": "2026-10-31T07:36:18.482Z",
+  "version": 1793432178482
 }
