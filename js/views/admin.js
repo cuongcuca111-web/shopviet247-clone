@@ -321,7 +321,9 @@
   // =========================================================================
   function renderAdminPortalModal() {
     const products = (window.ShopVietData && window.ShopVietData.products) || [];
-    const orders = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || [];
+    const orders = (window.ShopVietState && typeof window.ShopVietState.getOrders === 'function')
+      ? window.ShopVietState.getOrders()
+      : ((window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.orders) || []);
     const vouchers = (window.ShopVietState && window.ShopVietState.getVouchers) ? window.ShopVietState.getVouchers() : [];
     const schedules = (window.ShopVietState && window.ShopVietState.getSchedules) ? window.ShopVietState.getSchedules() : [];
     const vietqr = getVietQRConfig();
@@ -434,6 +436,12 @@
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               <span>Thanh toán VietQR & Đơn hàng</span>
               <span class="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-semibold" id="adminOrderTabBadge">${orders.length}</span>
+              ${orders.filter(o => o.status === 'pending_review').length > 0 ? `
+                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold animate-pulse shadow-sm flex items-center gap-1" id="adminPendingOrdersHeaderBadge">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                  <span>${orders.filter(o => o.status === 'pending_review').length} chờ duyệt</span>
+                </span>
+              ` : ''}
             </button>
 
             <!-- Tab 3: Cấu hình VietQR -->
@@ -687,7 +695,9 @@
   // =========================================================================
   function renderTabOrders() {
     // Quét và hợp nhất đồng thời từ state, localStorage('shopviet_orders') và localStorage('shopviet247_cloud_orders_sync')
-    let stateOrders = (window.ShopVietState && window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) ? window.ShopVietState.state.orders : [];
+    let stateOrders = (window.ShopVietState && typeof window.ShopVietState.getOrders === 'function')
+      ? window.ShopVietState.getOrders()
+      : ((window.ShopVietState && window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders)) ? window.ShopVietState.state.orders : []);
     let localOrders = [];
     try {
       const rawLoc = localStorage.getItem('shopviet_orders');
@@ -3072,6 +3082,16 @@
         tabContent.innerHTML = renderTabBody(tabKey);
       }
 
+      // Khi chuyển sang Tab Đơn hàng, tức thì quét kiểm tra đơn chờ duyệt mới nhất từ Cloud
+      if (tabKey === 'orders') {
+        if (typeof autoPollCloudOrders === 'function') {
+          autoPollCloudOrders();
+        }
+        if (typeof checkPendingReviewOrders === 'function') {
+          checkPendingReviewOrders();
+        }
+      }
+
       // Cập nhật style tab button
       document.querySelectorAll('.admin-nav-tab').forEach(btn => {
         btn.className = 'admin-nav-tab px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200';
@@ -3196,6 +3216,29 @@
           }
         } catch (eGh) {
           console.warn('[Admin] Direct cloud-db.json fetch notice:', eGh);
+        }
+
+        // Fallback 1: Thử tải qua GitHub Raw Cloud Storage
+        if (!cloudDbOrders || cloudDbOrders.length === 0) {
+          try {
+            const rawUrl = 'https://raw.githubusercontent.com/cuongcuca111-web/shopviet247-clone/main/cloud-db.json?_t=' + Date.now();
+            const rawRes = await fetch(rawUrl, { cache: 'no-store' });
+            if (rawRes.ok) {
+              const rJson = await rawRes.json();
+              if (rJson && Array.isArray(rJson.orders)) cloudDbOrders = rJson.orders;
+            }
+          } catch (eRaw) {}
+        }
+
+        // Fallback 2: Thử tải trực tiếp file ./cloud-db.json cục bộ
+        if (!cloudDbOrders || cloudDbOrders.length === 0) {
+          try {
+            const locRes = await fetch('./cloud-db.json?_t=' + Date.now(), { cache: 'no-store' });
+            if (locRes.ok) {
+              const lJson = await locRes.json();
+              if (lJson && Array.isArray(lJson.orders)) cloudDbOrders = lJson.orders;
+            }
+          } catch (eLoc) {}
         }
 
         // Hợp nhất toàn bộ theo Map với cleanCode chuẩn
@@ -5738,41 +5781,70 @@
 
       isPollingCloud = true;
       try {
-        const ghPat = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) ||
-                      [103,104,112,95,78,73,100,50,107,56,105,48,57,103,107,71,74,53,56,113,67,54,78,84,89,79,67,89,116,119,115,78,66,121,52,97,111,48,118,85].map(function (c) { return String.fromCharCode(c); }).join('');
-        const ghUrl = 'https://api.github.com/repos/cuongcuca111-web/shopviet247-clone/contents/cloud-db.json?_t=' + Date.now();
-        const res = await fetch(ghUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            'Authorization': 'token ' + ghPat,
-            'Accept': 'application/vnd.github.v3.raw',
-            'cache': 'no-store'
+        let data = null;
+        try {
+          const ghPat = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) ||
+                        [103,104,112,95,78,73,100,50,107,56,105,48,57,103,107,71,74,53,56,113,67,54,78,84,89,79,67,89,116,119,115,78,66,121,52,97,111,48,118,85].map(function (c) { return String.fromCharCode(c); }).join('');
+          const ghUrl = 'https://api.github.com/repos/cuongcuca111-web/shopviet247-clone/contents/cloud-db.json?_t=' + Date.now();
+          const res = await fetch(ghUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+              'Authorization': 'token ' + ghPat,
+              'Accept': 'application/vnd.github.v3.raw',
+              'cache': 'no-store'
+            }
+          });
+          if (res.ok) {
+            const rawText = await res.text();
+            let parsed = JSON.parse(rawText);
+            if (parsed && parsed.content && parsed.encoding === 'base64') {
+              parsed = JSON.parse(decodeURIComponent(escape(window.atob(parsed.content.replace(/\s/g, '')))));
+            }
+            if (parsed && Array.isArray(parsed.orders)) data = parsed;
           }
-        });
-        if (res.ok) {
-          const rawText = await res.text();
-          let data = JSON.parse(rawText);
-          if (data && data.content && data.encoding === 'base64') {
-            data = JSON.parse(decodeURIComponent(escape(window.atob(data.content.replace(/\s/g, '')))));
-          }
-          if (data && Array.isArray(data.orders)) {
-            let hasNewPending = false;
-            const notifiedList = getNotifiedList();
+        } catch (e1) {}
 
-            data.orders.forEach(function (ro) {
-              if (!ro) return;
-              const rawCode = ro.orderCode || ro.memo || ro.paymentMemo || ro.rawCode || ro.id;
-              const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
-              const isLocked = Boolean(window.ShopVietState && typeof window.ShopVietState.isOrderCompletedLocked === 'function' && window.ShopVietState.isOrderCompletedLocked(cleanCode));
-              if (ro.status === 'pending_review' && !isLocked) {
-                if (cleanCode && !notifiedList.includes(cleanCode)) {
-                  hasNewPending = true;
-                  console.log('[AdminWatcher] Phát hiện đơn hàng mới từ Cloud Auto-Poll:', cleanCode, ro);
-                }
-                ingestOrderIntoStateAndNotify(ro, cleanCode);
+        // Fallback 1: GitHub Raw
+        if (!data || !Array.isArray(data.orders)) {
+          try {
+            const rawUrl = 'https://raw.githubusercontent.com/cuongcuca111-web/shopviet247-clone/main/cloud-db.json?_t=' + Date.now();
+            const rRes = await fetch(rawUrl, { cache: 'no-store' });
+            if (rRes.ok) {
+              const rJson = await rRes.json();
+              if (rJson && Array.isArray(rJson.orders)) data = rJson;
+            }
+          } catch (e2) {}
+        }
+
+        // Fallback 2: Local ./cloud-db.json (Zero-Failover đảm bảo 100% không mất đơn chờ duyệt)
+        if (!data || !Array.isArray(data.orders)) {
+          try {
+            const locRes = await fetch('./cloud-db.json?_t=' + Date.now(), { cache: 'no-store' });
+            if (locRes.ok) {
+              const lJson = await locRes.json();
+              if (lJson && Array.isArray(lJson.orders)) data = lJson;
+            }
+          } catch (e3) {}
+        }
+
+        if (data && Array.isArray(data.orders)) {
+          let hasNewPending = false;
+          const notifiedList = getNotifiedList();
+
+          data.orders.forEach(function (ro) {
+            if (!ro) return;
+            const rawCode = ro.orderCode || ro.memo || ro.paymentMemo || ro.rawCode || ro.id;
+            const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
+            const isLocked = Boolean(window.ShopVietState && typeof window.ShopVietState.isOrderCompletedLocked === 'function' && window.ShopVietState.isOrderCompletedLocked(cleanCode));
+            if (ro.status === 'pending_review' && !isLocked) {
+              if (cleanCode && !notifiedList.includes(cleanCode)) {
+                hasNewPending = true;
+                console.log('[AdminWatcher] Phát hiện đơn hàng mới từ Cloud Auto-Poll:', cleanCode, ro);
               }
-            });
+              ingestOrderIntoStateAndNotify(ro, cleanCode);
+            }
+          });
 
             // Lưu cache cloud orders an toàn (Bi-directional merge, không ghi đè mất đơn pending cục bộ)
             try {
@@ -5805,12 +5877,30 @@
               localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(Array.from(safeMap.values())));
             } catch (eLs) {}
 
+            // Cập nhật tab badge trên header Admin Modal
+            const badge = document.getElementById('adminOrderTabBadge');
+            if (badge) {
+              const totalOrd = (window.ShopVietState && window.ShopVietState.state && Array.isArray(window.ShopVietState.state.orders))
+                ? window.ShopVietState.state.orders.length
+                : data.orders.length;
+              badge.textContent = totalOrd;
+            }
+            const pCount = data.orders.filter(o => o.status === 'pending_review').length;
+            const pendingHeaderBadge = document.getElementById('adminPendingOrdersHeaderBadge');
+            if (pendingHeaderBadge) {
+              if (pCount > 0) {
+                pendingHeaderBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white"></span><span>${pCount} chờ duyệt</span>`;
+                pendingHeaderBadge.classList.remove('hidden');
+              } else {
+                pendingHeaderBadge.classList.add('hidden');
+              }
+            }
+
             const tabContent = document.getElementById('adminTabContent');
             if (tabContent && currentActiveTab === 'orders') {
               tabContent.innerHTML = renderTabOrders();
             }
           }
-        }
       } catch (errPoll) {
         // Im lặng trước lỗi mạng ngầm
       } finally {

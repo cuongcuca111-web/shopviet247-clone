@@ -489,6 +489,22 @@
           }
         }
 
+        // FALLBACK 3: Đọc trực tiếp file ./cloud-db.json cục bộ (Zero-Failover đảm bảo 100% không mất đơn)
+        if (!data) {
+          try {
+            const localRes = await fetch('./cloud-db.json?_t=' + Date.now(), { cache: 'no-store' });
+            if (localRes.ok) {
+              const localJson = await localRes.json();
+              if (localJson) {
+                data = localJson.data || localJson;
+                console.log('[ShopVietState] Đã tải dữ liệu từ Local ./cloud-db.json thành công!');
+              }
+            }
+          } catch (eLocal) {
+            console.warn('[ShopVietState] Fallback local ./cloud-db.json notice:', eLocal);
+          }
+        }
+
         if (!data) {
           if (isManual) {
             if (syncIcon) syncIcon.classList.remove('animate-spin');

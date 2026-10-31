@@ -908,8 +908,10 @@
       let filteredOrders = orders;
       if (currentOrderFilter === 'completed') {
         filteredOrders = filteredOrders.filter(o => o.status === 'completed');
-      } else if (currentOrderFilter === 'pending') {
-        filteredOrders = filteredOrders.filter(o => o.status === 'pending' || o.status === 'pending_review');
+      } else if (currentOrderFilter === 'pending_review') {
+        filteredOrders = filteredOrders.filter(o => o.status === 'pending_review');
+      } else if (currentOrderFilter === 'pending' || currentOrderFilter === 'pending_payment') {
+        filteredOrders = filteredOrders.filter(o => o.status === 'pending' || o.status === 'pending_payment');
       }
 
       if (orderSearchQuery.trim()) {
@@ -923,7 +925,8 @@
 
       const totalCount = orders.length;
       const completedCount = orders.filter(o => o.status === 'completed').length;
-      const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'pending_review').length;
+      const pendingReviewCount = orders.filter(o => o.status === 'pending_review').length;
+      const pendingPaymentCount = orders.filter(o => o.status === 'pending' || o.status === 'pending_payment').length;
 
       return `
         <!-- Header Quản lý đơn hàng -->
@@ -963,17 +966,25 @@
         <!-- Thanh công cụ: Bộ lọc trạng thái & Ô Tìm kiếm -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
-          <!-- Bộ lọc 3 trạng thái -->
-          <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
+          <!-- Bộ lọc trạng thái thông minh -->
+          <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold gap-1 flex-wrap">
             <button type="button" data-order-filter="all" class="order-filter-btn px-3 py-1.5 rounded-lg transition-all ${currentOrderFilter === 'all' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
               Tất cả (${totalCount})
             </button>
             <button type="button" data-order-filter="completed" class="order-filter-btn px-3 py-1.5 rounded-lg transition-all ${currentOrderFilter === 'completed' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
               Hoàn tất (${completedCount})
             </button>
-            <button type="button" data-order-filter="pending" class="order-filter-btn px-3 py-1.5 rounded-lg transition-all ${currentOrderFilter === 'pending' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
-              Chờ thanh toán (${pendingCount})
-            </button>
+            ${pendingReviewCount > 0 ? `
+              <button type="button" data-order-filter="pending_review" class="order-filter-btn px-3 py-1.5 rounded-lg transition-all ${currentOrderFilter === 'pending_review' ? 'bg-amber-500 text-white shadow-xs font-bold' : 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'} flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>Chờ duyệt (${pendingReviewCount})</span>
+              </button>
+            ` : ''}
+            ${pendingPaymentCount > 0 ? `
+              <button type="button" data-order-filter="pending_payment" class="order-filter-btn px-3 py-1.5 rounded-lg transition-all ${currentOrderFilter === 'pending_payment' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                Chờ thanh toán (${pendingPaymentCount})
+              </button>
+            ` : ''}
           </div>
 
           <!-- Ô tìm kiếm đơn hàng -->
