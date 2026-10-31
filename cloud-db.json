@@ -190,16 +190,6 @@
       "startDate": "2026-10-29",
       "expireDate": "2026-11-29",
       "notes": "Khách VIP nâng cấp chính chủ"
-    },
-    {
-      "id": "SCH-002",
-      "customerEmail": "huy.dev99@gmail.com",
-      "customerName": "Nguyễn Huy",
-      "managerEmail": "slot2-cursor@shopviet.vip",
-      "serviceName": "Cursor Pro 1 Tháng Chính Chủ",
-      "startDate": "2026-10-25",
-      "expireDate": "2026-11-01",
-      "notes": "Sắp hết hạn cần nhắc gia hạn"
     }
   ],
   "orders": [
@@ -466,6 +456,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:48:35.416Z",
-  "version": 1793422115416
+  "updatedAt": "2026-10-31T04:49:43.295Z",
+  "version": 1793422183295
 }
