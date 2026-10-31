@@ -9,6 +9,16 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="alternate icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='favG' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%237c3aed'/%3E%3Cstop offset='50%25' stop-color='%234f46e5'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='10' fill='url(%23favG)'/%3E%3Cpath d='M16 4C16 10.5 10.5 16 4 16C10.5 16 16 21.5 16 28C16 21.5 21.5 16 28 16C21.5 16 16 10.5 16 4Z' fill='white' fill-opacity='0.95'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%234f46e5'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%2338bdf8'/%3E%3Cpath d='M24 5C24 7 22 9 20 9C22 9 24 11 24 13C24 11 26 9 28 9C26 9 24 7 24 5Z' fill='white' fill-opacity='0.85'/%3E%3C/svg%3E">
 
+  <!-- PWA Manifest & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#080A15">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ShopSkill247">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -376,6 +386,411 @@
       }
       .u292-t.out {
         display: none !important;
+      }
+    }
+  </style>
+
+  <!-- ==================== [ELEMENT] DRAG-TO-RESIZE RESPONSIVE PREVIEW (LUCIAN #257) ==================== -->
+  <!-- Lucian UX/UI Prompt #257 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#257 -->
+  <style>
+    /* Lucian UX/UI Prompt #257 · Scoped Drag-to-resize Responsive Preview Styles */
+    .u257 {
+      --ux-page: #F8FAFC;
+      --ux-surface: #FFFFFF;
+      --ux-surface-2: #F1F5F9;
+      --ux-surface-3: #E2E8F0;
+      --ux-ink: #0F172A;
+      --ux-ink-2: #475569;
+      --ux-ink-3: #94A3B8;
+      --ux-line: rgba(15, 23, 42, 0.08);
+      --ux-line-2: rgba(15, 23, 42, 0.16);
+      --ux-accent: #6366F1;
+      --ux-accent-2: #38BDF8;
+      --ux-accent-soft: rgba(99, 102, 241, 0.12);
+      --ux-accent-ink: #FFFFFF;
+      --ux-mint: #10B981;
+      --ux-warn: #F59E0B;
+      --ux-danger: #EF4444;
+      --ux-glass: rgba(255, 255, 255, 0.7);
+      --ux-glass-line: rgba(255, 255, 255, 0.9);
+      --ux-shadow: rgba(15, 23, 42, 0.08);
+      --ux-shadow-strong: rgba(15, 23, 42, 0.22);
+      --ux-grad: linear-gradient(135deg, #6366F1, #8B5CF6 55%, #06B6D4);
+      --ux-ease: cubic-bezier(.2,.8,.2,1);
+      --ux-spring: cubic-bezier(.34,1.45,.64,1);
+    }
+
+    .dark .u257,
+    html.dark .u257 {
+      --ux-page: #080A15;
+      --ux-surface: #0E1326;
+      --ux-surface-2: #141A33;
+      --ux-surface-3: #1E2749;
+      --ux-ink: #F8FAFC;
+      --ux-ink-2: #94A3B8;
+      --ux-ink-3: #64748B;
+      --ux-line: rgba(255, 255, 255, 0.08);
+      --ux-line-2: rgba(255, 255, 255, 0.15);
+      --ux-accent: #818CF8;
+      --ux-accent-2: #38BDF8;
+      --ux-accent-soft: rgba(129, 140, 248, 0.18);
+      --ux-accent-ink: #0B0D1B;
+      --ux-mint: #34D399;
+      --ux-warn: #FBBF24;
+      --ux-danger: #F87171;
+      --ux-glass: rgba(14, 19, 38, 0.75);
+      --ux-glass-line: rgba(255, 255, 255, 0.12);
+      --ux-shadow: rgba(0, 0, 0, 0.5);
+      --ux-shadow-strong: rgba(0, 0, 0, 0.75);
+      --ux-grad: linear-gradient(135deg, #818CF8, #A78BFA 55%, #22D3EE);
+    }
+
+    .u257, .u257 *, .u257 *::before, .u257 *::after {
+      box-sizing: border-box;
+    }
+
+    .u257 {
+      position: relative;
+      width: 340px;
+      height: 340px;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--ux-surface-2);
+      box-shadow: 0 0 0 1px var(--ux-line), 0 30px 60px -36px var(--ux-shadow-strong);
+      color: var(--ux-ink);
+      font-family: inherit;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .u257-tb {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .u257-sg {
+      display: flex;
+      padding: 3px;
+      border-radius: 11px;
+      background: var(--ux-surface);
+      box-shadow: inset 0 0 0 1px var(--ux-line);
+    }
+
+    .u257-dv {
+      width: 36px;
+      height: 28px;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      color: var(--ux-ink-3);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+
+    .u257-dv[aria-pressed="true"] {
+      background: var(--ux-ink);
+      color: var(--ux-surface);
+    }
+
+    .u257-dv svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .u257-px {
+      margin-left: auto;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: var(--ux-surface);
+      box-shadow: inset 0 0 0 1px var(--ux-line);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--ux-ink);
+    }
+
+    .u257-ru {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 54px;
+      height: 16px;
+    }
+
+    .u257-ru i {
+      position: absolute;
+      top: 0;
+      height: 16px;
+      border-left: 1.5px solid var(--ux-ink-3);
+      font-style: normal;
+      font-size: 8.5px;
+      font-weight: 800;
+      color: var(--ux-ink-3);
+      padding-left: 3px;
+      line-height: 10px;
+      transition: color .2s, border-color .2s;
+    }
+
+    .u257-ru i.is-flash {
+      animation: u257-fl .7s ease;
+    }
+
+    @keyframes u257-fl {
+      30% {
+        color: var(--ux-accent);
+        border-color: var(--ux-accent);
+        transform: scaleY(1.3);
+      }
+    }
+
+    .u257-st {
+      position: absolute;
+      left: 14px;
+      top: 74px;
+      bottom: 14px;
+      right: 14px;
+    }
+
+    .u257-fr {
+      position: relative;
+      height: 100%;
+      border-radius: 12px;
+      background: var(--ux-surface);
+      box-shadow: 0 0 0 1px var(--ux-line), 0 12px 24px -16px var(--ux-shadow-strong);
+      overflow: hidden;
+      container-type: inline-size;
+      transition: width .5s cubic-bezier(.3,1.1,.4,1);
+    }
+
+    .u257-fr.is-drag {
+      transition: none;
+    }
+
+    .u257-hd {
+      position: absolute;
+      top: 50%;
+      width: 14px;
+      height: 44px;
+      margin: -22px 0 0 2px;
+      border-radius: 7px;
+      background: var(--ux-surface);
+      box-shadow: 0 0 0 1px var(--ux-line), 0 2px 6px -2px var(--ux-shadow-strong);
+      cursor: ew-resize;
+      touch-action: none;
+      display: grid;
+      place-items: center;
+      transition: left .5s cubic-bezier(.3,1.1,.4,1);
+      z-index: 10;
+    }
+
+    .u257-hd.is-drag {
+      transition: none;
+    }
+
+    .u257-hd::before {
+      content: "";
+      width: 4px;
+      height: 18px;
+      border-left: 1.5px solid var(--ux-ink-3);
+      border-right: 1.5px solid var(--ux-ink-3);
+    }
+
+    .u257-hd:focus-visible {
+      outline: 2px solid var(--ux-accent);
+      outline-offset: 2px;
+    }
+
+    .u257-pg {
+      padding: 10px 12px;
+    }
+
+    .u257-nv {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--ux-ink-2);
+    }
+
+    .u257-nv b {
+      margin-right: auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      color: var(--ux-ink);
+    }
+
+    .u257-nv b i {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--ux-grad);
+      display: inline-block;
+    }
+
+    .u257-hb {
+      display: none;
+      width: 20px;
+      height: 16px;
+      border-radius: 5px;
+      background: var(--ux-surface-2);
+      position: relative;
+    }
+
+    .u257-hb::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      top: 5px;
+      height: 6px;
+      border-top: 1.5px solid var(--ux-ink-2);
+      border-bottom: 1.5px solid var(--ux-ink-2);
+    }
+
+    .u257-hr {
+      margin-top: 14px;
+    }
+
+    .u257-hr h4 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      color: var(--ux-ink);
+      transition: font-size .3s;
+    }
+
+    .u257-hr span {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--ux-ink);
+      color: var(--ux-surface);
+      font-size: 9px;
+      font-weight: 850;
+    }
+
+    .u257-gd {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .u257-gd i {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 64px;
+      border-radius: 9px;
+      padding: 5px 6px;
+      background: var(--ux-surface-2);
+      box-shadow: inset 0 0 0 1px var(--ux-line);
+      font-style: normal;
+      transition: height .3s;
+      overflow: hidden;
+    }
+
+    .u257-gd i:nth-child(1) {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(129, 140, 248, 0.08));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .u257-gd i:nth-child(2) {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.08));
+      border: 1px solid rgba(236, 72, 153, 0.25);
+    }
+
+    .u257-gd i:nth-child(3) {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.08));
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .u257-card-t {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--ux-ink);
+      display: block;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .u257-card-p {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: var(--ux-accent);
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* Container Queries của Lucian #257 */
+    @container (max-width: 200px) {
+      .u257-gd {
+        grid-template-columns: 1fr 1fr;
+      }
+      .u257-gd i:nth-child(3) {
+        grid-column: span 2;
+        height: 38px;
+        flex-direction: row;
+        align-items: center;
+      }
+      .u257-nv > span {
+        display: none;
+      }
+      .u257-hb {
+        display: block;
+      }
+    }
+
+    @container (max-width: 140px) {
+      .u257-gd {
+        grid-template-columns: 1fr;
+      }
+      .u257-gd i {
+        height: 32px;
+        flex-direction: row;
+        align-items: center;
+      }
+      .u257-gd i:nth-child(3) {
+        grid-column: auto;
+        height: 32px;
+      }
+      .u257-hr h4 {
+        font-size: 13px;
+      }
+    }
+
+    .u257 button:focus-visible {
+      outline: 2px solid var(--ux-accent);
+      outline-offset: 2px;
+    }
+
+    /* Accessibility: prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .u257-fr,
+      .u257-hd,
+      .u257-hr h4,
+      .u257-gd i {
+        transition: none !important;
+      }
+      .u257-ru i.is-flash {
+        animation: none !important;
       }
     }
   </style>
@@ -1374,17 +1789,120 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_reflow_v14"></script>
+  <script src="js/firebase-config.js?v=20261031_pwa_sim_v15"></script>
 
-  <script src="js/data.js?v=20261031_reflow_v14"></script>
-  <script src="js/state.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/home.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/modal.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/checkout.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/auth.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/dashboard.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/admin.js?v=20261031_reflow_v14"></script>
-  <script src="js/views/blog.js?v=20261031_reflow_v14"></script>
-  <script src="js/app.js?v=20261031_reflow_v14"></script>
+  <script src="js/data.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/state.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/home.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/modal.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/checkout.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/auth.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/dashboard.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/admin.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/views/blog.js?v=20261031_pwa_sim_v15"></script>
+  <script src="js/app.js?v=20261031_pwa_sim_v15"></script>
+
+  <!-- ==================== PWA SMART INSTALL BANNER ==================== -->
+  <aside id="pwaInstallBanner" aria-label="Cài đặt ứng dụng PWA" class="fixed bottom-5 right-5 z-50 hidden transition-all duration-300 transform translate-y-4 opacity-0">
+    <div class="flex items-center gap-3 bg-slate-900/95 border border-indigo-500/40 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl shadow-indigo-500/20 max-w-sm text-slate-100">
+      <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-md">
+        <img src="favicon.svg" alt="ShopSkill247" class="w-7 h-7" width="28" height="28">
+      </div>
+      <div class="flex-1 min-w-0 pr-1">
+        <div class="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
+          <span>ShopSkill247 App</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">PWA</span>
+        </div>
+        <p class="text-[11px] text-slate-400 truncate">Mở nhanh trên thiết bị, dùng mượt mà cả khi offline</p>
+      </div>
+      <button id="pwaInstallBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all shrink-0 cursor-pointer">
+        <span>📲 Cài đặt App</span>
+      </button>
+      <button id="pwaDismissBtn" class="text-slate-400 hover:text-slate-200 p-1 -mr-1 transition-colors cursor-pointer" title="Đóng thông báo">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==================== PWA SERVICE WORKER REGISTRATION ==================== -->
+  <script>
+    (function initPWA() {
+      // 1. Đăng ký Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+              console.log('[PWA] Service Worker đăng ký thành công! Scope:', registration.scope);
+              registration.onupdatefound = () => {
+                const installingWorker = registration.installing;
+                if (installingWorker) {
+                  installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('[PWA] Đã có phiên bản mới, sẵn sàng khi tải lại trang.');
+                    }
+                  };
+                }
+              };
+            })
+            .catch((error) => {
+              console.warn('[PWA] Lỗi đăng ký Service Worker:', error);
+            });
+        });
+      }
+
+      // 2. Quản lý Banner Cài đặt PWA Thông minh
+      let deferredPrompt = null;
+      const banner = document.getElementById('pwaInstallBanner');
+      const installBtn = document.getElementById('pwaInstallBtn');
+      const dismissBtn = document.getElementById('pwaDismissBtn');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Chặn prompt mặc định của trình duyệt để hiện banner custom sang trọng
+        e.preventDefault();
+        deferredPrompt = e;
+
+        if (sessionStorage.getItem('pwa_dismissed') === 'true') {
+          return;
+        }
+
+        if (banner) {
+          banner.classList.remove('hidden');
+          setTimeout(() => {
+            banner.classList.remove('translate-y-4', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+          }, 600);
+        }
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          banner.classList.add('opacity-0', 'translate-y-4');
+          setTimeout(() => banner.classList.add('hidden'), 300);
+
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('[PWA] Kết quả phản hồi của người dùng:', outcome);
+          deferredPrompt = null;
+        });
+      }
+
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+          if (banner) {
+            banner.classList.add('opacity-0', 'translate-y-4');
+            setTimeout(() => banner.classList.add('hidden'), 300);
+          }
+          sessionStorage.setItem('pwa_dismissed', 'true');
+        });
+      }
+
+      window.addEventListener('appinstalled', () => {
+        console.log('[PWA] Ứng dụng ShopSkill247 đã được cài đặt thành công!');
+        if (banner) banner.classList.add('hidden');
+        deferredPrompt = null;
+      });
+    })();
+  </script>
 </body>
 </html>

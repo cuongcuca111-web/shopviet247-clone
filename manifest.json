@@ -1,0 +1,52 @@
+{
+  "name": "ShopSkill247 - Nền Tảng Kỹ Năng & Công Cụ AI Bản Quyền Tự Động",
+  "short_name": "ShopSkill247",
+  "description": "Cung cấp bản quyền công cụ AI hàng đầu: Cursor, Gemini Advanced, ChatGPT Plus, Canva Pro, Capcut Pro tự động 24/7.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080A15",
+  "theme_color": "#080A15",
+  "categories": [
+    "shopping",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Công cụ AI Coding",
+      "short_name": "AI Coding",
+      "description": "Cursor Pro, Claude 3.5, Gemini bản quyền",
+      "url": "./index.html#category-coding",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tài khoản VIP",
+      "short_name": "VIP Pro",
+      "description": "ChatGPT Plus, Canva Pro, Capcut Pro",
+      "url": "./index.html#category-vip",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
