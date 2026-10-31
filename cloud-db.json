@@ -137,6 +137,18 @@
   ],
   "vouchers": [
     {
+      "code": "SV20P-3527",
+      "type": "percent_discount",
+      "percent": 20,
+      "value": 20,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-10-31T11:31:25.223Z"
+    },
+    {
       "code": "SV20P-KUSD",
       "type": "percent_discount",
       "percent": 50,
@@ -396,6 +408,6 @@
     "SV30P-XA8S",
     "SV20P-PYGL"
   ],
-  "updatedAt": "2026-10-31T11:31:18.486Z",
-  "version": 1793446278486
+  "updatedAt": "2026-10-31T11:31:25.223Z",
+  "version": 1793446285223
 }
