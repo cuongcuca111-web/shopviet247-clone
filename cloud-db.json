@@ -134,29 +134,6 @@
       "createdAt": "2026-10-31T04:46:40.452Z"
     },
     {
-      "code": "SV30P-XA8S",
-      "type": "percent_discount",
-      "percent": 30,
-      "value": 30,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-10-29T15:17:36.460Z"
-    },
-    {
-      "code": "DISCOUNT20K",
-      "type": "order_discount",
-      "value": 20000,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
       "code": "VIP50K",
       "type": "order_discount",
       "value": 50000,
@@ -166,6 +143,18 @@
       "usedAt": null,
       "orderCode": null,
       "createdAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "code": "SV20P-PEY6",
+      "type": "percent_discount",
+      "percent": 20,
+      "value": 20,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-10-29T16:17:13.606Z"
     }
   ],
   "schedules": [
@@ -454,6 +443,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:55:40.459Z",
-  "version": 1793422540459
+  "updatedAt": "2026-10-31T04:55:43.403Z",
+  "version": 1793422543403
 }
