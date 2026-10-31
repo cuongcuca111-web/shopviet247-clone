@@ -36,6 +36,32 @@
   ],
   "products": [
     {
+      "id": "prod-6178",
+      "name": "[6 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+      "category": "cat_gemini",
+      "tag": "Gemini - Antigravity - Veo",
+      "price": 69000,
+      "oldPrice": 250000,
+      "discount": "-72%",
+      "stock": 100,
+      "status": "in_stock",
+      "rating": 5,
+      "reviewsCount": 1,
+      "soldCount": 0,
+      "badge": "Bán chạy nhất",
+      "badgeColor": "bg-indigo-600 text-white",
+      "autoDelivery": false,
+      "warranty": "18 tháng (1 đổi 1)",
+      "desc": "Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...",
+      "iconType": "gemini",
+      "imageUrl": "",
+      "features": [
+        "Bản quyền kích hoạt nhanh chóng 24/7",
+        "Bảo hành 1 đổi 1 nhanh chóng",
+        "Hỗ trợ kỹ thuật qua Zalo 0868668809"
+      ]
+    },
+    {
       "id": "prod-3749",
       "name": "[3 Tháng]Gemini Argon 4 Pro + 5TB Drive",
       "category": "cat_gemini",
@@ -358,6 +384,6 @@
       "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:14:33.369Z",
-  "version": 1793420073369
+  "updatedAt": "2026-10-31T04:14:56.174Z",
+  "version": 1793420096174
 }
