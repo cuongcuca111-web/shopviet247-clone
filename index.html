@@ -537,11 +537,11 @@
 
     /* Floating Reload Button */
     .u256-re {
+      display: none !important;
       position: fixed;
       bottom: 20px;
       right: 20px;
       z-index: 100000;
-      display: inline-flex;
       align-items: center;
       gap: 7px;
       background: rgba(15, 23, 42, 0.78);
@@ -556,14 +556,16 @@
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-      pointer-events: auto;
-      opacity: 0;
-      visibility: hidden;
+      pointer-events: none;
+      opacity: 0 !important;
+      visibility: hidden !important;
       user-select: none;
     }
     .u256.is-open .u256-re {
-      opacity: 1;
-      visibility: visible;
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
     .u256-re:hover {
       background: rgba(30, 41, 59, 0.95);
@@ -651,16 +653,7 @@
       </div>
     </div>
 
-    <!-- Floating Reload Button -->
-    <button id="u256ReloadBtn" class="u256-re" type="button" aria-label="Xem lại hiệu ứng tải trang (Preloader)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-        <path d="M3 3v5h5"/>
-        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-        <path d="M16 21h5v-5"/>
-      </svg>
-      <span>Tải lại</span>
-    </button>
+    <!-- Floating Reload Button (Đã gỡ bỏ để tinh gọn góc màn hình) -->
   </div>
 
   <script>
@@ -669,7 +662,6 @@
       if (!root) return;
       var numEl = root.querySelector('.u256-v');
       var barEl = root.querySelector('.u256-br i');
-      var reloadBtn = document.getElementById('u256ReloadBtn');
       var v = 0;
       var t = null;
 
@@ -705,13 +697,6 @@
         void root.offsetHeight;
         root.classList.remove('u256-no-transition');
         t = setTimeout(step, 80);
-      }
-
-      if (reloadBtn) {
-        reloadBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          load();
-        });
       }
 
       // Initial execution
@@ -1395,45 +1380,23 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_adaptive_v16"></script>
+  <script src="js/firebase-config.js?v=20261031_clean_v17"></script>
 
-  <script src="js/data.js?v=20261031_adaptive_v16"></script>
-  <script src="js/state.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/home.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/modal.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/checkout.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/auth.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/dashboard.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/admin.js?v=20261031_adaptive_v16"></script>
-  <script src="js/views/blog.js?v=20261031_adaptive_v16"></script>
-  <script src="js/app.js?v=20261031_adaptive_v16"></script>
-
-  <!-- ==================== PWA SMART INSTALL BANNER ==================== -->
-  <aside id="pwaInstallBanner" aria-label="Cài đặt ứng dụng PWA" class="fixed bottom-5 right-5 z-50 hidden transition-all duration-300 transform translate-y-4 opacity-0">
-    <div class="flex items-center gap-3 bg-slate-900/95 border border-indigo-500/40 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl shadow-indigo-500/20 max-w-sm text-slate-100">
-      <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-md">
-        <img src="favicon.svg" alt="ShopSkill247" class="w-7 h-7" width="28" height="28">
-      </div>
-      <div class="flex-1 min-w-0 pr-1">
-        <div class="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
-          <span>ShopSkill247 App</span>
-          <span class="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">PWA</span>
-        </div>
-        <p class="text-[11px] text-slate-400 truncate">Mở nhanh trên thiết bị, dùng mượt mà cả khi offline</p>
-      </div>
-      <button id="pwaInstallBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all shrink-0 cursor-pointer">
-        <span>📲 Cài đặt App</span>
-      </button>
-      <button id="pwaDismissBtn" class="text-slate-400 hover:text-slate-200 p-1 -mr-1 transition-colors cursor-pointer" title="Đóng thông báo">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-  </aside>
+  <script src="js/data.js?v=20261031_clean_v17"></script>
+  <script src="js/state.js?v=20261031_clean_v17"></script>
+  <script src="js/views/home.js?v=20261031_clean_v17"></script>
+  <script src="js/views/modal.js?v=20261031_clean_v17"></script>
+  <script src="js/views/checkout.js?v=20261031_clean_v17"></script>
+  <script src="js/views/auth.js?v=20261031_clean_v17"></script>
+  <script src="js/views/dashboard.js?v=20261031_clean_v17"></script>
+  <script src="js/views/admin.js?v=20261031_clean_v17"></script>
+  <script src="js/views/blog.js?v=20261031_clean_v17"></script>
+  <script src="js/app.js?v=20261031_clean_v17"></script>
 
   <!-- ==================== PWA SERVICE WORKER REGISTRATION ==================== -->
   <script>
     (function initPWA() {
-      // 1. Đăng ký Service Worker
+      // 1. Đăng ký Service Worker chuẩn SEO & Offline-first (Bảo toàn 100%)
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
@@ -1456,56 +1419,16 @@
         });
       }
 
-      // 2. Quản lý Banner Cài đặt PWA Thông minh
+      // 2. Quản lý sự kiện PWA ngầm định (Đã gỡ bỏ banner nổi để tinh gọn giao diện theo yêu cầu)
       let deferredPrompt = null;
-      const banner = document.getElementById('pwaInstallBanner');
-      const installBtn = document.getElementById('pwaInstallBtn');
-      const dismissBtn = document.getElementById('pwaDismissBtn');
-
       window.addEventListener('beforeinstallprompt', (e) => {
-        // Chặn prompt mặc định của trình duyệt để hiện banner custom sang trọng
+        // Lưu trữ sự kiện cài đặt ngầm, không tự động bung popup banner làm vướng màn hình
         e.preventDefault();
         deferredPrompt = e;
-
-        if (sessionStorage.getItem('pwa_dismissed') === 'true') {
-          return;
-        }
-
-        if (banner) {
-          banner.classList.remove('hidden');
-          setTimeout(() => {
-            banner.classList.remove('translate-y-4', 'opacity-0');
-            banner.classList.add('translate-y-0', 'opacity-100');
-          }, 600);
-        }
       });
-
-      if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-          if (!deferredPrompt) return;
-          banner.classList.add('opacity-0', 'translate-y-4');
-          setTimeout(() => banner.classList.add('hidden'), 300);
-
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log('[PWA] Kết quả phản hồi của người dùng:', outcome);
-          deferredPrompt = null;
-        });
-      }
-
-      if (dismissBtn) {
-        dismissBtn.addEventListener('click', () => {
-          if (banner) {
-            banner.classList.add('opacity-0', 'translate-y-4');
-            setTimeout(() => banner.classList.add('hidden'), 300);
-          }
-          sessionStorage.setItem('pwa_dismissed', 'true');
-        });
-      }
 
       window.addEventListener('appinstalled', () => {
         console.log('[PWA] Ứng dụng ShopSkill247 đã được cài đặt thành công!');
-        if (banner) banner.classList.add('hidden');
         deferredPrompt = null;
       });
     })();
