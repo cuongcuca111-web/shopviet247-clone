@@ -1,10 +1,10 @@
 /**
  * ShopSkill247 Progressive Web App - Service Worker
- * Version: shopskill247-pwa-v2.2
+ * Version: shopskill247-pwa-v2.3
  * Strategy: Network-First falling back to Cache (luôn ưu tiên dữ liệu mới, offline mở tức thì)
  */
 
-const CACHE_NAME = 'shopskill247-pwa-v2.2';
+const CACHE_NAME = 'shopskill247-pwa-v2.3';
 
 const CORE_STATIC_ASSETS = [
   './',
@@ -13,6 +13,7 @@ const CORE_STATIC_ASSETS = [
   './favicon.svg',
   './icon-192.png',
   './icon-512.png',
+  './js/security-shield.js',
   './js/firebase-config.js',
   './js/data.js',
   './js/state.js',
