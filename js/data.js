@@ -104,6 +104,35 @@
     // Danh sách Sản Phẩm Thật Duy Nhất (Chuẩn Nguồn Chân Lý Đồng Bộ Toàn Hệ Thống)
     products: [
       {
+        id: 'prod-002',
+        name: '[3 Tháng]Gemini Argon 4 Pro + 5TB Drive',
+        category: 'cat_gemini',
+        tag: 'Gemini - Antigravity - Veo',
+        price: 49000,
+        oldPrice: 109000,
+        discount: '-55%',
+        stock: 100,
+        status: 'in_stock', // 'in_stock' | 'low_stock' | 'out_of_stock'
+        rating: 5,
+        reviewsCount: 128,
+        soldCount: 460,
+        badge: 'Bán chạy nhất',
+        isBestSeller: true,
+        badgeColor: 'bg-amber-500 text-white',
+        autoDelivery: false,
+        warranty: 'Bảo hành chính chủ 3 tháng',
+        desc: 'Gói 3 tháng Gemini Argon 4 Pro kèm 5TB Cloud Drive chính chủ, tích hợp Antigravity 2.0 & Veo Video AI.',
+        instructions: 'Sau khi thanh toán thành công, hệ thống gửi ngay Link kích hoạt vào màn hình và email. Click link để nhận tài khoản ngay lập tức!',
+        iconType: 'gemini',
+        imageUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120"><rect width="120" height="120" rx="28" fill="%23ffffff"/><defs><linearGradient id="g4_3m" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%234285F4"/><stop offset="35%" stop-color="%239B72CB"/><stop offset="70%" stop-color="%23D96570"/><stop offset="100%" stop-color="%23F4B400"/></linearGradient></defs><path d="M60 18 C60 41.2 41.2 60 18 60 C41.2 60 60 78.8 60 102 C60 78.8 78.8 60 102 60 C78.8 60 60 41.2 60 18 Z" fill="url(%23g4_3m)"/><path d="M92 24 v14 M85 31 h14" stroke="%23F4B400" stroke-width="4" stroke-linecap="round"/></svg>',
+        features: [
+          'Kích hoạt qua link mời chính chủ Google',
+          'Tích hợp Antigravity 2.0 & Veo Video AI',
+          'Bảo hành chính chủ 1 đổi 1',
+          'Tự động cấp link ngay sau khi thanh toán'
+        ]
+      },
+      {
         id: 'prod-001',
         name: '[1 Tháng] Gemini Argon 4 Pro + 5TB Drive',
         category: 'cat_gemini',

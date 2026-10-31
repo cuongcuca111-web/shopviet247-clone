@@ -264,26 +264,69 @@
       try {
         let data = null;
 
-        // ƯU TIÊN 1: Tải trực tiếp từ GitHub Raw Cloud Storage (CORS Open 100%, không giới hạn request, không rate-limit)
+        // ƯU TIÊN 1 TUYỆT ĐỐI: Gọi trực tiếp GitHub Contents API (Zero-Cache qua header Accept raw & Authorization token)
         try {
-          const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-          const ghRes = await fetch(ghRawUrl, {
+          const ghApiUrl = GITHUB_API_URL + (GITHUB_API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+          const ghHeaders = {
+            'Accept': 'application/vnd.github.v3.raw',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          };
+          if (GITHUB_PAT) {
+            ghHeaders['Authorization'] = 'token ' + GITHUB_PAT;
+          }
+          const ghApiRes = await fetch(ghApiUrl, {
             method: 'GET',
             cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
+            headers: ghHeaders
           });
-          if (ghRes.ok) {
-            const ghJson = await ghRes.json();
-            if (ghJson) {
-              data = ghJson.data || ghJson;
-              console.log('[ShopVietState] Đã tải thành công dữ liệu từ GitHub Raw Cloud Storage!');
+          if (ghApiRes.ok) {
+            const rawText = await ghApiRes.text();
+            let parsed = null;
+            try {
+              parsed = JSON.parse(rawText);
+            } catch (eParse) {}
+            // Fallback nếu GitHub API trả về JSON envelope chứa Base64
+            if (parsed && parsed.content && parsed.encoding === 'base64') {
+              try {
+                const b64 = parsed.content.replace(/\s/g, '');
+                const decoded = decodeURIComponent(escape(window.atob(b64)));
+                parsed = JSON.parse(decoded);
+              } catch (eDec) {}
             }
+            if (parsed) {
+              data = parsed.data || parsed;
+              console.log('[ShopVietState] Đã tải thành công Zero-Cache dữ liệu từ GitHub Contents API!');
+            }
+          } else {
+            console.warn('[ShopVietState] GitHub Contents API status:', ghApiRes.status);
           }
-        } catch (eGh) {
-          console.warn('[ShopVietState] Lỗi đọc GitHub Raw Cloud Storage, đang kích hoạt fallback REST:', eGh);
+        } catch (eGhApi) {
+          console.warn('[ShopVietState] Lỗi gọi trực tiếp GitHub API (Zero Cache), kích hoạt fallback Raw URL:', eGhApi);
+        }
+
+        // FALLBACK 1: Tải từ GitHub Raw Cloud Storage nếu API bị chặn hoặc rate limit
+        if (!data) {
+          try {
+            const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+            const ghRes = await fetch(ghRawUrl, {
+              method: 'GET',
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+              }
+            });
+            if (ghRes.ok) {
+              const ghJson = await ghRes.json();
+              if (ghJson) {
+                data = ghJson.data || ghJson;
+                console.log('[ShopVietState] Đã tải thành công dữ liệu từ GitHub Raw Cloud Storage!');
+              }
+            }
+          } catch (eGh) {
+            console.warn('[ShopVietState] Lỗi đọc GitHub Raw Cloud Storage, đang kích hoạt fallback REST:', eGh);
+          }
         }
 
         // FALLBACK 2: Fallback sang REST API dev nếu GitHub Raw chưa có hoặc lỗi
@@ -499,6 +542,50 @@
         }
       } catch (err) {
         console.warn('[ShopVietState] renderCurrentRoute error:', err);
+      }
+    },
+
+    // Cưỡng chế xóa cache sản phẩm cũ và kéo mới 100% từ Đám Mây Admin (Zero-Cache Hard Resync)
+    forceHardResync: async function (isManual = true) {
+      const syncIcon = document.getElementById('cloudSyncHeaderIcon');
+      if (syncIcon) {
+        syncIcon.classList.add('animate-spin');
+      }
+      try {
+        console.log('[ShopVietState] ⚡ Bắt đầu forceHardResync: Xóa sạch cache sản phẩm cũ...');
+        try {
+          localStorage.removeItem('shopviet_custom_products');
+          localStorage.removeItem('shopviet_admin_products');
+          localStorage.removeItem('shopviet247_custom_products_v1');
+        } catch (eStorage) {
+          console.warn('[ShopVietState] Lỗi xóa cache localStorage:', eStorage);
+        }
+
+        const success = await this.syncAllFromCloud(true);
+        this.renderCurrentRoute(true);
+
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+              detail: { type: 'force_hard_resync', timestamp: Date.now() }
+            }));
+          } catch (eEvt) {}
+        }
+
+        if (this.showToast) {
+          this.showToast('⚡ Đã kéo toàn bộ dữ liệu mới nhất từ Admin về máy thành công!', 'success');
+        }
+        return success;
+      } catch (err) {
+        console.warn('[ShopVietState] forceHardResync failed:', err);
+        if (this.showToast) {
+          this.showToast('Không thể kết nối máy chủ Đám Mây, vui lòng thử lại!', 'error');
+        }
+        return false;
+      } finally {
+        if (syncIcon) {
+          syncIcon.classList.remove('animate-spin');
+        }
       }
     },
 
@@ -875,8 +962,8 @@
       }
     },
 
-    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat)
-    startRealtimeDaemon: function (intervalMs = 3000) {
+    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat Zero-Cache 2.5s)
+    startRealtimeDaemon: function (intervalMs = 2500) {
       if (this._realtimeDaemonRunning) return this;
       this._realtimeDaemonRunning = true;
       this.initBroadcastChannel();
@@ -894,24 +981,40 @@
             self.setupFirestoreRealtimeListener();
           }
 
-          // Kiểm tra GitHub Raw Cloud hoặc REST API
-          const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
           let cloudUpdatedAt = 0;
           let cloudData = null;
 
+          // ƯU TIÊN 1: Kiểm tra trực tiếp GitHub API (Zero-Cache Header & Token)
           try {
-            const res = await fetch(ghRawUrl, {
+            const ghApiUrl = GITHUB_API_URL + (GITHUB_API_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
+            const ghHeaders = {
+              'Accept': 'application/vnd.github.v3.raw',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            };
+            if (GITHUB_PAT) {
+              ghHeaders['Authorization'] = 'token ' + GITHUB_PAT;
+            }
+            const ghRes = await fetch(ghApiUrl, {
               method: 'GET',
               cache: 'no-store',
-              headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-              }
+              headers: ghHeaders
             });
-            if (res.ok) {
-              const json = await res.json();
-              if (json) {
-                cloudData = json.data || json;
+            if (ghRes.ok) {
+              const rawText = await ghRes.text();
+              let parsed = null;
+              try {
+                parsed = JSON.parse(rawText);
+              } catch (eParse) {}
+              if (parsed && parsed.content && parsed.encoding === 'base64') {
+                try {
+                  const b64 = parsed.content.replace(/\s/g, '');
+                  const decoded = decodeURIComponent(escape(window.atob(b64)));
+                  parsed = JSON.parse(decoded);
+                } catch (eDec) {}
+              }
+              if (parsed) {
+                cloudData = parsed.data || parsed;
                 if (cloudData && cloudData.updatedAt) {
                   cloudUpdatedAt = typeof cloudData.updatedAt === 'number'
                     ? cloudData.updatedAt
@@ -921,13 +1024,19 @@
                 }
               }
             }
-          } catch (eGh) {
-            // Fallback sang REST API
+          } catch (eGhApi) {}
+
+          // FALLBACK 2: Fallback sang REST API nếu GitHub API lỗi hoặc nghẽn
+          if (!cloudUpdatedAt) {
             try {
               const restUrl = CLOUD_DB_URL + (CLOUD_DB_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
               const restRes = await fetch(restUrl, {
                 method: 'GET',
-                cache: 'no-store'
+                cache: 'no-store',
+                headers: {
+                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                  'Pragma': 'no-cache'
+                }
               });
               if (restRes.ok) {
                 const rJson = await restRes.json();
@@ -937,14 +1046,44 @@
                     cloudUpdatedAt = typeof cloudData.updatedAt === 'number'
                       ? cloudData.updatedAt
                       : new Date(cloudData.updatedAt).getTime();
+                  } else if (cloudData && cloudData.version && typeof cloudData.version === 'number') {
+                    cloudUpdatedAt = cloudData.version;
                   }
                 }
               }
             } catch (eRest) {}
           }
 
+          // FALLBACK 3: Kiểm tra GitHub Raw Cloud
+          if (!cloudUpdatedAt) {
+            try {
+              const ghRawUrl = GITHUB_RAW_CLOUD_URL + (GITHUB_RAW_CLOUD_URL.includes('?') ? '&' : '?') + '_hb=' + Date.now();
+              const res = await fetch(ghRawUrl, {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                  'Pragma': 'no-cache'
+                }
+              });
+              if (res.ok) {
+                const json = await res.json();
+                if (json) {
+                  cloudData = json.data || json;
+                  if (cloudData && cloudData.updatedAt) {
+                    cloudUpdatedAt = typeof cloudData.updatedAt === 'number'
+                      ? cloudData.updatedAt
+                      : new Date(cloudData.updatedAt).getTime();
+                  } else if (cloudData && cloudData.version && typeof cloudData.version === 'number') {
+                    cloudUpdatedAt = cloudData.version;
+                  }
+                }
+              }
+            } catch (eGh) {}
+          }
+
           const localUpdatedAt = self.getLastUpdatedAt();
-          if (cloudUpdatedAt && cloudUpdatedAt > localUpdatedAt + 1000) {
+          if (cloudUpdatedAt && cloudUpdatedAt > localUpdatedAt + 500) {
             console.log('[ShopVietState] Smart Heartbeat phát hiện cập nhật mới từ Cloud:', {
               cloudUpdatedAt: new Date(cloudUpdatedAt).toISOString(),
               localUpdatedAt: new Date(localUpdatedAt).toISOString()
@@ -968,7 +1107,7 @@
       };
 
       this._realtimeDaemonTimer = setInterval(checkCloudHeartbeat, intervalMs);
-      console.log(`[ShopVietState] Realtime Daemon đã khởi động (Smart Heartbeat ${intervalMs}ms)!`);
+      console.log(`[ShopVietState] Realtime Daemon đã khởi động (Smart Heartbeat Zero-Cache ${intervalMs}ms)!`);
       return this;
     },
 
@@ -1310,7 +1449,7 @@
       this.load();
       this.initBroadcastChannel();
       this.setupFirestoreRealtimeListener();
-      this.startRealtimeDaemon(3000);
+      this.startRealtimeDaemon(2500);
       this.syncAllFromCloud().catch(function () {});
 
       // Auto-Sync on Focus & Tab Visibility Change (Đồng bộ tức thì khi chuyển tab / mở lại màn hình)
@@ -1351,7 +1490,7 @@
         if (!this._isInitialized) {
           this.initBroadcastChannel();
           this.setupFirestoreRealtimeListener();
-          this.startRealtimeDaemon(3000);
+          this.startRealtimeDaemon(2500);
         }
 
         // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền

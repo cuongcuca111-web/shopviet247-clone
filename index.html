@@ -153,8 +153,8 @@
           <button 
             id="header-sync-btn" 
             type="button" 
-            onclick="ShopVietState && ShopVietState.syncAllFromCloud ? ShopVietState.syncAllFromCloud(true) : location.reload()" 
-            title="🟢 Realtime Live (Tự động đồng bộ thời gian thực)" 
+            onclick="window.ShopVietState && window.ShopVietState.forceHardResync ? window.ShopVietState.forceHardResync(true) : location.reload()" 
+            title="🟢 Realtime Live (Bấm để ép làm mới & kéo dữ liệu mới nhất)" 
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200/70 dark:border-emerald-800/70 shadow-2xs hover:shadow-emerald-500/20 transition-all duration-300 cursor-pointer group active:scale-95 shrink-0 whitespace-nowrap"
           >
             <!-- Chấm LED xanh ngọc animate-ping và animate-pulse -->
@@ -362,17 +362,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-config.js?v=20261031_realtime_mesh"></script>
 
-  <script src="js/data.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/views/home.js"></script>
-  <script src="js/views/modal.js"></script>
-  <script src="js/views/checkout.js"></script>
-  <script src="js/views/auth.js"></script>
-  <script src="js/views/dashboard.js"></script>
-  <script src="js/views/admin.js"></script>
-  <script src="js/views/blog.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/data.js?v=20261031_realtime_mesh"></script>
+  <script src="js/state.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/home.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/modal.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/checkout.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/auth.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/dashboard.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/admin.js?v=20261031_realtime_mesh"></script>
+  <script src="js/views/blog.js?v=20261031_realtime_mesh"></script>
+  <script src="js/app.js?v=20261031_realtime_mesh"></script>
 </body>
 </html>
