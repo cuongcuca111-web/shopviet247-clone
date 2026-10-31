@@ -430,11 +430,6 @@
                 </svg>
               </button>
 
-              <!-- Nút Đăng nhập 1-Chạm tài khoản Minh Cường (Admin) -->
-              <button type="button" id="quickAdminLoginBtn" onclick="window.ShopVietViews.auth.quickAdminLogin()" class="w-full mt-2.5 py-2.5 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-                <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                <span>⚡ Đăng nhập 1-chạm tài khoản Minh Cường (Admin)</span>
-              </button>
 
             </form>
 

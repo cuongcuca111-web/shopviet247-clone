@@ -1691,9 +1691,9 @@ window.ShopVietViews.modal = (function () {
       }
       if (waitingStockEl) {
         if (updatedStock !== null) {
-          waitingStockEl.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Còn ${updatedStock} gói</span> <span class="text-[10px] text-slate-400 font-normal">(Đã tự động trừ kho)</span>`;
+          waitingStockEl.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Còn ${updatedStock} gói</span>`;
         } else {
-          waitingStockEl.textContent = 'Đã ghi nhận trừ kho';
+          waitingStockEl.textContent = 'Còn hàng';
         }
       }
       if (mainContent) mainContent.classList.add('hidden');

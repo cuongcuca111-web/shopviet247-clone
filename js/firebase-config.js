@@ -260,15 +260,20 @@
      * Đồng bộ Đơn hàng lên Cloud Firestore
      */
     syncOrderToCloud: async function (orderData) {
-      if (!orderData || !orderData.id) return false;
+      if (!orderData || (!orderData.id && !orderData.orderCode && !orderData.rawCode)) return false;
+
+      const docId = String(orderData.rawCode || orderData.orderCode || orderData.id).replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!docId) return false;
 
       if (this.db && this.isOnline) {
         try {
-          await this.db.collection('orders').doc(orderData.id).set({
+          await this.db.collection('orders').doc(docId).set({
             ...orderData,
+            id: orderData.id || docId,
+            docId: docId,
             syncedAt: new Date().toISOString()
           }, { merge: true });
-          console.log('[ShopVietFirebase] Đã đồng bộ đơn hàng lên Firestore:', orderData.id);
+          console.log('[ShopVietFirebase] Đã đồng bộ đơn hàng lên Firestore:', docId);
         } catch (e) {
           console.warn('[ShopVietFirebase] Firestore Order Sync error:', e.message);
         }
@@ -279,11 +284,11 @@
         let orders = [];
         const raw = localStorage.getItem(CLOUD_ORDERS_KEY);
         if (raw) orders = JSON.parse(raw);
-        const idx = orders.findIndex(o => o.id === orderData.id);
+        const idx = orders.findIndex(o => o.id === orderData.id || o.rawCode === orderData.rawCode || o.orderCode === orderData.orderCode || o.id === docId);
         if (idx > -1) {
-          orders[idx] = { ...orders[idx], ...orderData, syncedAt: new Date().toISOString() };
+          orders[idx] = { ...orders[idx], ...orderData, id: orderData.id || docId, syncedAt: new Date().toISOString() };
         } else {
-          orders.unshift({ ...orderData, syncedAt: new Date().toISOString() });
+          orders.unshift({ ...orderData, id: orderData.id || docId, syncedAt: new Date().toISOString() });
         }
         localStorage.setItem(CLOUD_ORDERS_KEY, JSON.stringify(orders));
       } catch (e) {

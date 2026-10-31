@@ -823,10 +823,6 @@
                       <td class="py-3.5 px-4 whitespace-nowrap">
                         ${order.status === 'pending_review' ? `
                           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 backdrop-blur-xs shadow-xs">
-                            <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                            </span>
                             <svg class="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 2"/>
                               <polyline points="12 6 12 12 15 14" stroke-width="2" stroke-linecap="round"/>
@@ -982,10 +978,6 @@
                       <td class="py-3.5 px-4 whitespace-nowrap">
                         ${order.status === 'pending_review' ? `
                           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 backdrop-blur-xs shadow-xs">
-                            <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                            </span>
                             <svg class="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 2"/>
                               <polyline points="12 6 12 12 15 14" stroke-width="2" stroke-linecap="round"/>
