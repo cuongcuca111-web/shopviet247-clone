@@ -42,7 +42,7 @@
       "price": 69000,
       "oldPrice": 250000,
       "discount": "-72%",
-      "stock": 102,
+      "stock": 101,
       "status": "in_stock",
       "rating": 5,
       "reviewsCount": 1,
@@ -407,6 +407,6 @@
     "SV30P-XA8S",
     "SV20P-PYGL"
   ],
-  "updatedAt": "2026-10-31T11:33:32.780Z",
-  "version": 1793446412780
+  "updatedAt": "2026-10-31T11:33:37.135Z",
+  "version": 1793446417135
 }
