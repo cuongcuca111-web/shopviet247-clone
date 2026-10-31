@@ -40,11 +40,92 @@ window.ShopVietViews.home = (function () {
     return `<img src="${safeSrc}" alt="" class="${imgClass}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" /><div style="display:none;" class="${fallbackClass}">${iconSvg}</div>`;
   }
 
+  // Helper render huy hiệu Mark động với icon SVG & viền sáng sắc nét
+  function renderProductMarkBadge(badge, customBadgeColor) {
+    if (!badge) return '';
+    const bLower = badge.toLowerCase();
+
+    // 1. HOT (Đang sốt - Đỏ Cam Neon kèm icon ngọn lửa rực sáng)
+    if (bLower.includes('hot')) {
+      return `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-black rounded-lg bg-gradient-to-r from-rose-500 via-rose-600 to-amber-500 text-white shadow-md shadow-rose-500/35 border border-rose-300/40 ring-1 ring-rose-400/30 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-3 h-3 text-amber-200 fill-current animate-pulse shrink-0" viewBox="0 0 24 24">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+          </svg>
+          <span class="drop-shadow-xs">${badge}</span>
+        </span>
+      `;
+    }
+
+    // 2. Rẻ vô địch / Tiết kiệm (Xanh Emerald kèm icon tag giảm giá)
+    if (bLower.includes('rẻ') || bLower.includes('tiết kiệm')) {
+      return `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-black rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-md shadow-emerald-500/30 border border-emerald-300/40 ring-1 ring-emerald-400/30 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-3 h-3 text-emerald-100 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+            <line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+          <span class="drop-shadow-xs">${badge}</span>
+        </span>
+      `;
+    }
+
+    // 3. Mới ra mắt / New Arrival (Tím Cyber kèm icon tia sáng lấp lánh)
+    if (bLower.includes('mới') || bLower.includes('new')) {
+      return `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-black rounded-lg bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 text-white shadow-md shadow-purple-500/30 border border-purple-300/40 ring-1 ring-purple-400/30 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-3 h-3 text-purple-200 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+          </svg>
+          <span class="drop-shadow-xs">${badge}</span>
+        </span>
+      `;
+    }
+
+    // 4. Khuyên dùng / Pro Choice (Xanh Dương Cyber kèm icon viên kim cương/khiên)
+    if (bLower.includes('khuyên dùng') || bLower.includes('pro')) {
+      return `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-black rounded-lg bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 text-white shadow-md shadow-blue-500/30 border border-cyan-300/40 ring-1 ring-cyan-400/30 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-3 h-3 text-cyan-100 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 3 18 3 22 9 12 22 2 9 6 3"/>
+            <polyline points="11 3 11 22"/>
+          </svg>
+          <span class="drop-shadow-xs">${badge}</span>
+        </span>
+      `;
+    }
+
+    // 5. Flash Sale (Hồng Đỏ rực rỡ kèm tia chớp)
+    if (bLower.includes('flash') || bLower.includes('sale')) {
+      return `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-black rounded-lg bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 text-white shadow-md shadow-pink-500/35 border border-pink-300/40 ring-1 ring-pink-400/30 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-3 h-3 text-yellow-200 fill-current shrink-0 animate-pulse" viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span class="drop-shadow-xs">${badge}</span>
+        </span>
+      `;
+    }
+
+    // 6. Custom Badge hoặc giá trị tùy chỉnh riêng
+    const bgClass = customBadgeColor || 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-indigo-500/30';
+    return `
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-lg ${bgClass} shadow-sm border border-white/20 backdrop-blur-xs">
+        <svg class="w-2.5 h-2.5 text-white/80 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="4"/>
+        </svg>
+        <span>${badge}</span>
+      </span>
+    `;
+  }
+
   // Helper render thumbnail với gradient & SVG sắc nét
   function renderThumbnail(prod) {
     const brandGradients = {
       cursor: 'from-slate-950 via-indigo-950 to-indigo-900 border-indigo-800/40',
       gemini: 'from-slate-950 via-blue-950 to-blue-900 border-blue-800/40',
+      antigravity: 'from-slate-950 via-purple-950 to-indigo-950 border-purple-800/40',
+      veo: 'from-slate-950 via-rose-950 to-amber-950 border-rose-800/40',
       chatgpt: 'from-slate-950 via-emerald-950 to-teal-900 border-emerald-800/40',
       claude: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       sonnet: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
@@ -84,11 +165,7 @@ window.ShopVietViews.home = (function () {
             </span>
           ` : ''}
 
-          ${(prod.badge && !isBestSeller) ? `
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-lg ${prod.badgeColor || 'bg-indigo-600 text-white'} shadow-sm border border-white/10 backdrop-blur-xs">
-              ${prod.badge}
-            </span>
-          ` : ''}
+          ${(prod.badge && !isBestSeller) ? renderProductMarkBadge(prod.badge, prod.badgeColor) : ''}
         </div>
 
         <!-- Top Right: Bookmark Ribbon "BÁN CHẠY NHẤT" đè dọc mép ảnh -->

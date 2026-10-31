@@ -129,6 +129,8 @@ window.ShopVietViews.modal = (function () {
     const gradients = {
       cursor: 'from-slate-950 via-indigo-950 to-indigo-900 border-indigo-800/40',
       gemini: 'from-slate-950 via-blue-950 to-blue-900 border-blue-800/40',
+      antigravity: 'from-slate-950 via-purple-950 to-indigo-950 border-purple-800/40',
+      veo: 'from-slate-950 via-rose-950 to-amber-950 border-rose-800/40',
       chatgpt: 'from-slate-950 via-emerald-950 to-teal-900 border-emerald-800/40',
       claude: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',
       api: 'from-slate-950 via-amber-950 to-orange-950 border-amber-800/40',

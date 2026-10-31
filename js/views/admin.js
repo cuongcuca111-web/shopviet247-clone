@@ -626,7 +626,7 @@
           <div class="font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">${prod.name}</div>
           <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
             <span>ID: <code class="font-mono text-slate-400">${prod.id}</code></span>
-            ${prod.badge ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">${prod.badge}</span>` : ''}
+            ${prod.badge ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${prod.badgeColor || 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'} shadow-xs inline-block">${prod.badge}</span>` : ''}
           </div>
         </td>
 
@@ -2242,6 +2242,13 @@
       if (found) prod = Object.assign({}, found);
     }
 
+    // Nhận diện Badge chuẩn & chế độ tùy chỉnh
+    const standardBadges = ['Bán chạy nhất', 'HOT', 'Rẻ vô địch', 'Mới ra mắt', 'Khuyên dùng', 'Flash Sale'];
+    const currentBadge = (prod.badge || 'Bán chạy nhất').trim();
+    const matchedStandard = standardBadges.find(b => b.toLowerCase() === currentBadge.toLowerCase());
+    const isCustom = !matchedStandard && currentBadge !== '';
+    const badgeSelectValue = isCustom ? 'custom' : (matchedStandard || 'Bán chạy nhất');
+
     return `
       <div id="productEditBackdrop" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-up">
@@ -2452,15 +2459,32 @@
 
             <!-- Badge & Bảo hành -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Huy hiệu nổi bật (Badge)</label>
-                <input 
-                  type="text" 
-                  id="editProdBadge" 
-                  value="${prod.badge || 'Bán chạy nhất'}" 
-                  placeholder="Ví dụ: Bán chạy nhất, Hot Dev..." 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              <div class="space-y-1.5">
+                <label class="block font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">Huy hiệu nổi bật (Badge & Mark)</label>
+                <select 
+                  id="editProdBadgeSelect" 
+                  onchange="const c = document.getElementById('editProdBadgeCustomWrap'); if(c) { c.classList.toggle('hidden', this.value !== 'custom'); const hid = document.getElementById('editProdBadge'); if(hid && this.value !== 'custom') hid.value = this.value; }"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-xs sm:text-sm cursor-pointer"
                 >
+                  <option value="Bán chạy nhất" ${badgeSelectValue === 'Bán chạy nhất' ? 'selected' : ''}>⭐ Bán chạy nhất (Best Seller - Vàng Gold)</option>
+                  <option value="HOT" ${badgeSelectValue === 'HOT' ? 'selected' : ''}>🔥 HOT (Đang sốt - Đỏ Cam Neon)</option>
+                  <option value="Rẻ vô địch" ${badgeSelectValue === 'Rẻ vô địch' ? 'selected' : ''}>🏷️ Rẻ vô địch (Siêu tiết kiệm - Xanh Emerald)</option>
+                  <option value="Mới ra mắt" ${badgeSelectValue === 'Mới ra mắt' ? 'selected' : ''}>✨ Mới ra mắt (New Arrival - Tím Cyber)</option>
+                  <option value="Khuyên dùng" ${badgeSelectValue === 'Khuyên dùng' ? 'selected' : ''}>💎 Khuyên dùng (Pro Choice - Xanh Dương)</option>
+                  <option value="Flash Sale" ${badgeSelectValue === 'Flash Sale' ? 'selected' : ''}>⚡ Flash Sale (Giảm sốc - Hồng Đỏ)</option>
+                  <option value="custom" ${badgeSelectValue === 'custom' ? 'selected' : ''}>✍️ Tùy chỉnh chữ riêng...</option>
+                </select>
+                <div id="editProdBadgeCustomWrap" class="${isCustom ? '' : 'hidden'} mt-1.5">
+                  <input 
+                    type="text" 
+                    id="editProdBadgeCustom" 
+                    value="${isCustom ? currentBadge.replace(/"/g, '&quot;') : ''}"
+                    placeholder="Nhập tên huy hiệu riêng (VD: Phiên bản VIP, Limited...)" 
+                    oninput="const hid = document.getElementById('editProdBadge'); if(hid) hid.value = this.value.trim();"
+                    class="w-full px-3.5 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <input type="hidden" id="editProdBadge" value="${currentBadge.replace(/"/g, '&quot;')}" />
               </div>
 
               <div>
@@ -2975,7 +2999,48 @@
       const stock = Number(document.getElementById('editProdStock').value) || 0;
       const status = document.getElementById('editProdStatus').value;
       const iconType = document.getElementById('editProdIconType').value;
-      const badge = document.getElementById('editProdBadge').value.trim();
+      
+      // Đọc giá trị badge thông minh từ Dropdown & Custom Input
+      const badgeSelect = document.getElementById('editProdBadgeSelect');
+      const badgeCustom = document.getElementById('editProdBadgeCustom');
+      let badge = 'Bán chạy nhất';
+      if (badgeSelect) {
+        if (badgeSelect.value === 'custom') {
+          badge = (badgeCustom && badgeCustom.value.trim()) ? badgeCustom.value.trim() : 'Tùy chỉnh';
+        } else {
+          badge = badgeSelect.value;
+        }
+      } else if (document.getElementById('editProdBadge')) {
+        badge = document.getElementById('editProdBadge').value.trim() || 'Bán chạy nhất';
+      }
+
+      // Tự động gán badgeColor theo loại Mark chuẩn ShopViet247
+      function getMarkBadgeColor(bName) {
+        const b = (bName || '').toLowerCase();
+        if (b.includes('hot')) {
+          return 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-rose-500/30';
+        }
+        if (b.includes('rẻ') || b.includes('tiết kiệm')) {
+          return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30';
+        }
+        if (b.includes('mới') || b.includes('new')) {
+          return 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-purple-500/30';
+        }
+        if (b.includes('khuyên dùng') || b.includes('pro')) {
+          return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-500/30';
+        }
+        if (b.includes('flash') || b.includes('sale')) {
+          return 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-pink-500/30';
+        }
+        if (b.includes('bán chạy') || b.includes('best seller')) {
+          return 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white shadow-amber-500/30';
+        }
+        return 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-indigo-500/30';
+      }
+
+      const badgeColor = getMarkBadgeColor(badge);
+      const isBestSeller = Boolean(badge.toLowerCase().includes('bán chạy') || badge.toLowerCase().includes('best seller'));
+
       const warranty = document.getElementById('editProdWarranty').value.trim();
       const desc = document.getElementById('editProdDesc').value.trim();
       const imageUrlInput = document.getElementById('editProdImageUrl');
@@ -3011,6 +3076,8 @@
             status,
             iconType,
             badge,
+            badgeColor,
+            isBestSeller,
             warranty,
             desc,
             imageUrl
@@ -3031,8 +3098,9 @@
           rating: 5.0,
           reviewsCount: 1,
           soldCount: 0,
-          badge: badge || 'Mới',
-          badgeColor: 'bg-indigo-600 text-white',
+          badge: badge || 'Bán chạy nhất',
+          badgeColor: badgeColor,
+          isBestSeller: isBestSeller,
           autoDelivery: false,
           warranty: warranty || '12 tháng (1 đổi 1)',
           desc,

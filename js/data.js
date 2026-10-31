@@ -9,10 +9,12 @@
   // SVG Helper Icons for Product Brands (100% SVG độc bản, chuẩn nét 2px, bo góc, tương thích Light/Dark mode)
   const BRAND_ICONS = {
     cursor: `<svg class="w-8 h-8 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07 4 4z"/><path d="m13.58 13.58 6.42 6.42"/></svg>`,
-    gemini: `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285F4"/><stop offset="30%" stop-color="#9B72CB"/><stop offset="70%" stop-color="#D96570"/><stop offset="100%" stop-color="#F4B400"/></linearGradient></defs><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z" fill="url(#geminiGrad)"/><path d="M19 3v4M17 5h4" stroke="#F4B400" stroke-width="2" stroke-linecap="round"/></svg>`,
+    gemini: `<svg class="w-10 h-10" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="brandGeminiGradData" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285F4"/><stop offset="30%" stop-color="#9B72CB"/><stop offset="70%" stop-color="#D96570"/><stop offset="100%" stop-color="#F4B400"/></linearGradient></defs><path d="M12 2C12 7.52 7.52 12 2 12c5.48 0 10 4.48 10 10 0-5.52 4.48-10 10-10-5.52 0-10-4.48-10-10z" fill="url(#brandGeminiGradData)"/><path d="M19 3v4M17 5h4" stroke="#F4B400" stroke-width="2" stroke-linecap="round"/></svg>`,
     chatgpt: `<svg class="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(120 12 12)"/></svg>`,
     claude: `<svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2-1.5 5L3 8.5l5 1.5 1.5 5 1.5-5 5-1.5-5-1.5-1.5-5z"/><path d="m18 13-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3z"/></svg>`,
     sonnet: `<svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2-1.5 5L3 8.5l5 1.5 1.5 5 1.5-5 5-1.5-5-1.5-1.5-5z"/><path d="m18 13-1 3-3 1 3 1 1 3 1-3 3-1-3-1-1-3z"/></svg>`,
+    antigravity: `<svg class="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="brandAntigravityGradData" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><circle cx="12" cy="12" r="3.5" fill="url(#brandAntigravityGradData)"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(-30 12 12)" stroke="currentColor" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(30 12 12)" stroke="currentColor" stroke-width="1.8"/><circle cx="19.5" cy="7.5" r="1.5" fill="#a855f7"/><circle cx="4.5" cy="16.5" r="1.2" fill="#6366f1"/></svg>`,
+    veo: `<svg class="w-8 h-8 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 8 5.5-3.5v15L15.5 16"/><rect x="2" y="6" width="13.5" height="12" rx="2.5"/><circle cx="8.75" cy="12" r="2.5" fill="currentColor" fill-opacity="0.2"/><path d="M6 3.5 8 5.5M11.5 3.5 9.5 5.5" stroke="#f43f5e" stroke-width="2" stroke-linecap="round"/></svg>`,
     canva: `<svg class="w-8 h-8 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12c0 3.5 2.5 6.5 6 6.5 1 0 1.5-.5 1.5-1.5 0-.5 0-1 .5-1.5.5-.5 1-.5 1.5-.5h1.5c4.5 0 8.5-3.5 8.5-8 0-4-3.5-7-9.5-7z"/></svg>`,
     capcut: `<svg class="w-8 h-8 text-pink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="3"/><path d="m10 9 5 3-5 3V9z"/><path d="M2 8h20M2 16h20"/></svg>`,
     api: `<svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
@@ -120,9 +122,9 @@
         badgeColor: 'bg-indigo-600 text-white',
         autoDelivery: false,
         warranty: '18 tháng (1 đổi 1)',
-        desc: 'Mô tả tính năng gói sản phẩm bản quyền tự động 24/7...',
+        desc: 'Gói 6 tháng Gemini Argon 4 Pro kèm 5TB Cloud Drive chính chủ, tích hợp Antigravity 2.0 & Veo Video AI tự động 24/7.',
         iconType: 'gemini',
-        imageUrl: '',
+        imageUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCI+CiAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIyOCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnZW1pbmk2bUdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWE3M2U4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMzUlIiBzdG9wLWNvbG9yPSIjOGFiNGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNzAlIiBzdG9wLWNvbG9yPSIjYzU4YWY5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmNzU5NyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ2VtaW5pNm1QaWxsIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRmNDZlNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YzNhZWQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxwYXRoIGQ9Ik02MCAxNiBDNjAgMzggNDMgNTQgMjAgNTQgQzQzIDU0IDYwIDcwIDYwIDkyIEM2MCA3MCA3NyA1NCAxMDAgNTQgQzc3IDU0IDYwIDM4IDYwIDE2IFoiIGZpbGw9InVybCgjZ2VtaW5pNm1HcmFkKSIvPgogIDxwYXRoIGQ9Ik05MiAyMCB2MTIgTTg2IDI2IGgxMiIgc3Ryb2tlPSIjRjRCNDAwIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHJlY3QgeD0iMjYiIHk9IjkwIiB3aWR0aD0iNjgiIGhlaWdodD0iMjAiIHJ4PSIxMCIgZmlsbD0idXJsKCNnZW1pbmk2bVBpbGwpIi8+CiAgPHRleHQgeD0iNjAiIHk9IjEwNCIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgJ1NlZ29lIFVJJywgUm9ib3RvLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iMC41Ij42TSBQUk88L3RleHQ+Cjwvc3ZnPg==',
         features: [
           'Bản quyền kích hoạt nhanh chóng 24/7',
           'Bảo hành 1 đổi 1 nhanh chóng',
@@ -210,7 +212,11 @@
     // Helper Lấy chi tiết Icon
     getBrandIcon: function (type) {
       if (!type) return BRAND_ICONS.cursor;
-      const key = String(type).toLowerCase();
+      const key = String(type).toLowerCase().trim();
+      if (key === 'ag' || key === 'antigravity') return BRAND_ICONS.antigravity;
+      if (key === 'veo') return BRAND_ICONS.veo;
+      if (key === 'openai' || key === 'chatgpt') return BRAND_ICONS.chatgpt;
+      if (key === 'google' || key === 'gemini') return BRAND_ICONS.gemini;
       if (key === 'sonnet' || key === 'claude') return BRAND_ICONS.claude;
       return BRAND_ICONS[key] || BRAND_ICONS.cursor;
     },
