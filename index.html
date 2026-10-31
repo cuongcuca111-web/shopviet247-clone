@@ -157,8 +157,8 @@
             id="header-sync-btn" 
             type="button" 
             onclick="ShopVietState && ShopVietState.syncAllFromCloud ? ShopVietState.syncAllFromCloud(true) : location.reload()" 
-            title="🟢 Realtime Live (Tự động đồng bộ)" 
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200/70 dark:border-emerald-800/70 shadow-2xs hover:shadow-emerald-500/20 transition-all duration-300 cursor-pointer group active:scale-95 relative"
+            title="🟢 Realtime Live (Tự động đồng bộ thời gian thực)" 
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200/70 dark:border-emerald-800/70 shadow-2xs hover:shadow-emerald-500/20 transition-all duration-300 cursor-pointer group active:scale-95 shrink-0 whitespace-nowrap"
           >
             <!-- Chấm LED xanh ngọc animate-ping và animate-pulse -->
             <span class="relative flex h-2 w-2 shrink-0">
@@ -170,8 +170,7 @@
               <polyline points="13 13 10 16 7 13"/>
               <line x1="10" y1="9" x2="10" y2="16"/>
             </svg>
-            <span class="text-xs font-semibold hidden md:inline text-emerald-800 dark:text-emerald-200">🟢 Realtime Live (Tự động đồng bộ)</span>
-            <span class="text-xs font-semibold md:hidden text-emerald-800 dark:text-emerald-200">Live</span>
+            <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-200 whitespace-nowrap hidden sm:inline">Đồng bộ</span>
           </button>
 
           <!-- Nút Đổi Giao Diện Sáng/Tối (#headerThemeToggle) -->
