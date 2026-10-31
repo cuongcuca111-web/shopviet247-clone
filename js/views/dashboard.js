@@ -316,6 +316,9 @@
     `;
   }
 
+  // Cờ khóa chống trùng lặp / vòng lặp vô hạn refresh đơn hàng
+  let isRefreshingOrders = false;
+
   const dashboardView = {
     /**
      * Render HTML giao diện Dashboard 2 cột hoàn chỉnh
@@ -2004,45 +2007,58 @@
     },
 
     /**
-     * Làm mới danh sách đơn hàng tức thì (Nhiệm vụ 1)
+     * Làm mới danh sách đơn hàng tức thì (Nhiệm vụ 1: Triệt tiêu vòng lặp vô hạn)
      */
     refreshOrders: async function (isManual) {
+      if (isRefreshingOrders) {
+        return;
+      }
+      isRefreshingOrders = true;
+
       const refreshBtn = document.getElementById('dashboardRefreshOrdersBtn');
       const refreshIcon = document.getElementById('dashboardRefreshIcon');
-      if (refreshIcon) {
+      if (refreshIcon && isManual) {
         refreshIcon.classList.add('animate-spin');
       }
-      if (refreshBtn) {
+      if (refreshBtn && isManual) {
         refreshBtn.disabled = true;
       }
 
       try {
-        if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
-          await window.ShopVietState.syncAllFromCloud(isManual);
+        // ĐẶC BIỆT: CHỈ KHI isManual === true (người dùng chủ động bấm nút "Làm mới đơn")
+        // THÌ MỚI ĐƯỢC GỌI window.ShopVietState.syncAllFromCloud(true).
+        // Nếu isManual === false (sự kiện ngầm) thì TUYỆT ĐỐI KHÔNG gọi syncAllFromCloud(),
+        // mà chỉ đọc this.orders = getUserOrders(user) và cập nhật bảng đơn hàng cục bộ!
+        if (isManual && window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
+          await window.ShopVietState.syncAllFromCloud(true);
+        }
+
+        const user = getCurrentUser();
+        const userOrders = getUserOrders(user);
+        this.orders = userOrders;
+
+        // Re-render tab hiện tại một cách êm ái mà không reload trang
+        const mainArea = document.getElementById('dashboardMainArea');
+        if (mainArea && (activeTab === 'orders' || activeTab === 'overview')) {
+          mainArea.innerHTML = this.renderTabContent(activeTab, user, userOrders);
+          this.bindTabEvents(activeTab, user, userOrders);
+          this.bindModalEvents(user, userOrders);
+        }
+
+        if (isManual && window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
+          window.ShopVietState.showToast('Đã cập nhật trạng thái đơn hàng mới nhất!', 'success');
         }
       } catch (err) {
-        console.warn('[Dashboard] refreshOrders sync error:', err);
-      }
+        console.warn('[Dashboard] refreshOrders error:', err);
+      } finally {
+        setTimeout(() => {
+          if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+          if (refreshBtn) refreshBtn.disabled = false;
+        }, 500);
 
-      const user = getCurrentUser();
-      const userOrders = getUserOrders(user);
-      this.orders = userOrders;
-
-      // Re-render tab hiện tại một cách êm ái mà không reload trang
-      const mainArea = document.getElementById('dashboardMainArea');
-      if (mainArea && (activeTab === 'orders' || activeTab === 'overview')) {
-        mainArea.innerHTML = this.renderTabContent(activeTab, user, userOrders);
-        this.bindTabEvents(activeTab, user, userOrders);
-        this.bindModalEvents(user, userOrders);
-      }
-
-      setTimeout(() => {
-        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
-        if (refreshBtn) refreshBtn.disabled = false;
-      }, 500);
-
-      if (isManual && window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast('Đã cập nhật trạng thái đơn hàng mới nhất!', 'success');
+        setTimeout(() => {
+          isRefreshingOrders = false;
+        }, 2000);
       }
     }
   };
@@ -2050,38 +2066,38 @@
   // Gắn vào window.ShopVietViews.dashboard
   window.ShopVietViews.dashboard = dashboardView;
 
-  // Khởi tạo các bộ lắng nghe Realtime tức thì (0.2s) khắc phục độ trễ duyệt đơn Admin
+  // Khởi tạo các bộ lắng nghe Realtime tức thì có Debounce chống giật lag & vòng lặp
   (function initDashboardRealtimeListeners() {
     let orderListenerAttached = false;
+    let debounceTimer = null;
+
+    // Debounce tối thiểu 3000ms cho các event storage hoặc firestore snapshot ngầm
+    const debouncedRefreshOrders = function () {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function () {
+        if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
+          window.ShopVietViews.dashboard.refreshOrders(false);
+        }
+      }, 3000);
+    };
 
     const setupDashboardRealtime = function () {
       // 1. Lắng nghe storage event (khi shopviet_orders hoặc shopviet247_cloud_orders_sync thay đổi)
       window.addEventListener('storage', function (e) {
         if (e.key === 'shopviet_orders' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_state_v1') {
-          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
-            window.ShopVietViews.dashboard.refreshOrders(false);
-          }
+          debouncedRefreshOrders();
         }
       });
 
       // 2. Lắng nghe shopviet_realtime_update
       window.addEventListener('shopviet_realtime_update', function (e) {
-        if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
-          window.ShopVietViews.dashboard.refreshOrders(false);
-        }
+        debouncedRefreshOrders();
       });
 
-      // 3. Lắng nghe ShopVietState subscriptions
+      // 3. Lắng nghe ShopVietState subscriptions (Xóa bỏ hoàn toàn subscription 'cloud_sync_completed')
       if (window.ShopVietState && typeof window.ShopVietState.subscribe === 'function') {
         window.ShopVietState.subscribe('orders_updated', function () {
-          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
-            window.ShopVietViews.dashboard.refreshOrders(false);
-          }
-        });
-        window.ShopVietState.subscribe('cloud_sync_completed', function () {
-          if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
-            window.ShopVietViews.dashboard.refreshOrders(false);
-          }
+          debouncedRefreshOrders();
         });
       }
 
@@ -2114,15 +2130,13 @@
                   }
                 });
 
-                if (window.ShopVietViews && window.ShopVietViews.dashboard && typeof window.ShopVietViews.dashboard.refreshOrders === 'function') {
-                  window.ShopVietViews.dashboard.refreshOrders(false);
-                }
+                debouncedRefreshOrders();
               }
             }, function (err) {
               console.warn('[Dashboard] Firestore onSnapshot error:', err.message);
             });
             orderListenerAttached = true;
-            console.log('[Dashboard] Đã kích hoạt Firestore Realtime onSnapshot cho đơn hàng (0.2s latency)!');
+            console.log('[Dashboard] Đã kích hoạt Firestore Realtime onSnapshot cho đơn hàng (debounced 3000ms)!');
           }
         } catch (e) {
           console.warn('[Dashboard] Firestore listener error:', e);

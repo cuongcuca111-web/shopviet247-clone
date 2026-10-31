@@ -611,8 +611,8 @@
           }
         }
 
-        // Cập nhật lại giao diện trang chủ ngay lập tức
-        if (window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
+        // Cập nhật lại giao diện trang chủ chỉ khi người dùng bấm đồng bộ thủ công (tránh giật DOM ngầm)
+        if (isManual && window.ShopVietViews && window.ShopVietViews.home && typeof window.ShopVietViews.home.renderProducts === 'function') {
           window.ShopVietViews.home.renderProducts();
         }
 
@@ -644,15 +644,11 @@
         const appMount = document.getElementById('appMount');
         const viewModule = window.ShopVietViews && window.ShopVietViews[currentView];
 
-        // Khi gọi ngầm trong startRealtimeDaemon hoặc syncAllFromCloud:
-        // TUYỆT ĐỐI CẤM gán appMount.innerHTML = viewModule.render() nếu trang đang hiển thị bình thường!
-        // Thay vào đó chỉ cập nhật dữ liệu ngầm và gọi các hàm cập nhật cục bộ như renderProducts()
+        // Khi gọi ngầm trong startRealtimeDaemon hoặc syncAllFromCloud (isBackground === true):
+        // TUYỆT ĐỐI CẤM gọi viewModule.refreshOrders(false) hay xóa appMount.innerHTML.
+        // Chỉ cập nhật dữ liệu state ngầm.
         if (isBackground && appMount && appMount.children && appMount.children.length > 0) {
-          if (currentView === 'home' && viewModule && typeof viewModule.renderProducts === 'function') {
-            viewModule.renderProducts();
-          } else if (currentView === 'dashboard' && viewModule && typeof viewModule.refreshOrders === 'function') {
-            viewModule.refreshOrders(false);
-          } else if (currentView === 'admin' && viewModule && typeof viewModule.refreshData === 'function') {
+          if (currentView === 'admin' && viewModule && typeof viewModule.refreshData === 'function') {
             viewModule.refreshData();
           }
           this.notify('route_data_refreshed', { view: currentView });
@@ -1095,9 +1091,7 @@
                   if (remoteTime > localTime + 1000) {
                     console.log('[ShopVietState] Firestore onSnapshot phát hiện cập nhật mới từ Cloud:', data);
                     self.setLastUpdatedAt(remoteTime);
-                    self.syncAllFromCloud(false).then(function () {
-                      self.renderCurrentRoute(true, true);
-                    });
+                    self.syncAllFromCloud(false).catch(function () {});
                   }
                 }
               }
@@ -1111,8 +1105,11 @@
       }
     },
 
-    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat 7.0s chống giật lag)
-    startRealtimeDaemon: function (intervalMs = 7000) {
+    // Khởi động daemon kiểm tra ngầm định kỳ (Smart Heartbeat 15.0s chống giật lag và ngăn vòng lặp)
+    startRealtimeDaemon: function (intervalMs = 15000) {
+      if (typeof intervalMs !== 'number' || intervalMs < 15000) {
+        intervalMs = 15000;
+      }
       if (this._realtimeDaemonRunning) return this;
       this._realtimeDaemonRunning = true;
       this.initBroadcastChannel();
@@ -1647,7 +1644,7 @@
       this.load();
       this.initBroadcastChannel();
       this.setupFirestoreRealtimeListener();
-      this.startRealtimeDaemon(2000);
+      this.startRealtimeDaemon(15000);
       this.syncAllFromCloud().catch(function () {});
 
       // Auto-Sync on Focus & Tab Visibility Change (Đồng bộ tức thì khi chuyển tab / mở lại màn hình)
@@ -1668,7 +1665,7 @@
               if (e.newValue) {
                 const updatedProds = JSON.parse(e.newValue);
                 if (window.ShopVietData) window.ShopVietData.products = updatedProds;
-                self.renderCurrentRoute(true);
+                self.renderCurrentRoute(true, true);
               }
             } catch (err) {}
           }
@@ -1688,7 +1685,7 @@
         if (!this._isInitialized) {
           this.initBroadcastChannel();
           this.setupFirestoreRealtimeListener();
-          this.startRealtimeDaemon(2000);
+          this.startRealtimeDaemon(15000);
         }
 
         // Tự động kích hoạt đồng bộ đám mây đa thiết bị trong nền
