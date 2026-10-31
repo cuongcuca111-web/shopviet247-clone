@@ -3,7 +3,7 @@
     {
       "id": "usr_admin_minhcuong",
       "email": "minhcuong111aaa@gmail.com",
-      "password": "minhcuong111",
+      "password": "Minhcuong111aa@",
       "name": "Minh Cường",
       "role": "admin",
       "balance": 250000,
@@ -336,6 +336,6 @@
     "DISCOUNT20K",
     "SV30P-XA8S"
   ],
-  "updatedAt": "2026-10-31T06:09:16.282Z",
-  "version": 1793426956282
+  "updatedAt": "2026-10-31T06:18:42.608Z",
+  "version": 1793427522608
 }
