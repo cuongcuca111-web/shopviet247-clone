@@ -170,6 +170,42 @@
   "schedules": [],
   "orders": [
     {
+      "id": "#DJ20262WVQ",
+      "orderCode": "#DJ20262WVQ",
+      "rawCode": "DJ20262WVQ",
+      "memo": "DJ20262WVQ",
+      "items": [
+        {
+          "id": "prod-6178",
+          "name": "[6 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 69000,
+          "originalPrice": 250000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 69000,
+      "discount": 0,
+      "amount": 69000,
+      "voucherCode": null,
+      "appliedVoucher": null,
+      "paymentMethod": "Sacombank (VietQR 24/7)",
+      "bankName": "Sacombank (Ngân hàng TMCP Sài Gòn Thương Tín)",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-31T12:35:17.181Z",
+      "createdAtFormatted": "19:35 31/10/2026",
+      "status": "pending_review",
+      "expiresInSeconds": 600,
+      "statusText": "Chờ duyệt",
+      "submittedAt": "2026-10-31T12:35:21.364Z",
+      "userEmail": "cuongcuca111@gmail.com",
+      "stockDeducted": true
+    },
+    {
       "id": "#DJ2026T2HS",
       "orderCode": "#DJ2026T2HS",
       "memo": "3V5HS94L",
@@ -425,6 +461,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T12:35:21.366Z",
-  "version": 1793450121366
+  "updatedAt": "2026-10-31T13:02:57.234Z",
+  "version": 1793451777234
 }
