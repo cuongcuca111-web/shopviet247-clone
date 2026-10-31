@@ -12,14 +12,15 @@
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "usr_cuongcuca111",
-      "name": "Minh Cường",
+      "id": "usr_mvthhfw77ikb",
       "email": "cuongcuca111@gmail.com",
-      "phone": "0868668809",
-      "role": "user",
-      "password": "123456",
+      "password": "minhcuong111",
+      "name": "Minh Cường",
+      "phone": "",
       "balance": 250000,
-      "createdAt": "2026-03-20T10:00:00.000Z"
+      "role": "user",
+      "avatar": "M",
+      "createdAt": "2026-10-29T11:52:28.855Z"
     },
     {
       "id": "usr_mvtibr4c22o7",
@@ -121,17 +122,40 @@
   ],
   "vouchers": [
     {
-      "code": "SV30P-XA8S",
+      "code": "SV20P-PYGL",
       "type": "percent_discount",
-      "percent": 30,
+      "percent": 20,
+      "value": 20,
+      "singleUse": true,
+      "isUsed": true,
+      "usedBy": "cuongcuca111@gmail.com",
+      "usedAt": "2026-10-31T04:46:50.152Z",
+      "orderCode": "#DJ202674DK",
+      "createdAt": "2026-10-31T04:46:40.452Z"
+    },
+    {
+      "code": "SV20P-PEY6",
+      "type": "percent_discount",
+      "percent": 20,
+      "value": 20,
       "singleUse": true,
       "isUsed": false,
       "usedBy": null,
       "usedAt": null,
       "orderCode": null,
-      "desc": "Giảm 30% tổng đơn hàng",
-      "createdAt": "2026-10-29T15:17:36.460Z",
-      "value": 30
+      "createdAt": "2026-10-29T16:17:13.606Z"
+    },
+    {
+      "code": "SV30P-XA8S",
+      "type": "percent_discount",
+      "percent": 30,
+      "value": 30,
+      "singleUse": true,
+      "isUsed": false,
+      "usedBy": null,
+      "usedAt": null,
+      "orderCode": null,
+      "createdAt": "2026-10-29T15:17:36.460Z"
     },
     {
       "code": "DISCOUNT20K",
@@ -154,30 +178,6 @@
       "usedAt": null,
       "orderCode": null,
       "createdAt": "2026-03-20T00:00:00.000Z"
-    },
-    {
-      "code": "SV20P-PEY6",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-10-29T16:17:13.606Z"
-    },
-    {
-      "code": "SV20P-PYGL",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": true,
-      "usedBy": "cuongcuca111@gmail.com",
-      "usedAt": "2026-10-31T04:46:50.152Z",
-      "orderCode": "#DJ202674DK",
-      "createdAt": "2026-10-31T04:46:40.452Z"
     }
   ],
   "schedules": [
@@ -232,165 +232,16 @@
       "bin": "970403",
       "createdAt": "2026-10-31T04:45:57.773Z",
       "createdAtFormatted": "11:45 31/10/2026",
-      "status": "pending_review",
+      "status": "completed",
       "expiresInSeconds": 600,
       "submittedAt": "2026-10-31T04:46:01.759Z",
       "userEmail": "cuongcuca111@gmail.com",
-      "stockDeducted": true
-    },
-    {
-      "id": "DJ2026771",
-      "date": "2026-03-25 09:15:10",
-      "productId": "prod-002",
-      "productName": "Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email Cá Nhân",
-      "price": 120000,
-      "quantity": 1,
-      "total": 120000,
-      "status": "completed",
-      "statusText": "Đã hoàn tất",
-      "paymentMethod": "VietQR (Techcombank)",
-      "deliveryType": "Email mời Cursor Team",
-      "licenseKey": "CURSOR-PRO-TEAM: Đã gán gói Pro thành công cho email: huy.nguyen@example.com",
-      "userEmail": "minhcuong111aaa@gmail.com"
-    },
-    {
-      "id": "#DJ20263LDY",
-      "orderCode": "#DJ20263LDY",
-      "memo": "FMF642SP",
-      "items": [
-        {
-          "id": "prod-001",
-          "name": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
-          "category": "Gemini - Antigravity - Veo",
-          "price": 69000,
-          "originalPrice": 250000,
-          "quantity": 1,
-          "iconType": "gemini"
-        }
-      ],
-      "totalItems": 1,
-      "subtotal": 69000,
-      "discount": 0,
-      "amount": 69000,
-      "paymentMethod": "Sacombank (VietQR 24/7)",
-      "bankName": "Sacombank (STB)",
-      "accountNumber": "100071864927",
-      "accountName": "LE BUI MINH CUONG",
-      "bin": "970403",
-      "createdAt": "2026-10-29T12:01:29.984Z",
-      "createdAtFormatted": "19:01 29/10/2026",
-      "status": "completed",
-      "expiresInSeconds": 600,
-      "paidAt": "2026-10-29T12:01:39.480Z",
-      "userEmail": "minhcuong111aaa@gmail.com"
-    },
-    {
-      "id": "#DJ2026T2HS",
-      "orderCode": "#DJ2026T2HS",
-      "memo": "3V5HS94L",
-      "items": [
-        {
-          "id": "prod-001",
-          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
-          "category": "Gemini - Antigravity - Veo",
-          "price": 19000,
-          "originalPrice": 59000,
-          "quantity": 1,
-          "iconType": "gemini"
-        }
-      ],
-      "totalItems": 1,
-      "subtotal": 19000,
-      "discount": 0,
-      "amount": 19000,
-      "paymentMethod": "STB (VietQR 24/7)",
-      "bankName": "Sacombank",
-      "accountNumber": "100071864927",
-      "accountName": "LE BUI MINH CUONG",
-      "bin": "970403",
-      "createdAt": "2026-10-29T12:42:12.449Z",
-      "createdAtFormatted": "19:42 29/10/2026",
-      "status": "completed",
-      "expiresInSeconds": 600,
-      "paidAt": "2026-10-29T12:42:18.191Z",
-      "userEmail": "minhcuong111aaa@gmail.com"
-    },
-    {
-      "id": "#DJ2026N7RS",
-      "orderCode": "#DJ2026N7RS",
-      "memo": "MA2HFFSY",
-      "items": [
-        {
-          "id": "prod-001",
-          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
-          "category": "Gemini - Antigravity - Veo",
-          "price": 19000,
-          "originalPrice": 59000,
-          "quantity": 1,
-          "iconType": "gemini"
-        }
-      ],
-      "totalItems": 1,
-      "subtotal": 19000,
-      "discount": 0,
-      "amount": 19000,
-      "paymentMethod": "STB (VietQR 24/7)",
-      "bankName": "Sacombank",
-      "accountNumber": "100071864927",
-      "accountName": "LE BUI MINH CUONG",
-      "bin": "970403",
-      "createdAt": "2026-10-29T12:42:42.265Z",
-      "createdAtFormatted": "19:42 29/10/2026",
-      "status": "completed",
-      "expiresInSeconds": 600,
-      "submittedAt": "2026-10-29T12:42:46.439Z",
-      "userEmail": "cuongcuca111@gmail.com",
-      "statusText": "Đã hoàn tất",
-      "customDeliveryLink": "Ban oi",
-      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
-      "licenseKey": "Ban oi",
-      "approvedAt": "2026-10-29T12:47:19.342Z",
-      "deliveryInfo": {
-        "account": "cuongcuca111@gmail.com",
-        "licenseKey": "Ban oi",
-        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
-      }
-    },
-    {
-      "id": "#DJ2026QSXC",
-      "orderCode": "#DJ2026QSXC",
-      "memo": "YJQT2UHD",
-      "items": [
-        {
-          "id": "prod-001",
-          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
-          "category": "Gemini - Antigravity - Veo",
-          "price": 19000,
-          "originalPrice": 59000,
-          "quantity": 1,
-          "iconType": "gemini"
-        }
-      ],
-      "totalItems": 1,
-      "subtotal": 19000,
-      "discount": 0,
-      "amount": 19000,
-      "paymentMethod": "STB (VietQR 24/7)",
-      "bankName": "Sacombank",
-      "accountNumber": "100071864927",
-      "accountName": "LE BUI MINH CUONG",
-      "bin": "970403",
-      "createdAt": "2026-10-29T13:01:37.255Z",
-      "createdAtFormatted": "20:01 29/10/2026",
-      "status": "completed",
-      "expiresInSeconds": 600,
-      "submittedAt": "2026-10-29T13:02:08.552Z",
-      "userEmail": "minhcuong111aaa@gmail.com",
+      "stockDeducted": true,
       "statusText": "Đã hoàn tất",
       "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
       "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
       "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
-      "approvedAt": "2026-10-29T13:12:55.496Z",
+      "approvedAt": "2026-10-31T04:48:35.416Z",
       "deliveryInfo": {
         "account": "cuongcuca111@gmail.com",
         "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
@@ -441,21 +292,180 @@
       }
     },
     {
+      "id": "#DJ2026QSXC",
+      "orderCode": "#DJ2026QSXC",
+      "memo": "YJQT2UHD",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T13:01:37.255Z",
+      "createdAtFormatted": "20:01 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-29T13:02:08.552Z",
+      "userEmail": "minhcuong111aaa@gmail.com",
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+      "approvedAt": "2026-10-29T13:12:55.496Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "https://one.google.com/inv/gemini-pro-shopviet247-vip",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026N7RS",
+      "orderCode": "#DJ2026N7RS",
+      "memo": "MA2HFFSY",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T12:42:42.265Z",
+      "createdAtFormatted": "19:42 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "submittedAt": "2026-10-29T12:42:46.439Z",
+      "userEmail": "cuongcuca111@gmail.com",
+      "statusText": "Đã hoàn tất",
+      "customDeliveryLink": "Ban oi",
+      "adminMessage": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé.",
+      "licenseKey": "Ban oi",
+      "approvedAt": "2026-10-29T12:47:19.342Z",
+      "deliveryInfo": {
+        "account": "cuongcuca111@gmail.com",
+        "licenseKey": "Ban oi",
+        "guide": "Cảm ơn bạn đã mua hàng tại Shopviet247! Bạn bấm vào đường link trên để kích hoạt bản quyền nhé."
+      }
+    },
+    {
+      "id": "#DJ2026T2HS",
+      "orderCode": "#DJ2026T2HS",
+      "memo": "3V5HS94L",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[1 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 19000,
+          "originalPrice": 59000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 19000,
+      "discount": 0,
+      "amount": 19000,
+      "paymentMethod": "STB (VietQR 24/7)",
+      "bankName": "Sacombank",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T12:42:12.449Z",
+      "createdAtFormatted": "19:42 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "paidAt": "2026-10-29T12:42:18.191Z",
+      "userEmail": "minhcuong111aaa@gmail.com"
+    },
+    {
+      "id": "#DJ20263LDY",
+      "orderCode": "#DJ20263LDY",
+      "memo": "FMF642SP",
+      "items": [
+        {
+          "id": "prod-001",
+          "name": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
+          "category": "Gemini - Antigravity - Veo",
+          "price": 69000,
+          "originalPrice": 250000,
+          "quantity": 1,
+          "iconType": "gemini"
+        }
+      ],
+      "totalItems": 1,
+      "subtotal": 69000,
+      "discount": 0,
+      "amount": 69000,
+      "paymentMethod": "Sacombank (VietQR 24/7)",
+      "bankName": "Sacombank (STB)",
+      "accountNumber": "100071864927",
+      "accountName": "LE BUI MINH CUONG",
+      "bin": "970403",
+      "createdAt": "2026-10-29T12:01:29.984Z",
+      "createdAtFormatted": "19:01 29/10/2026",
+      "status": "completed",
+      "expiresInSeconds": 600,
+      "paidAt": "2026-10-29T12:01:39.480Z",
+      "userEmail": "minhcuong111aaa@gmail.com"
+    },
+    {
       "id": "DJ2026889",
       "date": "2026-03-28 14:20:35",
       "productId": "prod-001",
-      "productName": "[1 Tháng] Gemini Argon 4 Pro + 5TB Drive",
-      "price": 19000,
+      "productName": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
+      "price": 69000,
       "quantity": 1,
-      "total": 19000,
+      "total": 69000,
       "status": "completed",
       "statusText": "Đã hoàn tất",
       "paymentMethod": "VietQR (MB Bank - Tự động)",
       "deliveryType": "Link mời Google One",
       "licenseKey": "INVITE-LINK: https://one.google.com/inv/gemini-pro-ag26-889-subviet",
       "userEmail": "minhcuong111aaa@gmail.com"
+    },
+    {
+      "id": "DJ2026771",
+      "date": "2026-03-25 09:15:10",
+      "productId": "prod-002",
+      "productName": "Cursor Pro 1 Tháng Chính Chủ - Nâng Cấp Email Cá Nhân",
+      "price": 120000,
+      "quantity": 1,
+      "total": 120000,
+      "status": "completed",
+      "statusText": "Đã hoàn tất",
+      "paymentMethod": "VietQR (Techcombank)",
+      "deliveryType": "Email mời Cursor Team",
+      "licenseKey": "CURSOR-PRO-TEAM: Đã gán gói Pro thành công cho email: huy.nguyen@example.com",
+      "userEmail": "minhcuong111aaa@gmail.com"
     }
   ],
-  "updatedAt": "2026-10-31T04:46:50.153Z",
-  "version": 1793422010153
+  "updatedAt": "2026-10-31T04:48:35.416Z",
+  "version": 1793422115416
 }
