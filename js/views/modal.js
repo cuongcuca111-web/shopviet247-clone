@@ -275,18 +275,21 @@ window.ShopVietViews.modal = (function () {
                 </div>
               </div>
 
-              <!-- DÒNG TRẠNG THÁI TỒN KHO & BẢO HÀNH (ĐỒNG BỘ 100% THEO CARD ẢNH 4, LOẠI BỎ CHỮ 1 THÁNG) -->
-              <div class="flex items-center justify-between text-xs py-1 px-1">
-                <span class="font-bold ${isOutOfStock ? 'text-rose-500' : isLowStock ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'} flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full ${isOutOfStock ? 'bg-rose-500' : isLowStock ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}"></span>
-                  • Tồn kho • ${isOutOfStock ? 'Hết hàng tạm thời' : `Còn ${currentProduct.stock || 110} slot`}
+              <!-- DÒNG TRẠNG THÁI TỒN KHO & BẢO HÀNH CAO CẤP -->
+              <div class="flex items-center justify-between text-xs py-1.5 px-1 flex-wrap gap-2">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${isOutOfStock ? 'bg-rose-500/10 text-rose-500 border border-rose-500/25' : isLowStock ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'} shadow-2xs">
+                  <span class="relative flex h-2 w-2">
+                    <span class="${isOutOfStock ? '' : 'animate-ping'} absolute inline-flex h-full w-full rounded-full ${isOutOfStock ? 'bg-rose-400' : isLowStock ? 'bg-amber-400' : 'bg-emerald-400'} opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 ${isOutOfStock ? 'bg-rose-500' : isLowStock ? 'bg-amber-500' : 'bg-emerald-500'}"></span>
+                  </span>
+                  <span>Tình trạng: ${isOutOfStock ? 'Tạm hết slot' : `Còn ${currentProduct.stock || 110} slot sẵn sàng`}</span>
                 </span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     <path d="m9 12 2 2 4-4"/>
                   </svg>
-                  <span>${currentProduct.warranty || 'Bảo hành chính chủ'}</span>
+                  <span>${currentProduct.warranty || 'Bảo hành chính chủ 1 đổi 1'}</span>
                 </span>
               </div>
 
@@ -1035,15 +1038,27 @@ window.ShopVietViews.modal = (function () {
 
                   </div>
 
-                  <!-- Radar quét tín hiệu VietQR Realtime -->
-                  <div class="p-3.5 rounded-2xl bg-slate-900 text-white flex items-center gap-3">
-                    <div class="relative w-7 h-7 flex items-center justify-center shrink-0">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                    </div>
-                    <div class="text-xs">
-                      <p class="font-bold text-emerald-400">Radar Khớp Lệnh Sacombank VietQR Đang Chạy</p>
-                      <p class="text-[11px] text-slate-300 mt-0.5">Hệ thống tự động phát hiện số dư và bàn giao sản phẩm ngay lập tức</p>
+                  <!-- Hộp thông báo xử lý tự động & nhận kết quả chuẩn yêu cầu -->
+                  <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border border-indigo-500/30 text-white shadow-md relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-start gap-3 relative z-10">
+                      <div class="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0 mt-0.5 shadow-2xs">
+                        <svg class="w-4 h-4 text-indigo-300 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                      </div>
+                      <div class="text-xs space-y-1.5 leading-relaxed">
+                        <p class="font-bold text-indigo-200">
+                          Hệ thống sẽ tự động xử lý trong ít phút sau khi xác nhận thanh toán thành công.
+                        </p>
+                        <p class="text-slate-300 text-[11.5px] flex items-center gap-1.5 flex-wrap">
+                          <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <span>Hãy kiểm tra <button type="button" onclick="window.ShopVietViews.modal.close(); if(window.ShopVietState){window.ShopVietState.navigate('dashboard');}" class="text-white font-bold underline decoration-indigo-400 hover:text-indigo-200 cursor-pointer transition-colors">lịch sử mua hàng</button> để nhận kết quả.</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
 

@@ -316,23 +316,29 @@ window.ShopVietViews.home = (function () {
   function renderStockBadge(prod) {
     if (prod.status === 'out_of_stock' || prod.stock <= 0) {
       return `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-500 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/25 shadow-2xs">
           <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          Hết hàng
+          <span>Tạm hết slot</span>
         </span>
       `;
     } else if (prod.status === 'low_stock' || prod.stock <= 5) {
       return `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
-          Sắp hết hàng (còn ${prod.stock})
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 shadow-2xs">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
+          <span>Chỉ còn ${prod.stock} slot</span>
         </span>
       `;
     } else {
       return `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          Còn hàng (${prod.stock})
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-2xs">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>Còn ${prod.stock} slot</span>
         </span>
       `;
     }
@@ -613,67 +619,6 @@ window.ShopVietViews.home = (function () {
 
             </div>
 
-          </section>
-
-          <!-- ==================== KHU VỰC "DANH MỤC" ==================== -->
-          <section class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>Danh mục nổi bật</span>
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                    ${allProducts.length} sản phẩm sẵn có
-                  </span>
-                </h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Lựa chọn giải pháp công nghệ theo nhu cầu học tập & làm việc</p>
-              </div>
-
-              <button 
-                onclick="ShopVietViews.home.filterByTag('Tất cả')" 
-                class="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 flex items-center gap-1 cursor-pointer transition-colors"
-              >
-                <span>Xem tất cả</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-
-            <!-- Hàng Ngang Các Thẻ Danh Mục Nhỏ Bo Tròn (Đồng bộ số lượng thực tế) -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              ${(data.categories || []).map(cat => {
-                const realCount = allProducts.filter(function (p) {
-                  if (p.category && p.category === cat.id) return true;
-                  if (p.tag && cat.tag && (p.tag.toLowerCase() === cat.tag.toLowerCase() || p.tag.toLowerCase().includes(cat.tag.toLowerCase()) || cat.tag.toLowerCase().includes(p.tag.toLowerCase()))) return true;
-                  if (cat.id === 'cat_gemini' && ((p.name && p.name.includes('Gemini')) || (p.tag && p.tag.includes('Gemini')))) return true;
-                  if (cat.id === 'cat_cursor' && ((p.name && p.name.includes('Cursor')) || (p.tag && p.tag.includes('Cursor')))) return true;
-                  if (cat.id === 'cat_chatgpt' && ((p.name && (p.name.includes('GPT') || p.name.includes('ChatGPT'))) || (p.tag && p.tag.includes('ChatGPT')))) return true;
-                  if (cat.id === 'cat_canva' && ((p.name && p.name.includes('Canva')) || (p.tag && p.tag.includes('Canva')))) return true;
-                  if (cat.id === 'cat_capcut' && ((p.name && p.name.includes('Capcut')) || (p.tag && p.tag.includes('Capcut')))) return true;
-                  if (cat.id === 'cat_api' && ((p.name && (p.name.includes('API') || p.name.includes('Claude') || p.name.includes('Sonnet'))) || (p.tag && p.tag.includes('API')))) return true;
-                  return false;
-                }).length;
-
-                const countBadge = realCount > 0
-                  ? `<span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">${realCount} sản phẩm</span>`
-                  : `<span class="text-[11px] text-slate-400 dark:text-slate-500">0 sản phẩm (sắp có)</span>`;
-
-                return `
-                <div 
-                  onclick="ShopVietViews.home.filterByTag('${cat.tag}')" 
-                  class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3.5 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600/60 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
-                >
-                  <div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform duration-200">
-                    ${cat.icon}
-                  </div>
-                  <div class="min-w-0">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      ${cat.name}
-                    </h3>
-                    <p class="font-medium truncate mt-0.5">${countBadge}</p>
-                  </div>
-                </div>
-              `;
-              }).join('')}
-            </div>
           </section>
 
           <!-- ==================== KHU VỰC "SẢN PHẨM HOT" ==================== -->
