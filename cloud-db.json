@@ -171,6 +171,35 @@
   "schedules": [],
   "orders": [
     {
+      "id": "#DJ20263TF3",
+      "orderCode": "#DJ20263TF3",
+      "rawCode": "DJ20263TF3",
+      "memo": "DJ20263TF3",
+      "status": "pending_review",
+      "statusText": "Chờ duyệt",
+      "stockDeducted": true,
+      "items": [
+        {
+          "id": "gemini-argon-6m",
+          "name": "[6 Tháng]Gemini Argon 4 Pro + 5TB Drive",
+          "category": "AI Software",
+          "price": 89000,
+          "quantity": 1
+        }
+      ],
+      "amount": 89000,
+      "userEmail": "cuongcuca111@gmail.com",
+      "customerName": "Minh Cường",
+      "customer": {
+        "name": "Minh Cường",
+        "email": "cuongcuca111@gmail.com"
+      },
+      "paymentMethod": "Sacombank (VietQR 24/7)",
+      "createdAt": "2026-10-31T14:30:00.000Z",
+      "createdAtFormatted": "21:30 31/10/2026",
+      "submittedAt": "2026-10-31T14:30:05.000Z"
+    },
+    {
       "id": "#DJ2026LMFR",
       "orderCode": "#DJ2026LMFR",
       "rawCode": "DJ2026LMFR",
@@ -549,6 +578,6 @@
     "SV20P-PYGL",
     "ORD-TEST-999"
   ],
-  "updatedAt": "2026-10-31T14:22:00.000Z",
-  "version": 1793456520000
+  "updatedAt": "2026-10-31T14:40:00.145Z",
+  "version": 1793457600146
 }
