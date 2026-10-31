@@ -368,6 +368,330 @@ window.ShopVietViews.home = (function () {
     return 'expanded';
   }
 
+  /* ==================== [ELEMENT] CARD THAT EXPANDS INTO DETAIL (LUCIAN #328) ==================== */
+  /* Lucian UX/UI Prompt #328 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#328 */
+  var activeExpanderCardEl = null;
+  var activeExpanderProdId = null;
+
+  function formatMoney(amount) {
+    if (window.ShopVietState && typeof window.ShopVietState.formatCurrency === 'function') {
+      return window.ShopVietState.formatCurrency(amount);
+    }
+    if (window.ShopVietData && typeof window.ShopVietData.formatMoney === 'function') {
+      return window.ShopVietData.formatMoney(amount);
+    }
+    return Number(amount || 0).toLocaleString('vi-VN') + 'đ';
+  }
+
+  function handleBuyNowClick(event, prodId, btnElement) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    var isMobile = (window.innerWidth < 768) || (typeof detectDevice === 'function' && detectDevice() === 'mobile');
+    var cardEl = btnElement ? btnElement.closest('[data-product-card]') : null;
+    if (!cardEl && prodId) {
+      cardEl = document.querySelector('[data-product-id="' + prodId + '"]');
+    }
+
+    if (isMobile && cardEl) {
+      openMobileExpander(prodId, cardEl);
+    } else {
+      if (window.ShopVietViews && window.ShopVietViews.modal) {
+        window.ShopVietViews.modal.open(prodId);
+      }
+    }
+  }
+
+  function openMobileExpander(prodId, cardEl) {
+    var prod = null;
+    if (window.ShopVietData && typeof window.ShopVietData.getProductById === 'function') {
+      prod = window.ShopVietData.getProductById(prodId);
+    }
+    if (!prod && window.ShopVietState && typeof window.ShopVietState.getCustomProducts === 'function') {
+      var list = window.ShopVietState.getCustomProducts();
+      if (Array.isArray(list)) {
+        prod = list.find(function (p) { return p.id === prodId; });
+      }
+    }
+    if (!prod) return;
+
+    var overlay = document.getElementById('mobileCardExpander');
+    var card = document.getElementById('mobileExpanderCard');
+    var content = document.getElementById('mobileExpanderContent');
+    var barPrice = document.getElementById('mobileExpanderBarPrice');
+    var goBtn = document.getElementById('mobileExpanderGoBtn');
+    var closeBtn = document.getElementById('mobileExpanderCloseBtn');
+    var backdrop = document.getElementById('mobileExpanderBackdrop');
+
+    if (!overlay || !card || !content) return;
+
+    activeExpanderCardEl = cardEl || document.querySelector('[data-product-card][data-product-id="' + prodId + '"]');
+    activeExpanderProdId = prodId;
+
+    var formattedPrice = formatMoney(prod.price);
+    var rawOldPrice = prod.oldPrice || prod.originalPrice;
+    var formattedOldPrice = rawOldPrice ? formatMoney(rawOldPrice) : '';
+    var discountBadge = prod.discount || '';
+    if (!discountBadge && rawOldPrice && prod.price && rawOldPrice > prod.price) {
+      discountBadge = '-' + Math.round((1 - prod.price / rawOldPrice) * 100) + '%';
+    }
+    var stockCount = (typeof prod.stock === 'number' && prod.stock > 0) ? prod.stock : 15;
+    var ratingVal = prod.rating || '5.0';
+    var soldVal = prod.soldCount ? (prod.soldCount + '+') : '128+';
+    var categoryLabel = prod.category || prod.tag || 'Công cụ AI Bản Quyền';
+
+    var featuresList = (Array.isArray(prod.features) && prod.features.length > 0)
+      ? prod.features
+      : [
+          'Kích hoạt siêu tốc qua hệ thống VietQR trong 30 giây',
+          'Tài khoản chính chủ hoặc cấp sẵn riêng tư 100%',
+          'Chính sách bảo hành 1 đổi 1 suốt thời gian sử dụng',
+          'Đội ngũ kỹ thuật viên CSKH tận tâm trực 24/7'
+        ];
+
+    // Render Hero & Staggered Body
+    content.innerHTML = `
+      <div class="u328-hero">
+        <span class="u328-cat">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+          ${categoryLabel}
+        </span>
+        <div class="w-20 h-20 sm:w-24 sm:h-24 my-2 relative flex items-center justify-center">
+          <div class="absolute inset-0 rounded-2xl bg-indigo-500/30 blur-xl"></div>
+          ${renderSafeProductImage(prod, 'w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-2xl shadow-2xl border border-white/20 relative z-10', 'w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-800/90 p-4 border border-white/10 flex items-center justify-center relative z-10')}
+        </div>
+        <h2 class="u328-ttl">${prod.name || 'Sản phẩm số'}</h2>
+        <p class="text-xs text-slate-300/90 mt-1 max-w-xs">${prod.warranty ? '🛡️ Bảo hành: ' + prod.warranty : 'Kích hoạt tức thì · Bản quyền chính hãng'}</p>
+      </div>
+
+      <div class="u328-body">
+        <!-- 1. Stats Pill -->
+        <div class="flex items-center justify-between gap-2 bg-slate-900/80 border border-slate-800/90 rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
+          <div class="flex items-center gap-1.5 font-bold text-amber-400">
+            <span>⚡ Còn ${stockCount} slot</span>
+          </div>
+          <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+          <div class="flex items-center gap-1 font-semibold text-amber-300">
+            <span>⭐ ${ratingVal}</span>
+            <span class="text-slate-400 font-normal text-[11px]">(5.0)</span>
+          </div>
+          <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+          <div class="text-slate-400 text-[11px]">
+            Đã bán <strong class="text-slate-200 font-semibold">${soldVal}</strong>
+          </div>
+        </div>
+
+        <!-- 2. Pricing Box -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-indigo-950/40 border border-indigo-500/25 rounded-xl p-3.5 flex items-center justify-between shadow-sm">
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium">Giá khuyến mãi hôm nay</div>
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight">${formattedPrice}</span>
+              ${formattedOldPrice ? `<span class="text-xs text-slate-400 line-through">${formattedOldPrice}</span>` : ''}
+            </div>
+          </div>
+          ${discountBadge ? `
+            <div class="bg-rose-500/20 text-rose-300 text-xs font-black px-2.5 py-1 rounded-lg border border-rose-500/30 flex items-center gap-1">
+              <span>${discountBadge}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- 3. Key Features -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3.5 space-y-2.5">
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Đặc quyền khi mua tại ShopSkill247
+          </h4>
+          <ul class="space-y-1.5 text-xs text-slate-300">
+            ${featuresList.map(function (feat) {
+              return `
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
+                  <span>${feat}</span>
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        </div>
+
+        <!-- 4. Description & Notes -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3.5 space-y-1.5">
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Mô tả & Hướng dẫn sử dụng
+          </h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            ${prod.desc || prod.description || 'Sản phẩm được kích hoạt hoàn toàn tự động ngay sau khi hoàn tất giao dịch. Thông tin đăng nhập và chứng chỉ bản quyền được gửi trực tiếp.'}
+          </p>
+        </div>
+
+        <!-- 5. Trust Indicators -->
+        <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-slate-300 py-1">
+          <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 flex flex-col items-center gap-1">
+            <span class="text-base">🛡️</span>
+            <span class="font-semibold text-slate-200">Bảo hành 1:1</span>
+            <span class="text-[9px] text-slate-400">Suốt chu kỳ</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 flex flex-col items-center gap-1">
+            <span class="text-base">⚡</span>
+            <span class="font-semibold text-slate-200">Giao dịch 30s</span>
+            <span class="text-[9px] text-slate-400">VietQR Tự động</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 flex flex-col items-center gap-1">
+            <span class="text-base">💬</span>
+            <span class="font-semibold text-slate-200">Hỗ trợ 24/7</span>
+            <span class="text-[9px] text-slate-400">Zalo & Telegram</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (barPrice) {
+      barPrice.textContent = formattedPrice;
+    }
+
+    if (goBtn) {
+      goBtn.onclick = function (e) {
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        closeMobileExpander(function () {
+          if (window.ShopVietViews && window.ShopVietViews.modal) {
+            window.ShopVietViews.modal.open(prod.id);
+          }
+        });
+      };
+    }
+    if (closeBtn) {
+      closeBtn.onclick = function (e) {
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        closeMobileExpander();
+      };
+    }
+    if (backdrop) {
+      backdrop.onclick = function (e) {
+        if (e) e.stopPropagation();
+        closeMobileExpander();
+      };
+    }
+
+    document.body.style.overflow = 'hidden';
+
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    card.scrollTop = 0;
+    card.style.transform = '';
+
+    var startRect = activeExpanderCardEl ? activeExpanderCardEl.getBoundingClientRect() : null;
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!startRect || prefersReducedMotion) {
+      card.style.top = '0px';
+      card.style.left = '0px';
+      card.style.width = '100vw';
+      card.style.height = '100vh';
+      card.style.height = '100dvh';
+      card.style.borderRadius = '0px';
+      card.style.transition = 'none';
+      overlay.classList.add('is-in');
+      return;
+    }
+
+    card.style.transition = 'none';
+    card.style.top = startRect.top + 'px';
+    card.style.left = startRect.left + 'px';
+    card.style.width = startRect.width + 'px';
+    card.style.height = startRect.height + 'px';
+    card.style.borderRadius = '16px';
+    card.style.opacity = '1';
+
+    void card.offsetWidth;
+
+    var duration = 340;
+    card.style.transition = 'top ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1), ' +
+                            'left ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1), ' +
+                            'width ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1), ' +
+                            'height ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1), ' +
+                            'border-radius ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1)';
+
+    card.style.top = '0px';
+    card.style.left = '0px';
+    card.style.width = '100vw';
+    card.style.height = '100vh';
+    card.style.height = '100dvh';
+    card.style.borderRadius = '0px';
+
+    setTimeout(function () {
+      overlay.classList.add('is-in');
+    }, 120);
+  }
+
+  function closeMobileExpander(callback) {
+    var overlay = document.getElementById('mobileCardExpander');
+    var card = document.getElementById('mobileExpanderCard');
+    if (!overlay || !card) return;
+
+    overlay.classList.remove('is-in');
+
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var currentTargetRect = activeExpanderCardEl ? activeExpanderCardEl.getBoundingClientRect() : null;
+
+    function finalize() {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      card.style.transition = 'none';
+      card.style.top = '';
+      card.style.left = '';
+      card.style.width = '';
+      card.style.height = '';
+      card.style.borderRadius = '';
+      card.style.opacity = '';
+      card.style.transform = '';
+      activeExpanderCardEl = null;
+      activeExpanderProdId = null;
+      if (typeof callback === 'function') {
+        callback();
+      }
+    }
+
+    if (!currentTargetRect || prefersReducedMotion || currentTargetRect.bottom < 0 || currentTargetRect.top > window.innerHeight) {
+      card.style.transition = 'opacity 200ms ease, transform 200ms ease';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.95)';
+      setTimeout(finalize, 200);
+      return;
+    }
+
+    var duration = 280;
+    card.style.transition = 'top ' + duration + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                            'left ' + duration + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                            'width ' + duration + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                            'height ' + duration + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                            'border-radius ' + duration + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                            'opacity ' + duration + 'ms ease';
+
+    card.style.top = currentTargetRect.top + 'px';
+    card.style.left = currentTargetRect.left + 'px';
+    card.style.width = currentTargetRect.width + 'px';
+    card.style.height = currentTargetRect.height + 'px';
+    card.style.borderRadius = '16px';
+    card.style.opacity = '0.5';
+
+    setTimeout(finalize, duration);
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var overlay = document.getElementById('mobileCardExpander');
+        if (overlay && overlay.classList.contains('is-open')) {
+          closeMobileExpander();
+        }
+      }
+    });
+  }
+
   return {
     render: function (params) {
       params = params || {};
@@ -811,7 +1135,7 @@ window.ShopVietViews.home = (function () {
                         </button>
                       ` : `
                         <button 
-                          onclick="event.stopPropagation(); ShopVietViews.modal.open('${prod.id}')" 
+                          onclick="event.stopPropagation(); ShopVietViews.home.handleBuyNowClick(event, '${prod.id}', this)" 
                           class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
                         >
                           <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -1411,6 +1735,9 @@ window.ShopVietViews.home = (function () {
         window.ShopVietState.showToast('Đã chuyển sang chế độ xem: ' + (modeLabels[mode] || mode), 'info');
       }
     },
+    handleBuyNowClick: handleBuyNowClick,
+    openMobileExpander: openMobileExpander,
+    closeMobileExpander: closeMobileExpander,
     renderSafeProductImage: renderSafeProductImage
   };
 
@@ -1419,6 +1746,9 @@ window.ShopVietViews.home = (function () {
     window.ShopVietViews.renderSafeProductImage = renderSafeProductImage;
     window.ShopVietViews.detectDevice = detectDevice;
     window.ShopVietViews.getEffectiveViewMode = getEffectiveViewMode;
+    window.ShopVietViews.handleBuyNowClick = handleBuyNowClick;
+    window.ShopVietViews.openMobileExpander = openMobileExpander;
+    window.ShopVietViews.closeMobileExpander = closeMobileExpander;
   }
 
   // Tự động kích hoạt listener toàn cục ngay khi nạp file

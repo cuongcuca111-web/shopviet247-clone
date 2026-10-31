@@ -704,6 +704,192 @@
         display: none !important;
       }
     }
+
+    /* ==================== [ELEMENT] CARD THAT EXPANDS INTO DETAIL (LUCIAN #328) ==================== */
+    /* Lucian UX/UI Prompt #328 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#328 */
+    .u328-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99995;
+      pointer-events: none;
+      visibility: hidden;
+      overflow: hidden;
+    }
+    .u328-overlay.is-open {
+      pointer-events: auto;
+      visibility: visible;
+    }
+    .u328-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 21, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+    }
+    .u328-overlay.is-open .u328-backdrop {
+      opacity: 1;
+    }
+    .u328-x {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 99997;
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+    .u328-x:active {
+      transform: scale(0.92);
+      background: rgba(30, 41, 59, 0.9);
+    }
+    .u328-overlay.is-in .u328-x {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .u328-card {
+      position: fixed;
+      background: #080A15;
+      color: #F8FAFC;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 99996;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+      -webkit-overflow-scrolling: touch;
+      will-change: top, left, width, height, border-radius;
+      transform-origin: top left;
+    }
+    .u328-hero {
+      position: relative;
+      width: 100%;
+      min-height: 230px;
+      padding: 60px 20px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.28) 0%, rgba(139, 92, 246, 0.12) 50%, transparent 80%),
+                  linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, #080A15 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .u328-cat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #A5B4FC;
+      margin-bottom: 6px;
+    }
+    .u328-ttl {
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+      margin-top: 6px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      max-width: 90%;
+    }
+    .u328-body {
+      padding: 16px 16px 96px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+    .u328-body > * {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .u328-overlay.is-in .u328-body > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.08s; }
+    .u328-overlay.is-in .u328-body > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.14s; }
+    .u328-overlay.is-in .u328-body > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.20s; }
+    .u328-overlay.is-in .u328-body > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
+    .u328-overlay.is-in .u328-body > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 0.32s; }
+    .u328-overlay.is-in .u328-body > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 0.38s; }
+    .u328-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      background: rgba(8, 10, 21, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      z-index: 99998;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .u328-overlay.is-in .u328-bar {
+      transform: translateY(0%);
+    }
+    .u328-go {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .u328-go:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .u328-backdrop,
+      .u328-card,
+      .u328-x,
+      .u328-body > *,
+      .u328-bar {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+    }
   </style>
 
   <div id="sitePreloader" class="u256" aria-label="Đang nạp dữ liệu ShopSkill247">
@@ -1409,6 +1595,33 @@
           <span id="curtainDestSubtitle" class="u321-subtitle text-[11px] tracking-widest uppercase text-slate-300">Nền tảng công cụ AI & Bản quyền số</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== [ELEMENT] CARD THAT EXPANDS INTO DETAIL (LUCIAN #328) ==================== -->
+  <!-- Lucian UX/UI Prompt #328 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#328 -->
+  <div id="mobileCardExpander" class="u328-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Chi tiết sản phẩm">
+    <div class="u328-backdrop" id="mobileExpanderBackdrop"></div>
+    <button type="button" class="u328-x" id="mobileExpanderCloseBtn" aria-label="Đóng chi tiết">
+      <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="u328-card" id="mobileExpanderCard">
+      <div id="mobileExpanderContent"></div>
+    </div>
+    <div class="u328-bar" id="mobileExpanderBar">
+      <div class="flex flex-col">
+        <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Tổng thanh toán</span>
+        <span id="mobileExpanderBarPrice" class="text-base font-extrabold text-emerald-400">0đ</span>
+      </div>
+      <button type="button" id="mobileExpanderGoBtn" class="u328-go">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path>
+        </svg>
+        <span>Thanh toán VietQR 30s</span>
+      </button>
     </div>
   </div>
 
