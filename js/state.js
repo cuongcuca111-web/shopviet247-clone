@@ -2260,9 +2260,17 @@
       return true;
     },
 
-    // Điều hướng SPA Router
+    // Điều hướng SPA Router (Tích hợp Lucian UX/UI Prompt #321 Curtain Page Transition - Ngoại trừ Sản phẩm)
     navigate: function (viewName, params) {
       params = params || {};
+      const self = this;
+
+      // Xử lý alias viewName 'products' -> chuyển thành 'home' cuộn tới '#productsSection'
+      const isProductAction = viewName === 'products' || (params && params.scrollTo === '#productsSection');
+      if (viewName === 'products') {
+        viewName = 'home';
+        params.scrollTo = '#productsSection';
+      }
 
       // Kiểm tra bảo mật Cổng Portal Admin
       if (viewName === 'admin') {
@@ -2278,19 +2286,18 @@
         }
       }
 
-      this.state.currentView = viewName;
+      const curtain = document.getElementById('curtainTransition');
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isSameView = this.state.currentView === viewName;
 
-      // Cập nhật giao diện menu Nav
-      this.updateNavUI(viewName);
+      // Hàm nội bộ thực hiện render view vào DOM
+      const renderViewContent = function () {
+        self.state.currentView = viewName;
+        self.updateNavUI(viewName);
 
-      const appMount = document.getElementById('appMount');
-      if (!appMount) return;
+        const appMount = document.getElementById('appMount');
+        if (!appMount) return;
 
-      // Hiệu ứng fade in mượt
-      appMount.style.opacity = '0';
-      appMount.style.transform = 'translateY(6px)';
-
-      setTimeout(() => {
         const viewModule = window.ShopVietViews[viewName];
         if (viewModule && typeof viewModule.render === 'function') {
           appMount.innerHTML = viewModule.render(params);
@@ -2299,7 +2306,7 @@
           }
         } else {
           // Fallback UI nếu view chưa được khởi tạo
-          appMount.innerHTML = this.renderFallbackView(viewName, params);
+          appMount.innerHTML = self.renderFallbackView(viewName, params);
         }
 
         // Tái tạo icon Lucide
@@ -2307,22 +2314,105 @@
           window.lucide.createIcons();
         }
 
-        // Cuộn trang
+        // Cuộn trang theo params hoặc mặc định
         if (params.scrollTo) {
           const target = document.querySelector(params.scrollTo);
           if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
           }
         } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: isProductAction ? 'smooth' : 'instant' });
         }
 
-        appMount.style.transition = 'opacity 0.25s ease-out, transform 0.25s ease-out';
-        appMount.style.opacity = '1';
-        appMount.style.transform = 'translateY(0)';
-      }, 50);
+        self.notify('view_changed', { view: viewName, params: params });
+      };
 
-      this.notify('view_changed', { view: viewName, params: params });
+      // ĐIỀU KIỆN NGOẠI TRỪ (BỎ QUA RÈM):
+      // 1. Thao tác tới Sản phẩm (isProductAction)
+      // 2. Chế độ giảm chuyển động (prefersReducedMotion)
+      // 3. Không tìm thấy phần tử rèm (#curtainTransition)
+      // 4. Chuyển vào cùng một view đang hiển thị (isSameView)
+      if (isProductAction || prefersReducedMotion || !curtain || isSameView) {
+        const appMount = document.getElementById('appMount');
+        if (appMount) {
+          if (isProductAction && isSameView) {
+            // Đang ở home bấm Sản phẩm chỉ cần cuộn mượt
+            if (params.scrollTo) {
+              const target = document.querySelector(params.scrollTo);
+              if (target) target.scrollIntoView({ behavior: 'smooth' });
+            }
+            if (typeof window.setActiveNav === 'function') {
+              window.setActiveNav('navProducts');
+            }
+            this.notify('view_changed', { view: 'home', params: params });
+            return;
+          }
+          appMount.style.opacity = '0';
+          appMount.style.transform = 'translateY(6px)';
+          setTimeout(() => {
+            renderViewContent();
+            appMount.style.transition = 'opacity 0.25s ease-out, transform 0.25s ease-out';
+            appMount.style.opacity = '1';
+            appMount.style.transform = 'translateY(0)';
+          }, 50);
+        } else {
+          renderViewContent();
+        }
+        return;
+      }
+
+      // ==================== KÍCH HOẠT CURTAIN PAGE TRANSITION (LUCIAN #321) ====================
+      const titleEl = document.getElementById('curtainDestTitle');
+      const subtitleEl = document.getElementById('curtainDestSubtitle');
+
+      const metaMap = {
+        home: { title: 'Trang chủ', subtitle: 'Khám phá công cụ AI bản quyền' },
+        blog: { title: 'Blog & Tin Tức', subtitle: 'Kiến thức AI & Hướng dẫn sử dụng' },
+        dashboard: { title: 'Dashboard Đơn Hàng', subtitle: 'Quản lý tài khoản & gói dịch vụ' },
+        admin: { title: 'Cổng Quản Trị', subtitle: 'Admin Management Portal' },
+        login: { 
+          title: params.mode === 'register' ? 'Đăng ký tài khoản' : 'Đăng nhập', 
+          subtitle: 'ShopSkill247 Member' 
+        },
+        checkout: { title: 'Thanh toán đơn hàng', subtitle: 'Tự động kích hoạt trong 30s' }
+      };
+
+      const meta = metaMap[viewName] || { 
+        title: viewName.charAt(0).toUpperCase() + viewName.slice(1), 
+        subtitle: 'ShopSkill247 • AI Store' 
+      };
+
+      if (titleEl) titleEl.textContent = meta.title;
+      if (subtitleEl) subtitleEl.textContent = meta.subtitle;
+
+      // Reset các class trước khi phủ rèm
+      curtain.classList.remove('is-lift');
+      curtain.classList.remove('is-cover');
+      void curtain.offsetWidth; // Trigger reflow để đảm bảo CSS chuyển động mượt
+
+      // Bước 1: Hạ rèm phủ kín màn hình
+      curtain.classList.add('is-cover');
+
+      // Bước 2: Sau 450ms (rèm đã che kín 100% viewport), hoán đổi nội dung bên dưới
+      setTimeout(() => {
+        const appMount = document.getElementById('appMount');
+        if (appMount) {
+          appMount.style.transition = 'none';
+          appMount.style.opacity = '1';
+          appMount.style.transform = 'none';
+        }
+
+        renderViewContent();
+
+        // Bước 3: Nâng rèm lên để lộ view mới
+        curtain.classList.add('is-lift');
+        curtain.classList.remove('is-cover');
+
+        // Bước 4: Sau 550ms, hoàn tất toàn bộ chu trình chuyển cảnh
+        setTimeout(() => {
+          curtain.classList.remove('is-lift');
+        }, 550);
+      }, 450);
     },
 
     // Cập nhật trạng thái active của Menu Header dạng viên thuốc chuẩn
