@@ -139,18 +139,6 @@
       "usedAt": "2026-10-31T04:46:50.152Z",
       "orderCode": "#DJ202674DK",
       "createdAt": "2026-10-31T04:46:40.452Z"
-    },
-    {
-      "code": "SV20P-PEY6",
-      "type": "percent_discount",
-      "percent": 20,
-      "value": 20,
-      "singleUse": true,
-      "isUsed": false,
-      "usedBy": null,
-      "usedAt": null,
-      "orderCode": null,
-      "createdAt": "2026-10-29T16:17:13.606Z"
     }
   ],
   "schedules": [],
@@ -420,8 +408,9 @@
   ],
   "deletedIds": [
     "SCH-002",
-    "SCH-001"
+    "SCH-001",
+    "SV20P-PEY6"
   ],
-  "updatedAt": "2026-10-31T06:08:24.256Z",
-  "version": 1793426904256
+  "updatedAt": "2026-10-31T06:08:33.316Z",
+  "version": 1793426913316
 }
