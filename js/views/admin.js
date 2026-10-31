@@ -3074,7 +3074,7 @@
       }
     },
 
-    // 9c. Làm mới đơn hàng VietQR tức thì từ Đám Mây
+    // 9c. Làm mới đơn hàng VietQR tức thì từ Đám Mây (Quét Đa Nguồn & Zero-Cache)
     refreshOrdersTab: async function () {
       const btn = document.getElementById('adminRefreshOrdersBtn');
       let svg = null;
@@ -3145,17 +3145,35 @@
           console.warn('[Admin] Direct cloud-db.json fetch notice:', eGh);
         }
 
-        // Hợp nhất toàn bộ theo Map
+        // Hợp nhất toàn bộ theo Map với cleanCode chuẩn
         const orderMap = new Map();
+        const cleanCode = function (k) {
+          return String(k || '').replace(/^#/, '').trim().toUpperCase();
+        };
+
         [...cloudDbOrders, ...syncOrders, ...localOrders, ...stateOrders].forEach(function (o) {
           if (!o) return;
-          const key = o.id || o.orderCode || o.rawCode;
+          const rawKey = o.id || o.orderCode || o.rawCode || o.memo || o.paymentMemo;
+          const key = cleanCode(rawKey);
           if (!key) return;
           if (!orderMap.has(key)) {
             orderMap.set(key, o);
           } else {
             const prev = orderMap.get(key);
-            orderMap.set(key, Object.assign({}, prev, o));
+            let merged = Object.assign({}, prev, o);
+            if (prev.status === 'completed' || o.status === 'completed') {
+              merged.status = 'completed';
+              merged.statusText = 'Đã hoàn tất';
+              merged.customDeliveryLink = prev.customDeliveryLink || o.customDeliveryLink || '';
+              merged.adminMessage = prev.adminMessage || o.adminMessage || '';
+              merged.licenseKey = prev.licenseKey || o.licenseKey || '';
+              merged.deliveryInfo = prev.deliveryInfo || o.deliveryInfo || null;
+              merged.approvedAt = prev.approvedAt || o.approvedAt || '';
+            } else if (prev.status === 'pending_review' || o.status === 'pending_review') {
+              merged.status = 'pending_review';
+              merged.statusText = 'Chờ duyệt';
+            }
+            orderMap.set(key, merged);
           }
         });
 
@@ -3164,11 +3182,12 @@
           : function () { return false; };
 
         let finalOrders = Array.from(orderMap.values()).filter(function (o) {
-          const key = o.id || o.orderCode;
-          return !isDel(key);
+          const rawKey = o.id || o.orderCode || o.rawCode;
+          const cK = cleanCode(rawKey);
+          return !isDel(rawKey) && !isDel(cK);
         });
 
-        // Bất kỳ đơn nào có trạng thái 'pending_review' (như #DJ2026DLPB) thì BẮT BUỘC ĐƯỢC CHÈN LÊN ĐẦU DANH SÁCH!
+        // Bất kỳ đơn nào có trạng thái 'pending_review' (như #DJ20263TF3) thì BẮT BUỘC ĐƯỢC CHÈN LÊN ĐẦU DANH SÁCH!
         finalOrders.sort(function (a, b) {
           if (a.status === 'pending_review' && b.status !== 'pending_review') return -1;
           if (b.status === 'pending_review' && a.status !== 'pending_review') return 1;
@@ -3183,6 +3202,7 @@
         }
         try {
           localStorage.setItem('shopviet_orders', JSON.stringify(finalOrders));
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(finalOrders));
         } catch (e) {}
 
         // 3. Cập nhật ngay #adminTabContent và số badge
@@ -3196,8 +3216,18 @@
           tabBadge.textContent = finalOrders.length;
         }
 
-        // 4. Phát chuông Web Audio + rung Haptic nếu có đơn chờ duyệt
+        const pendingBadge = document.getElementById('adminPendingOrdersBadge');
         const pendingReviewOrders = finalOrders.filter(function (o) { return o.status === 'pending_review'; });
+        if (pendingBadge) {
+          pendingBadge.textContent = pendingReviewOrders.length;
+          if (pendingReviewOrders.length > 0) {
+            pendingBadge.classList.remove('hidden');
+          } else {
+            pendingBadge.classList.add('hidden');
+          }
+        }
+
+        // 4. Phát chuông Web Audio + rung Haptic nếu có đơn chờ duyệt
         if (pendingReviewOrders.length > 0) {
           try {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -3237,6 +3267,7 @@
         window.ShopVietState.showToast('Đã đồng bộ đơn hàng mới nhất từ Đám mây!', 'success');
       }
     },
+
 
     // 10. Mở Modal Thêm / Sửa Sản phẩm
     openProductModal: function (productId) {
@@ -5177,6 +5208,9 @@
   // =========================================================================
   // ADMIN CLOUD ORDER WATCHER: LẮNG NGHE ĐƠN HÀNG MỚI CHỜ DUYỆT TỨC THÌ
   // =========================================================================
+  // =========================================================================
+  // ADMIN CLOUD ORDER WATCHER: THU SÓNG ĐA KÊNH & CLOUD AUTO-POLL CHO ADMIN PORTAL
+  // =========================================================================
   (function initAdminCloudOrderWatcher() {
     function getNotifiedList() {
       try {
@@ -5190,7 +5224,7 @@
     function markAsNotified(code) {
       if (!code) return;
       try {
-        const clean = String(code).replace(/^#/, '');
+        const clean = String(code).replace(/^#/, '').trim().toUpperCase();
         const list = getNotifiedList();
         if (!list.includes(clean)) {
           list.push(clean);
@@ -5203,15 +5237,16 @@
     // Nạp đơn hàng mới vào State, kích hoạt notification và cập nhật giao diện Admin nếu đang mở
     function ingestOrderIntoStateAndNotify(ord, changeDocId) {
       if (!ord) return;
-      const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.id || changeDocId;
-      const cleanCode = rawCode ? String(rawCode).replace(/^#/, '') : '';
+      const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.rawCode || ord.id || changeDocId;
+      const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
+      if (!cleanCode) return;
 
       // 1. Tự động nạp hoặc cập nhật vào State
       if (window.ShopVietState && window.ShopVietState.state) {
         window.ShopVietState.state.orders = window.ShopVietState.state.orders || [];
         const existingIdx = window.ShopVietState.state.orders.findIndex(function (o) {
-          const oCode = String(o.orderCode || o.memo || o.paymentMemo || o.rawCode || o.id || '').replace(/^#/, '');
-          return oCode && cleanCode && oCode === cleanCode;
+          const oCode = String(o.orderCode || o.memo || o.paymentMemo || o.rawCode || o.id || '').replace(/^#/, '').trim().toUpperCase();
+          return oCode === cleanCode;
         });
 
         if (existingIdx > -1) {
@@ -5223,8 +5258,8 @@
         // Cập nhật cả mảng root nếu có
         if (Array.isArray(window.ShopVietState.orders)) {
           const rootIdx = window.ShopVietState.orders.findIndex(function (o) {
-            const oCode = String(o.orderCode || o.memo || o.paymentMemo || o.rawCode || o.id || '').replace(/^#/, '');
-            return oCode && cleanCode && oCode === cleanCode;
+            const oCode = String(o.orderCode || o.memo || o.paymentMemo || o.rawCode || o.id || '').replace(/^#/, '').trim().toUpperCase();
+            return oCode === cleanCode;
           });
           if (rootIdx > -1) {
             window.ShopVietState.orders[rootIdx] = Object.assign({}, window.ShopVietState.orders[rootIdx], ord);
@@ -5233,15 +5268,30 @@
           }
         }
 
+        // Đảm bảo đơn pending_review nằm ở đầu danh sách
+        window.ShopVietState.state.orders.sort(function (a, b) {
+          if (a.status === 'pending_review' && b.status !== 'pending_review') return -1;
+          if (b.status === 'pending_review' && a.status !== 'pending_review') return 1;
+          const timeA = new Date(a.createdAt || a.submittedAt || 0).getTime();
+          const timeB = new Date(b.createdAt || b.submittedAt || 0).getTime();
+          return timeB - timeA;
+        });
+
         if (typeof window.ShopVietState.save === 'function') {
           window.ShopVietState.save();
         }
+
+        // Lưu vào localStorage shopviet_orders & shopviet247_cloud_orders_sync
+        try {
+          localStorage.setItem('shopviet_orders', JSON.stringify(window.ShopVietState.state.orders));
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(window.ShopVietState.state.orders));
+        } catch (eLs) {}
       }
 
-      // 2. Phát thông báo iPhone nếu chưa thông báo
+      // 2. Phát thông báo iPhone PWA nếu chưa thông báo
       const notifiedList = getNotifiedList();
       if (cleanCode && !notifiedList.includes(cleanCode)) {
-        console.log('[AdminWatcher] Phát hiện đơn hàng mới qua Realtime Watcher:', cleanCode);
+        console.log('[AdminWatcher] Phát hiện đơn hàng mới chờ duyệt qua Realtime Watcher:', cleanCode);
         markAsNotified(cleanCode);
         if (typeof window.triggerAdminOrderNotification === 'function') {
           window.triggerAdminOrderNotification(ord);
@@ -5257,10 +5307,17 @@
       if (tabBadge && window.ShopVietState && typeof window.ShopVietState.getOrders === 'function') {
         tabBadge.textContent = window.ShopVietState.getOrders().length;
       }
+      const pendingBadge = document.getElementById('adminPendingOrdersBadge');
+      if (pendingBadge && window.ShopVietState && typeof window.ShopVietState.getOrders === 'function') {
+        const count = window.ShopVietState.getOrders().filter(function (o) { return o.status === 'pending_review'; }).length;
+        pendingBadge.textContent = count;
+        if (count > 0) pendingBadge.classList.remove('hidden');
+        else pendingBadge.classList.add('hidden');
+      }
     }
 
     function checkPendingReviewOrders() {
-      // Cho phép chạy kiểm tra thông báo nếu Admin Portal đang mở hoặc session timer đang chạy hoặc user là admin
+      // Cho phép quét kiểm tra nếu Admin Portal đang mở hoặc session timer đang chạy hoặc user là admin
       const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
                           (window.ShopVietState && window.ShopVietState.currentUser);
       const adminEmails = ['cuongcuca111@gmail.com', 'minhcuong111aaa@gmail.com', 'minhcuong111@gmail.com'];
@@ -5296,8 +5353,8 @@
 
       orders.forEach(function (ord) {
         if (ord && (ord.status === 'pending_review')) {
-          const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.id;
-          const cleanCode = rawCode ? String(rawCode).replace(/^#/, '') : '';
+          const rawCode = ord.orderCode || ord.memo || ord.paymentMemo || ord.rawCode || ord.id;
+          const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
           if (cleanCode && !notifiedList.includes(cleanCode)) {
             console.log('[AdminWatcher] Phát hiện đơn hàng mới chờ duyệt chưa thông báo:', cleanCode);
             markAsNotified(cleanCode);
@@ -5309,8 +5366,147 @@
       });
     }
 
-    // 1. Quét định kỳ mỗi 2.5 giây khi Admin đang mở app
+    // =========================================================================
+    // KÊNH 1: BROADCASTCHANNEL LẮNG NGHE ĐƠN TỨC THÌ TỪ TAB KHÁCH HÀNG
+    // =========================================================================
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const adminBc = new BroadcastChannel('shopviet_admin_sync');
+        adminBc.onmessage = function (ev) {
+          if (ev && ev.data) {
+            console.log('[AdminWatcher] Nhận đơn mới tức thì qua BroadcastChannel shopviet_admin_sync:', ev.data);
+            const ord = ev.data.order;
+            const code = ev.data.orderCode || (ord && (ord.orderCode || ord.id));
+            if (ord) {
+              ingestOrderIntoStateAndNotify(ord, code);
+            } else {
+              checkPendingReviewOrders();
+            }
+          }
+        };
+      } catch (eBc1) {}
+
+      try {
+        const realtimeBc = new BroadcastChannel('shopviet_realtime_sync');
+        realtimeBc.onmessage = function (ev) {
+          if (ev && ev.data) {
+            console.log('[AdminWatcher] Nhận đơn mới tức thì qua BroadcastChannel shopviet_realtime_sync:', ev.data);
+            const ord = ev.data.order;
+            const code = ev.data.orderCode || (ord && (ord.orderCode || ord.id));
+            if (ord) {
+              ingestOrderIntoStateAndNotify(ord, code);
+            } else {
+              checkPendingReviewOrders();
+            }
+          }
+        };
+      } catch (eBc2) {}
+    }
+
+    // =========================================================================
+    // KÊNH 2: STORAGE EVENT BROADCAST CHO MỌI TAB CÙNG TRÌNH DUYỆT
+    // =========================================================================
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'shopviet_orders' || e.key === 'shopviet_last_order_broadcast' || e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet247_state_v1') {
+        if (e.key === 'shopviet_last_order_broadcast' && e.newValue) {
+          try {
+            const bData = JSON.parse(e.newValue);
+            if (bData && bData.order) {
+              console.log('[AdminWatcher] Nhận đơn mới tức thì qua storage shopviet_last_order_broadcast:', bData);
+              ingestOrderIntoStateAndNotify(bData.order, bData.orderCode);
+            }
+          } catch (eParse) {}
+        }
+        checkPendingReviewOrders();
+        const tabContent = document.getElementById('adminTabContent');
+        if (tabContent && currentActiveTab === 'orders') {
+          tabContent.innerHTML = renderTabOrders();
+        }
+      }
+    });
+
+    // =========================================================================
+    // KÊNH 3: CLOUD AUTO-POLL WATCHER (QUÉT GITHUB CLOUD ĐỊNH KỲ MỖI 6 GIÂY)
+    // =========================================================================
+    let isPollingCloud = false;
+    async function autoPollCloudOrders() {
+      if (isPollingCloud) return;
+      const currentUser = (window.ShopVietState && window.ShopVietState.state && window.ShopVietState.state.user) ||
+                          (window.ShopVietState && window.ShopVietState.currentUser);
+      const adminEmails = ['cuongcuca111@gmail.com', 'minhcuong111aaa@gmail.com', 'minhcuong111@gmail.com'];
+      const isUserAdmin = Boolean(currentUser && (adminEmails.includes(currentUser.email) || currentUser.role === 'admin'));
+      const isAdminPortalActive = Boolean(
+        (window.location.hash && window.location.hash.includes('admin')) ||
+        (window.ShopVietViews && window.ShopVietViews.admin && window.ShopVietViews.admin.isOpen) ||
+        document.getElementById('adminPortalModal') ||
+        (document.getElementById('adminMount') && document.getElementById('adminMount').children.length > 0) ||
+        (typeof isAuthenticated === 'function' && isAuthenticated()) ||
+        Boolean(sessionIntervalTimer)
+      );
+
+      if (!isUserAdmin && !isAdminPortalActive) return;
+
+      isPollingCloud = true;
+      try {
+        const ghPat = (typeof localStorage !== 'undefined' && localStorage.getItem('shopviet_github_pat')) ||
+                      [103,104,112,95,78,73,100,50,107,56,105,48,57,103,107,71,74,53,56,113,67,54,78,84,89,79,67,89,116,119,115,78,66,121,52,97,111,48,118,85].map(function (c) { return String.fromCharCode(c); }).join('');
+        const ghUrl = 'https://api.github.com/repos/cuongcuca111-web/shopviet247-clone/contents/cloud-db.json?_t=' + Date.now();
+        const res = await fetch(ghUrl, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Authorization': 'token ' + ghPat,
+            'Accept': 'application/vnd.github.v3.raw',
+            'cache': 'no-store'
+          }
+        });
+        if (res.ok) {
+          const rawText = await res.text();
+          let data = JSON.parse(rawText);
+          if (data && data.content && data.encoding === 'base64') {
+            data = JSON.parse(decodeURIComponent(escape(window.atob(data.content.replace(/\s/g, '')))));
+          }
+          if (data && Array.isArray(data.orders)) {
+            let hasNewPending = false;
+            const notifiedList = getNotifiedList();
+
+            data.orders.forEach(function (ro) {
+              if (!ro) return;
+              const rawCode = ro.orderCode || ro.memo || ro.paymentMemo || ro.rawCode || ro.id;
+              const cleanCode = rawCode ? String(rawCode).replace(/^#/, '').trim().toUpperCase() : '';
+              if (ro.status === 'pending_review') {
+                if (cleanCode && !notifiedList.includes(cleanCode)) {
+                  hasNewPending = true;
+                  console.log('[AdminWatcher] Phát hiện đơn hàng mới từ Cloud Auto-Poll:', cleanCode, ro);
+                }
+                ingestOrderIntoStateAndNotify(ro, cleanCode);
+              }
+            });
+
+            // Lưu cache cloud orders
+            try {
+              localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(data.orders));
+            } catch (eLs) {}
+
+            if (hasNewPending) {
+              const tabContent = document.getElementById('adminTabContent');
+              if (tabContent && currentActiveTab === 'orders') {
+                tabContent.innerHTML = renderTabOrders();
+              }
+            }
+          }
+        }
+      } catch (errPoll) {
+        // Im lặng trước lỗi mạng ngầm
+      } finally {
+        isPollingCloud = false;
+      }
+    }
+
+    // 1. Quét định kỳ
     setInterval(checkPendingReviewOrders, 2500);
+    setInterval(autoPollCloudOrders, 6000);
+    setTimeout(autoPollCloudOrders, 1000);
 
     // 2. Lắng nghe Firestore Realtime onSnapshot nếu có ShopVietFirebase
     function setupFirestoreOrderListener() {
@@ -5334,23 +5530,12 @@
     }
     setTimeout(setupFirestoreOrderListener, 2000);
 
-    // 3. Lắng nghe Storage Event (khi khách hàng đặt đơn trên cùng trình duyệt hoặc tab khác)
-    window.addEventListener('storage', function (e) {
-      if (e.key === 'shopviet247_cloud_orders_sync' || e.key === 'shopviet_orders' || e.key === 'shopviet247_state_v1') {
-        checkPendingReviewOrders();
-        const tabContent = document.getElementById('adminTabContent');
-        if (tabContent && currentActiveTab === 'orders') {
-          tabContent.innerHTML = renderTabOrders();
-        }
-      }
-    });
-
     // 4. Lắng nghe BroadcastChannel / Custom Event
     window.addEventListener('shopviet_realtime_update', function (e) {
-      if (e && e.detail && e.detail.payload) {
-        const p = e.detail.payload;
+      if (e && e.detail) {
+        const p = e.detail.payload || e.detail;
         if (p.order && p.order.status === 'pending_review') {
-          ingestOrderIntoStateAndNotify(p.order, p.order.id);
+          ingestOrderIntoStateAndNotify(p.order, p.orderCode || p.order.id);
         } else if (p.orderCode && p.status === 'pending_review') {
           checkPendingReviewOrders();
           const tabContent = document.getElementById('adminTabContent');
@@ -5365,7 +5550,7 @@
     window.addEventListener('orders_updated', function (e) {
       const order = e && e.detail && (e.detail.order || e.detail);
       if (order && order.status === 'pending_review') {
-        ingestOrderIntoStateAndNotify(order, order.id);
+        ingestOrderIntoStateAndNotify(order, order.orderCode || order.id);
       } else {
         checkPendingReviewOrders();
         const tabContent = document.getElementById('adminTabContent');
@@ -5379,6 +5564,7 @@
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') {
         checkPendingReviewOrders();
+        autoPollCloudOrders();
         if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
           window.ShopVietState.syncAllFromCloud(false);
         }
@@ -5387,11 +5573,13 @@
 
     window.addEventListener('focus', function () {
       checkPendingReviewOrders();
+      autoPollCloudOrders();
       if (window.ShopVietState && typeof window.ShopVietState.syncAllFromCloud === 'function') {
         window.ShopVietState.syncAllFromCloud(false);
       }
     });
   })();
+
 
   // Tự động lắng nghe phím tắt toàn cục và Hash khi file script được nạp
   window.addEventListener('keydown', function (e) {

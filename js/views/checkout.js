@@ -1385,8 +1385,8 @@
         };
       }
 
-      // HÀM CHUNG HOÀN TẤT THANH TOÁN
-      function completePaymentSuccess() {
+      // HÀM CHUNG HOÀN TẤT THANH TOÁN (ĐẨY CLOUD ĐA TẦNG 100%)
+      async function completePaymentSuccess() {
         clearPaymentCountdown();
 
         // Cập nhật trạng thái đơn hàng
@@ -1414,9 +1414,131 @@
           }
         }
 
+        // Lưu trực tiếp vào shopviet_orders
+        try {
+          let currentOrders = [];
+          const rawLocal = localStorage.getItem('shopviet_orders');
+          if (rawLocal) {
+            const p = JSON.parse(rawLocal);
+            if (Array.isArray(p)) currentOrders = p;
+          }
+          const filtered = currentOrders.filter(function (o) {
+            if (!o) return false;
+            return o.id !== order.id && o.orderCode !== order.orderCode && o.rawCode !== order.rawCode;
+          });
+          filtered.unshift(order);
+          localStorage.setItem('shopviet_orders', JSON.stringify(filtered));
+        } catch (e) {}
+
+        // Lưu trực tiếp vào shopviet247_cloud_orders_sync
+        try {
+          let syncOrders = [];
+          const rawSync = localStorage.getItem('shopviet247_cloud_orders_sync');
+          if (rawSync) {
+            const p = JSON.parse(rawSync);
+            if (Array.isArray(p)) syncOrders = p;
+          }
+          const filteredSync = syncOrders.filter(function (o) {
+            if (!o) return false;
+            return o.id !== order.id && o.orderCode !== order.orderCode && o.rawCode !== order.rawCode;
+          });
+          filteredSync.unshift(order);
+          localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(filteredSync));
+        } catch (e) {}
+
         // Đồng bộ đơn hàng lên Firebase Firestore Cloud
         if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
-          window.ShopVietFirebase.syncOrderToCloud(order);
+          try {
+            window.ShopVietFirebase.syncOrderToCloud(order);
+          } catch (eFb) {}
+        }
+
+        // Đẩy lên GitHub Cloud Storage & REST API độc lập với pushAllToCloud(true) - BẮT BUỘC AWAIT
+        if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
+          try {
+            await window.ShopVietState.pushAllToCloud(true);
+          } catch (ePush) {
+            console.warn('[Checkout] pushAllToCloud error:', ePush);
+          }
+        }
+
+        // Phát sóng Realtime toàn diện đa kênh: BroadcastChannel + LocalStorage Broadcast + CustomEvent
+        // 1. BroadcastChannel shopviet_admin_sync & shopviet_realtime_sync
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc1 = new BroadcastChannel('shopviet_admin_sync');
+            bc1.postMessage({
+              type: 'orders_updated',
+              action: 'order_completed',
+              order: order,
+              orderCode: order.orderCode || order.id,
+              status: 'completed',
+              timestamp: Date.now()
+            });
+            const bc2 = new BroadcastChannel('shopviet_realtime_sync');
+            bc2.postMessage({
+              type: 'orders_updated',
+              action: 'order_completed',
+              order: order,
+              orderCode: order.orderCode || order.id,
+              status: 'completed',
+              timestamp: Date.now()
+            });
+          }
+        } catch (eBc) {}
+
+        // 2. Storage event broadcast cho mọi tab cùng trình duyệt
+        try {
+          localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
+            order: order,
+            orderCode: order.orderCode || order.id,
+            status: 'completed',
+            timestamp: Date.now()
+          }));
+        } catch (eSt) {}
+
+        // 3. CustomEvent nội bộ tab
+        try {
+          window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+            detail: {
+              type: 'orders_updated',
+              action: 'order_completed',
+              order: order,
+              orderCode: order.orderCode || order.id,
+              status: 'completed',
+              timestamp: Date.now(),
+              payload: {
+                order: order,
+                orderCode: order.orderCode || order.id,
+                status: 'completed'
+              }
+            }
+          }));
+          window.dispatchEvent(new CustomEvent('orders_updated', {
+            detail: {
+              type: 'orders_updated',
+              action: 'order_completed',
+              order: order,
+              orderCode: order.orderCode || order.id,
+              status: 'completed',
+              timestamp: Date.now()
+            }
+          }));
+        } catch (eCe) {}
+
+        // 4. Phát sóng qua kênh ShopVietState nội bộ
+        if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
+          window.ShopVietState.broadcastAdminChange('orders_updated', {
+            order: order,
+            orderCode: order.orderCode || order.id,
+            status: 'completed',
+            timestamp: Date.now()
+          });
+        }
+
+        // 5. Kích hoạt PWA Push Notification cho iPhone Admin (iOS 16.4+) & Desktop
+        if (typeof window.triggerAdminOrderNotification === 'function') {
+          window.triggerAdminOrderNotification(order);
         }
 
         // Dọn dẹp giỏ hàng
@@ -1490,8 +1612,8 @@
 
           showToast('Đang kết nối cổng Sacombank để kiểm tra số dư...', 'info');
 
-          setTimeout(() => {
-            completePaymentSuccess();
+          setTimeout(async () => {
+            await completePaymentSuccess();
           }, 1500);
         };
       }
@@ -1503,8 +1625,8 @@
           webhookBtn.disabled = true;
           webhookBtn.classList.add('opacity-75', 'cursor-wait');
           showToast('Nhận tín hiệu Webhook tức thì từ Sacombank...', 'info');
-          setTimeout(() => {
-            completePaymentSuccess();
+          setTimeout(async () => {
+            await completePaymentSuccess();
           }, 600);
         };
       }

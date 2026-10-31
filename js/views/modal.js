@@ -1535,28 +1535,27 @@ window.ShopVietViews.modal = (function () {
     },
 
     // Xác nhận đã thanh toán -> Đưa vào hàng đợi chờ Ban quản trị duyệt
-    confirmPaid: function (orderCode) {
+    // Xác nhận đã thanh toán -> Đưa vào hàng đợi chờ Ban quản trị duyệt (Đẩy Cloud Đa Tầng 100%)
+    confirmPaid: async function (orderCode) {
       const confirmBtn = document.getElementById('btn-quickpay-confirm');
       if (confirmBtn) {
         confirmBtn.disabled = true;
         confirmBtn.classList.add('opacity-75', 'cursor-wait');
         confirmBtn.innerHTML = `
           <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-          <span>Đang lưu giao dịch...</span>
+          <span>Đang lưu giao dịch & đồng bộ Cloud...</span>
         `;
       }
 
       if (window.ShopVietState && typeof window.ShopVietState.showToast === 'function') {
-        window.ShopVietState.showToast('Đang ghi nhận thông tin chuyển khoản...', 'info');
+        window.ShopVietState.showToast('Đang ghi nhận thông tin chuyển khoản & đồng bộ Cloud...', 'info');
       }
 
-      setTimeout(() => {
-        this.finishPaymentWaitingReview(orderCode);
-      }, 1000);
+      await this.finishPaymentWaitingReview(orderCode);
     },
 
     // Xử lý hoàn tất trạng thái Chờ phê duyệt (Khi khách bấm "Tôi đã chuyển khoản")
-    finishPaymentWaitingReview: function (orderCode) {
+    finishPaymentWaitingReview: async function (orderCode) {
       clearPaymentTimer();
 
       const order = window.ShopVietState ? window.ShopVietState.currentOrder : null;
@@ -1701,19 +1700,31 @@ window.ShopVietViews.modal = (function () {
           } catch (eFb) {}
         }
 
-        // 3. Đẩy lên GitHub Cloud Storage & REST API độc lập với pushAllToCloud(true)
+        // 3. Đẩy lên GitHub Cloud Storage & REST API độc lập với pushAllToCloud(true) - BẮT BUỘC AWAIT
         if (window.ShopVietState && typeof window.ShopVietState.pushAllToCloud === 'function') {
-          window.ShopVietState.pushAllToCloud(true).catch(function (e) {
+          try {
+            await window.ShopVietState.pushAllToCloud(true);
+          } catch (e) {
             console.warn('[Modal] pushAllToCloud error:', e);
-          });
+          }
         }
 
-        // 4. Phát sóng Realtime toàn diện: BroadcastChannel('shopviet_admin_sync') + CustomEvent
+        // 4. Phát sóng Realtime toàn diện đa kênh: BroadcastChannel + LocalStorage Broadcast + CustomEvent
+        // 4.1 BroadcastChannel shopviet_admin_sync & shopviet_realtime_sync
         try {
           if (typeof BroadcastChannel !== 'undefined') {
-            const bc = new BroadcastChannel('shopviet_admin_sync');
-            bc.postMessage({
-              type: 'orders_updated',
+            const bc1 = new BroadcastChannel('shopviet_admin_sync');
+            bc1.postMessage({
+              type: 'new_order_pending_review',
+              action: 'new_order_pending_review',
+              order: order,
+              orderCode: order.orderCode || orderCode,
+              status: 'pending_review',
+              timestamp: Date.now()
+            });
+            const bc2 = new BroadcastChannel('shopviet_realtime_sync');
+            bc2.postMessage({
+              type: 'new_order_pending_review',
               action: 'new_order_pending_review',
               order: order,
               orderCode: order.orderCode || orderCode,
@@ -1723,8 +1734,34 @@ window.ShopVietViews.modal = (function () {
           }
         } catch (eBc) {}
 
+        // 4.2 Storage event broadcast cho mọi tab cùng trình duyệt
+        try {
+          localStorage.setItem('shopviet_last_order_broadcast', JSON.stringify({
+            order: order,
+            orderCode: order.orderCode || orderCode,
+            status: 'pending_review',
+            timestamp: Date.now()
+          }));
+        } catch (eSt) {}
+
+        // 4.3 CustomEvent nội bộ tab
         try {
           window.dispatchEvent(new CustomEvent('shopviet_realtime_update', {
+            detail: {
+              type: 'new_order_pending_review',
+              action: 'new_order_pending_review',
+              order: order,
+              orderCode: order.orderCode || orderCode,
+              status: 'pending_review',
+              timestamp: Date.now(),
+              payload: {
+                order: order,
+                orderCode: order.orderCode || orderCode,
+                status: 'pending_review'
+              }
+            }
+          }));
+          window.dispatchEvent(new CustomEvent('orders_updated', {
             detail: {
               type: 'orders_updated',
               action: 'new_order_pending_review',
@@ -1736,7 +1773,7 @@ window.ShopVietViews.modal = (function () {
           }));
         } catch (eCe) {}
 
-        // Phát sóng qua kênh ShopVietState nội bộ
+        // 4.4 Phát sóng qua kênh ShopVietState nội bộ
         if (window.ShopVietState && window.ShopVietState.broadcastAdminChange) {
           window.ShopVietState.broadcastAdminChange('orders_updated', {
             order: order,
@@ -1774,6 +1811,7 @@ window.ShopVietViews.modal = (function () {
         window.ShopVietState.showToast('Đã ghi nhận giao dịch & cập nhật tồn kho! Đơn của bạn sẽ được duyệt sau ít phút.', 'success');
       }
     },
+
 
     // Điều hướng vào tab Đơn hàng trong trang Dashboard
     goToOrdersTab: function () {

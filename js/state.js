@@ -864,7 +864,7 @@
                 if (fileData && fileData.sha) {
                   sha = fileData.sha;
                 }
-                // Hợp nhất đơn hàng 2 chiều từ Cloud: Không bao giờ làm mất đơn của máy khác
+                // Hợp nhất đơn hàng 2 chiều từ Cloud: Dùng cleanCode đối chiếu chuẩn xác
                 if (fileData && fileData.content) {
                   try {
                     const decodedRemote = decodeURIComponent(escape(window.atob(fileData.content.replace(/\s/g, ''))));
@@ -872,15 +872,28 @@
                     if (remoteData && Array.isArray(remoteData.orders)) {
                       remoteData.orders.forEach(function (ro) {
                         if (!ro) return;
-                        const k = ro.id || ro.orderCode || ro.rawCode;
-                        if (k && !orderMap.has(k)) {
+                        const rawKey = ro.id || ro.orderCode || ro.rawCode || ro.memo || ro.paymentMemo;
+                        const k = cleanCode(rawKey);
+                        if (!k) return;
+                        if (!orderMap.has(k)) {
                           orderMap.set(k, ro);
-                        } else if (k && orderMap.has(k)) {
+                        } else {
                           const cur = orderMap.get(k);
+                          let merged = Object.assign({}, cur, ro);
                           // Nếu bản ghi trên Cloud đã completed mà local chưa completed thì giữ completed
-                          if (ro.status === 'completed' && cur.status !== 'completed') {
-                            orderMap.set(k, Object.assign({}, cur, ro));
+                          if (cur.status === 'completed' || ro.status === 'completed') {
+                            merged.status = 'completed';
+                            merged.statusText = 'Đã hoàn tất';
+                            merged.customDeliveryLink = cur.customDeliveryLink || ro.customDeliveryLink || '';
+                            merged.adminMessage = cur.adminMessage || ro.adminMessage || '';
+                            merged.licenseKey = cur.licenseKey || ro.licenseKey || '';
+                            merged.deliveryInfo = cur.deliveryInfo || ro.deliveryInfo || null;
+                            merged.approvedAt = cur.approvedAt || ro.approvedAt || '';
+                          } else if (cur.status === 'pending_review' || ro.status === 'pending_review') {
+                            merged.status = 'pending_review';
+                            merged.statusText = 'Chờ duyệt';
                           }
+                          orderMap.set(k, merged);
                         }
                       });
                       dbData.orders = Array.from(orderMap.values()).sort(function (a, b) {
@@ -1603,7 +1616,7 @@
       });
     },
 
-    // Thêm đơn hàng mới được gắn chặt chẽ vào email tài khoản
+    // Thêm đơn hàng mới được gắn chặt chẽ vào email tài khoản (Lưu Đa Tầng Cục Bộ & Cloud)
     addOrder: function (order) {
       if (!order) return;
       const currentUser = this.state.user;
@@ -1616,16 +1629,62 @@
       order.customer.email = userEmail;
 
       this.state.orders = this.state.orders || [];
-      this.state.orders.unshift(order);
+      const cleanOrderCode = String(order.id || order.orderCode || order.rawCode || '').replace(/^#/, '').trim().toUpperCase();
+      const existingIdx = this.state.orders.findIndex(function (o) {
+        const oCode = String(o.id || o.orderCode || o.rawCode || '').replace(/^#/, '').trim().toUpperCase();
+        return oCode && cleanOrderCode && oCode === cleanOrderCode;
+      });
+      if (existingIdx > -1) {
+        this.state.orders[existingIdx] = Object.assign({}, this.state.orders[existingIdx], order);
+      } else {
+        this.state.orders.unshift(order);
+      }
       this.save();
 
+      // Lưu trực tiếp vào shopviet_orders
+      try {
+        let currentOrders = [];
+        const rawLocal = localStorage.getItem('shopviet_orders');
+        if (rawLocal) {
+          const p = JSON.parse(rawLocal);
+          if (Array.isArray(p)) currentOrders = p;
+        }
+        const filtered = currentOrders.filter(function (o) {
+          if (!o) return false;
+          const k = String(o.id || o.orderCode || o.rawCode || '').replace(/^#/, '').trim().toUpperCase();
+          return k !== cleanOrderCode;
+        });
+        filtered.unshift(order);
+        localStorage.setItem('shopviet_orders', JSON.stringify(filtered));
+      } catch (eLs1) {}
+
+      // Lưu trực tiếp vào shopviet247_cloud_orders_sync
+      try {
+        let syncOrders = [];
+        const rawSync = localStorage.getItem('shopviet247_cloud_orders_sync');
+        if (rawSync) {
+          const p = JSON.parse(rawSync);
+          if (Array.isArray(p)) syncOrders = p;
+        }
+        const filteredSync = syncOrders.filter(function (o) {
+          if (!o) return false;
+          const k = String(o.id || o.orderCode || o.rawCode || '').replace(/^#/, '').trim().toUpperCase();
+          return k !== cleanOrderCode;
+        });
+        filteredSync.unshift(order);
+        localStorage.setItem('shopviet247_cloud_orders_sync', JSON.stringify(filteredSync));
+      } catch (eLs2) {}
+
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.syncOrderToCloud === 'function') {
-        window.ShopVietFirebase.syncOrderToCloud(order);
+        try {
+          window.ShopVietFirebase.syncOrderToCloud(order);
+        } catch (eFb) {}
       }
       this.pushAllToCloud().catch(function () {});
 
       this.notify('orders_updated', this.state.orders);
     },
+
 
     // Cập nhật số dư ví độc lập cho tài khoản cụ thể
     updateUserBalance: function (email, newBalance) {
