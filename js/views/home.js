@@ -281,7 +281,7 @@ window.ShopVietViews.home = (function () {
         <!-- Top Left: Huy hiệu Giảm Giá (Sale Tag) duy nhất -->
         <div class="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
           ${prod.discount ? `
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/35 border border-white/20 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-[11px] sm:px-2.5 sm:py-1 font-black rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white shadow-md shadow-rose-500/35 border border-white/20 backdrop-blur-md tracking-tight group-hover:scale-105 transition-transform duration-200">
               <svg class="w-2.5 h-2.5 text-white/90 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="5" x2="5" y2="19"/>
                 <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
@@ -296,8 +296,8 @@ window.ShopVietViews.home = (function () {
         ${renderTopRightRibbon(prod)}
 
         <!-- Product SVG Center Icon or Image with Glowing Backdrop -->
-        <div class="relative z-10 w-24 h-24 sm:w-24 sm:h-24 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-4 sm:p-3.5'} shadow-xl shadow-indigo-500/20 ring-1 ring-white/15 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-          ${renderSafeProductImage(prod, 'w-full h-full object-cover rounded-2xl', 'w-full h-full p-4 sm:p-3.5 flex items-center justify-center')}
+        <div class="relative z-10 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center ${prod.imageUrl ? 'p-0 overflow-hidden' : 'p-3 sm:p-3.5'} shadow-xl shadow-indigo-500/20 ring-1 ring-white/15 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
+          ${renderSafeProductImage(prod, 'w-full h-full object-cover rounded-2xl', 'w-full h-full p-3 sm:p-3.5 flex items-center justify-center')}
         </div>
 
         <!-- Bottom brand label overlay (Đã bỏ chữ 1 tháng, nhãn thương hiệu mở rộng lấp trọn vẹn khoảng trống) -->
@@ -362,18 +362,6 @@ window.ShopVietViews.home = (function () {
   }
 
   function getEffectiveViewMode() {
-    var saved = null;
-    try {
-      if (typeof localStorage !== 'undefined') {
-        saved = localStorage.getItem('shopskill_view_mode');
-      }
-    } catch (e) {}
-
-    if (saved === 'expanded' || saved === 'standard' || saved === 'compact') {
-      return saved;
-    }
-
-    // Nếu chưa chọn, tự động dùng kết quả nhận diện thiết bị làm mặc định!
     var device = detectDevice();
     if (device === 'mobile') return 'compact';
     if (device === 'tablet') return 'standard';
@@ -389,12 +377,7 @@ window.ShopVietViews.home = (function () {
 
       // Tự động nhận diện thiết bị & chế độ xem lưới sản phẩm
       const currentViewMode = getEffectiveViewMode();
-      let gridColClasses = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
-      if (currentViewMode === 'standard') {
-        gridColClasses = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3';
-      } else if (currentViewMode === 'compact') {
-        gridColClasses = 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2';
-      }
+      let gridColClasses = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
 
       // Lấy danh sách sản phẩm thật (Ưu tiên từ getCustomProducts trong State, nếu không có fallback về ShopVietData)
       const allProducts = (window.ShopVietState && typeof window.ShopVietState.getCustomProducts === 'function' && window.ShopVietState.getCustomProducts().length > 0)
@@ -687,7 +670,7 @@ window.ShopVietViews.home = (function () {
                   </span>
 
                   <!-- Smart View Mode Switcher (Bo tròn kính mờ sang trọng) -->
-                  <div id="shopskillViewModeSwitcher" class="inline-flex items-center p-1 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md shadow-xs ml-1" role="group" aria-label="Tùy chọn chế độ xem lưới sản phẩm">
+                  <div id="shopskillViewModeSwitcher" class="hidden inline-flex items-center p-1 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-md shadow-xs ml-1" role="group" aria-label="Tùy chọn chế độ xem lưới sản phẩm">
                     <button 
                       type="button"
                       data-view-mode="expanded"
@@ -808,11 +791,11 @@ window.ShopVietViews.home = (function () {
                     <!-- Bottom Price & CTA Button -->
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                       <div class="flex flex-col min-w-0">
-                        <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                        <span class="text-xs sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                           ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.price) : `${prod.price.toLocaleString('vi-VN')} đ`}
                         </span>
                         ${prod.oldPrice ? `
-                          <span class="text-[11px] text-slate-400 line-through truncate -mt-0.5">
+                          <span class="text-[10px] sm:text-[11px] text-slate-400 line-through truncate -mt-0.5">
                             ${window.ShopVietState ? window.ShopVietState.formatCurrency(prod.oldPrice) : `${prod.oldPrice.toLocaleString('vi-VN')} đ`}
                           </span>
                         ` : ''}
@@ -822,14 +805,14 @@ window.ShopVietViews.home = (function () {
                         <button 
                           disabled 
                           onclick="event.stopPropagation()" 
-                          class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-xs font-semibold px-3 py-1.5 rounded-full cursor-not-allowed shrink-0"
+                          class="bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-full cursor-not-allowed shrink-0"
                         >
                           Hết hàng
                         </button>
                       ` : `
                         <button 
                           onclick="event.stopPropagation(); ShopVietViews.modal.open('${prod.id}')" 
-                          class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-xs font-semibold px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-full active:scale-95 transition-all shadow-xs hover:shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
                         >
                           <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                           <span>Mua ngay</span>
@@ -1368,7 +1351,7 @@ window.ShopVietViews.home = (function () {
         // Áp dụng class grid-cols mới tương ứng
         var newCols = [];
         if (mode === 'expanded') {
-          newCols = ['grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-5'];
+          newCols = ['grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-5'];
         } else if (mode === 'standard') {
           newCols = ['grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-3'];
         } else if (mode === 'compact') {

@@ -414,20 +414,25 @@
       inset: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
+      background-color: #080A15;
       z-index: 99999;
       pointer-events: auto;
       overflow: hidden;
       font-family: inherit;
+      transition: opacity 0.5s ease 0.4s, visibility 0.5s ease 0.4s;
     }
     .u256.is-open {
       pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
     }
     .u256-hf {
       position: absolute;
       left: 0;
       width: 100%;
-      height: 50vh;
-      height: 50dvh;
+      height: calc(50% + 1px);
+      height: calc(50dvh + 1px);
       background-color: #080A15;
       background-image: 
         radial-gradient(circle at 50% 100%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
@@ -457,6 +462,7 @@
     .u256.is-open .u256-b {
       transform: translateY(101%);
     }
+    .u256.u256-no-transition,
     .u256.u256-no-transition .u256-hf {
       transition: none !important;
     }
@@ -594,13 +600,15 @@
         padding: 24px 20px;
       }
       .u256-b {
-        padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 20px) + 65px) 20px;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 20px) + 20px) 20px;
       }
       .u256-n {
         font-size: clamp(3.75rem, 16vw, 5.5rem);
       }
       .u256-ct {
-        gap: 10px;
+        gap: 12px;
       }
       .u256-re {
         bottom: 16px;
@@ -740,7 +748,7 @@
         <div class="flex flex-col">
           <div class="flex items-center gap-1.5">
             <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">ShopSkill<span class="text-indigo-600 dark:text-indigo-400">247</span></span>
-            <span class="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase rounded-md bg-gradient-to-r from-violet-500/15 via-indigo-500/15 to-cyan-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 dark:border-indigo-400/30 shadow-2xs">AI STORE</span>
+            <span class="hidden sm:inline-flex px-1.5 py-0.5 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase rounded-md bg-gradient-to-r from-violet-500/15 via-indigo-500/15 to-cyan-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 dark:border-indigo-400/30 shadow-2xs">AI STORE</span>
           </div>
           <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide hidden sm:block"><span id="brandTagline" class="u267-sw"><span>Kỹ Năng & Bản Quyền Tự Động 24/7</span></span></span>
         </div>
@@ -1392,18 +1400,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=20261031_mobile_opt_v19"></script>
+  <script src="js/firebase-config.js?v=20261031_proportions_opt_v20"></script>
 
-  <script src="js/data.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/state.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/home.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/modal.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/checkout.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/auth.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/dashboard.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/admin.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/views/blog.js?v=20261031_mobile_opt_v19"></script>
-  <script src="js/app.js?v=20261031_mobile_opt_v19"></script>
+  <script src="js/data.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/state.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/home.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/modal.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/checkout.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/auth.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/dashboard.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/admin.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/views/blog.js?v=20261031_proportions_opt_v20"></script>
+  <script src="js/app.js?v=20261031_proportions_opt_v20"></script>
 
   <!-- ==================== PWA SERVICE WORKER REGISTRATION ==================== -->
   <script>
