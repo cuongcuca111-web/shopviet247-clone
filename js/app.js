@@ -509,8 +509,10 @@ function updateHeaderAuthUI() {
   if (adminHeaderBtn) {
     if (isAdminUser) {
       adminHeaderBtn.classList.remove('hidden');
+      adminHeaderBtn.classList.add('hidden', 'sm:inline-flex');
     } else {
       adminHeaderBtn.classList.add('hidden');
+      adminHeaderBtn.classList.remove('sm:inline-flex');
     }
   }
   const adminFooterBtn = document.getElementById('adminPortalFooterBtn');
