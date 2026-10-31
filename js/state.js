@@ -102,20 +102,11 @@
     }
   ];
 
-  // Trạng thái khởi tạo mặc định (Khách hàng Minh Cường đăng nhập sẵn)
+  // Trạng thái khởi tạo mặc định (Khách vãng lai chưa đăng nhập)
   const initialState = {
     currentView: 'home',
     cart: [],
-    user: {
-      id: DEFAULT_USER_CUONG.id,
-      name: DEFAULT_USER_CUONG.name,
-      email: DEFAULT_USER_CUONG.email,
-      balance: DEFAULT_USER_CUONG.balance,
-      isLoggedIn: true,
-      role: 'user',
-      phone: DEFAULT_USER_CUONG.phone,
-      avatar: 'C'
-    },
+    user: null,
     currentOrder: null,
     orders: [],
     discountCode: { code: '', percent: 0, amount: 0 },
@@ -1264,6 +1255,10 @@
         isOnline: true
       };
 
+      try {
+        localStorage.setItem('shopviet_has_logged_in', 'true');
+      } catch (e) {}
+
       this.save();
       this.notify('user_login', this.state.user);
       if (window.ShopVietApp && typeof window.ShopVietApp.updateHeaderAuthUI === 'function') {
@@ -1273,15 +1268,10 @@
 
     // Đăng xuất an toàn khỏi hệ thống (xóa session người dùng)
     logout: function () {
-      this.state.user = {
-        name: 'Khách',
-        email: '',
-        balance: 0,
-        isLoggedIn: false,
-        role: 'guest',
-        phone: '',
-        avatar: 'K'
-      };
+      this.state.user = null;
+      try {
+        localStorage.removeItem('shopviet_has_logged_in');
+      } catch (e) {}
       if (window.ShopVietFirebase && typeof window.ShopVietFirebase.logout === 'function') {
         window.ShopVietFirebase.logout();
       }
@@ -1368,20 +1358,40 @@
         this.syncAllFromCloud().catch(function () {});
 
         const saved = localStorage.getItem(STORAGE_KEY);
+        const hasLoggedInFlag = localStorage.getItem('shopviet_has_logged_in') === 'true';
+
         if (saved) {
           const parsed = JSON.parse(saved);
           this.state.cart = parsed.cart || [];
           
-          // Kiểm tra tính hợp lệ của user đã lưu
-          if (parsed.user && parsed.user.isLoggedIn && parsed.user.email) {
+          // ==================== CƠ CHẾ DỌN DẸP PHIÊN CŨ & XÁC THỰC KHÁCH VÃNG LAI ====================
+          // Chỉ khôi phục this.state.user khi:
+          // 1. Có cờ xác nhận người dùng đã từng chủ động đăng nhập: shopviet_has_logged_in === 'true'
+          // 2. parsed.user hợp lệ: isLoggedIn === true và có email
+          // 3. Email tồn tại trong Cơ sở Dữ liệu Tài khoản (getUsersDB)
+          let restoredUser = null;
+          if (hasLoggedInFlag && parsed.user && parsed.user.isLoggedIn === true && parsed.user.email) {
             const matchedInDb = this.findUserByEmail(parsed.user.email);
             if (matchedInDb) {
-              this.state.user = Object.assign({}, matchedInDb, { isLoggedIn: true });
-            } else {
-              this.state.user = Object.assign({}, initialState.user);
+              restoredUser = Object.assign({}, matchedInDb, { isLoggedIn: true, isOnline: true });
             }
+          }
+
+          if (restoredUser) {
+            this.state.user = restoredUser;
           } else {
-            this.state.user = Object.assign({}, initialState.user);
+            // Thiết lập trạng thái Khách vãng lai (Guest 100%)
+            this.state.user = null;
+            // Purge Migration: Dọn dẹp session cũ lưu tự động hoặc không hợp lệ khỏi LocalStorage
+            if (parsed.user) {
+              parsed.user = null;
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+              } catch (e) {}
+            }
+            try {
+              localStorage.removeItem('shopviet_has_logged_in');
+            } catch (e) {}
           }
 
           // Khôi phục đơn hàng và đảm bảo mỗi đơn có userEmail
@@ -1404,6 +1414,11 @@
           this.state.lang = parsed.lang || 'VI';
           this.state.discountCode = parsed.discountCode || { code: '', percent: 0, amount: 0 };
         } else {
+          // Chưa có dữ liệu lưu trữ -> Mặc định là Khách vãng lai
+          this.state.user = null;
+          try {
+            localStorage.removeItem('shopviet_has_logged_in');
+          } catch (e) {}
           // Khởi tạo đơn hàng mẫu cho tài khoản admin
           if (window.ShopVietData && window.ShopVietData.defaultOrders) {
             this.state.orders = window.ShopVietData.defaultOrders.map(function (o) {

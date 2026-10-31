@@ -228,83 +228,43 @@
         <div class="flex items-center gap-2">
           <!-- Dropdown Tài khoản (#headerUserSection) -->
           <div id="headerUserSection" class="relative">
-            <div id="headerAuthContainer" class="relative">
-              <!-- Nút User Profile Badge (Click mở Dropdown) -->
-              <button id="headerUserMenuBtn" type="button" class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer group shadow-2xs">
-                <!-- Avatar tròn chữ cái đầu (VD: C) -->
-                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs ring-2 ring-white/50 dark:ring-slate-800">
-                  C
-                </div>
-                <!-- Tên người dùng -->
-                <span class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[90px] sm:max-w-[130px] truncate select-none">
-                  Minh Cường
-                </span>
-                <!-- Mũi tên Dropdown chevron-down -->
-                <svg id="userMenuChevron" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+            <div id="headerAuthContainer" class="flex items-center gap-2">
+              <!-- Nút Đăng ký (Guest State) -->
+              <button 
+                id="headerRegisterBtn" 
+                type="button" 
+                onclick="window.ShopVietState && window.ShopVietState.navigate ? window.ShopVietState.navigate('login', { mode: 'register' }) : location.hash='#login'"
+                class="inline-flex items-center gap-1.5 px-3 py-2 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer shadow-2xs active:scale-95 select-none"
+                title="Tạo tài khoản mới"
+              >
+                <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 20a6 6 0 0 1 12 0v1H3v-1Z"/>
                 </svg>
+                <span>Đăng ký</span>
               </button>
 
-              <!-- Dropdown Menu Tài Khoản Thông Minh -->
-              <div id="headerUserDropdown" class="hidden absolute right-0 top-full mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 animate-slide-up">
-                <!-- Thông tin User tóm tắt -->
-                <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800/80">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Firebase Cloud Synced</span>
-                  </div>
-                  <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Minh Cường</p>
-                  <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">cuongcuca111@gmail.com</p>
-                </div>
-
-                <!-- Các chức năng Menu -->
-                <div class="py-1 text-xs">
-                  <button id="dropdownProfileBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
-                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <span>Trang cá nhân</span>
-                  </button>
-
-                  <button id="dropdownOrdersBtn" type="button" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
-                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                      <path d="M3 6h18"/>
-                      <path d="M16 10a4 4 0 0 1-8 0"/>
-                    </svg>
-                    <span>Đơn hàng của tôi</span>
-                  </button>
-
-                  <button id="dropdownAdminBtn" type="button" class="hidden w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2.5 transition-colors cursor-pointer">
-                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    <span>Portal Admin</span>
-                  </button>
-                </div>
-
-                <!-- Đăng xuất -->
-                <div class="pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                  <button id="dropdownLogoutBtn" type="button" class="w-full px-4 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 font-medium transition-colors cursor-pointer">
-                    <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                      <polyline points="16 17 21 12 16 7"/>
-                      <line x1="21" x2="9" y1="12" y2="12"/>
-                    </svg>
-                    <span>Đăng xuất</span>
-                  </button>
-                </div>
-              </div>
+              <!-- Nút Đăng nhập (Guest State) -->
+              <button 
+                id="headerLoginBtn" 
+                type="button" 
+                onclick="window.ShopVietState && window.ShopVietState.navigate ? window.ShopVietState.navigate('login') : location.hash='#login'"
+                class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-3.5 sm:px-4 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none ring-1 ring-white/10 dark:ring-white/20"
+                title="Đăng nhập tài khoản"
+              >
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+                </svg>
+                <span>Đăng nhập</span>
+              </button>
             </div>
           </div>
 
-          <!-- Nút Dashboard: Primary Action Button Nền tối / Gradient Indigo bo tròn, icon dashboard, viền phát sáng nhẹ -->
+          <!-- Nút Dashboard: Primary Action Button (Mặc định ẩn cho Guest, hiện khi đăng nhập) -->
           <button 
             id="header-dashboard-link" 
             type="button" 
             title="Mở trang Quản lý cá nhân & Đơn hàng (Dashboard)" 
-            class="bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white dark:from-indigo-600 dark:to-violet-600 dark:hover:from-indigo-500 dark:hover:to-violet-500 rounded-xl px-3.5 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md shadow-indigo-500/15 hover:shadow-indigo-500/30 border border-indigo-500/20 dark:border-indigo-400/30 ring-1 ring-white/10 dark:ring-white/20 transition-all duration-200 cursor-pointer active:scale-95"
+            class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-white dark:from-indigo-600 dark:to-violet-600 dark:hover:from-indigo-500 dark:hover:to-violet-500 rounded-xl px-3.5 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md shadow-indigo-500/15 hover:shadow-indigo-500/30 border border-indigo-500/20 dark:border-indigo-400/30 ring-1 ring-white/10 dark:ring-white/20 transition-all duration-200 cursor-pointer active:scale-95"
           >
             <svg class="w-4 h-4 text-indigo-400 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <rect width="7" height="9" x="3" y="3" rx="1" />

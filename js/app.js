@@ -388,9 +388,19 @@ function updateHeaderAuthUI() {
   const container = document.getElementById('headerAuthContainer');
   if (!container) return;
 
-  const user = window.ShopVietState.state.user;
-  const isLoggedIn = user && user.isLoggedIn === true;
+  const user = window.ShopVietState && window.ShopVietState.state ? window.ShopVietState.state.user : null;
+  const isLoggedIn = Boolean(user && user.isLoggedIn === true);
   const isAdminUser = Boolean(window.ShopVietState && typeof window.ShopVietState.isAdmin === 'function' && window.ShopVietState.isAdmin());
+
+  // Quản lý hiển thị nút Dashboard trên Header (Chỉ hiện khi đã đăng nhập)
+  const dashboardLinkBtn = document.getElementById('header-dashboard-link');
+  if (dashboardLinkBtn) {
+    if (isLoggedIn) {
+      dashboardLinkBtn.classList.remove('hidden');
+    } else {
+      dashboardLinkBtn.classList.add('hidden');
+    }
+  }
 
   // Cập nhật ẩn/hiển thị cổng Portal Admin trên Header và Footer (Chỉ minhcuong111aaa@gmail.com)
   const adminHeaderBtn = document.getElementById('adminPortalHeaderBtn');
@@ -411,22 +421,40 @@ function updateHeaderAuthUI() {
   }
 
   if (!isLoggedIn) {
-    // ==================== TRẠNG THÁI 1: CHƯA ĐĂNG NHẬP ====================
-    // Nút "Đăng nhập" nền đen bo góc tròn chuẩn SaaS
+    // ==================== TRẠNG THÁI 1: KHÁCH VÃNG LAI (CHƯA ĐĂNG NHẬP) ====================
+    // Bộ đôi nút "Đăng nhập" & "Đăng ký" chuẩn SaaS cao cấp
     container.innerHTML = `
-      <button id="headerLoginBtn" type="button" class="bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl px-4 py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none">
-        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
-        </svg>
-        <span>Đăng nhập</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="headerLoginBtn" type="button" class="px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-200 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer active:scale-95 select-none flex items-center gap-1.5 shadow-2xs">
+          <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          <span>Đăng nhập</span>
+        </button>
+        <button id="headerRegisterBtn" type="button" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold shadow-sm shadow-indigo-500/20 transition-all duration-200 cursor-pointer active:scale-95 select-none">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 8v6M22 11h-6"/>
+          </svg>
+          <span>Đăng ký</span>
+        </button>
+      </div>
     `;
 
     const loginBtn = document.getElementById('headerLoginBtn');
     if (loginBtn) {
       loginBtn.addEventListener('click', function (e) {
         e.preventDefault();
-        window.ShopVietState.navigate('login');
+        window.ShopVietState.navigate('login', { mode: 'login' });
+      });
+    }
+
+    const registerBtn = document.getElementById('headerRegisterBtn');
+    if (registerBtn) {
+      registerBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.ShopVietState.navigate('login', { mode: 'register' });
       });
     }
   } else {
