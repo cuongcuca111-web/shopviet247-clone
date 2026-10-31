@@ -144,37 +144,6 @@
   "schedules": [],
   "orders": [
     {
-      "id": "#DJ20263LDY",
-      "orderCode": "#DJ20263LDY",
-      "memo": "FMF642SP",
-      "items": [
-        {
-          "id": "prod-001",
-          "name": "[LINK] Antigravity + Gemini Pro 18 Tháng - Mail Phụ Kèm Quà Tặng",
-          "category": "Gemini - Antigravity - Veo",
-          "price": 69000,
-          "originalPrice": 250000,
-          "quantity": 1,
-          "iconType": "gemini"
-        }
-      ],
-      "totalItems": 1,
-      "subtotal": 69000,
-      "discount": 0,
-      "amount": 69000,
-      "paymentMethod": "Sacombank (VietQR 24/7)",
-      "bankName": "Sacombank (STB)",
-      "accountNumber": "100071864927",
-      "accountName": "LE BUI MINH CUONG",
-      "bin": "970403",
-      "createdAt": "2026-10-29T12:01:29.984Z",
-      "createdAtFormatted": "19:01 29/10/2026",
-      "status": "completed",
-      "expiresInSeconds": 600,
-      "paidAt": "2026-10-29T12:01:39.480Z",
-      "userEmail": "minhcuong111aaa@gmail.com"
-    },
-    {
       "id": "#DJ2026T2HS",
       "orderCode": "#DJ2026T2HS",
       "memo": "3V5HS94L",
@@ -395,8 +364,9 @@
     "SCH-002",
     "SCH-001",
     "SV20P-PEY6",
-    "DJ2026771"
+    "DJ2026771",
+    "#DJ20263LDY"
   ],
-  "updatedAt": "2026-10-31T06:08:46.592Z",
-  "version": 1793426926592
+  "updatedAt": "2026-10-31T06:08:51.888Z",
+  "version": 1793426931888
 }
